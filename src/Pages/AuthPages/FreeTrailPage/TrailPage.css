@@ -1,0 +1,191 @@
+.mainSection {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+}
+
+.whiteBox {
+  padding: 3rem 2rem;
+  background-color: #fff;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.darkBox {
+  height: 100%;
+  background: linear-gradient(135deg, #0d6efd, #003b88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.DarkPanel {
+  max-width: 400px;
+}
+
+.panel-heading img {
+  max-width: 140px;
+}
+
+.panel-heading h2 {
+  font-size: 1.8rem;
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+  height: 45px;
+  border-radius: 6px;
+}
+
+.form-check-label {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.invalid-feedback {
+  color: #dc3545;
+}
+
+.btn-primary {
+  background-color: #504b54;
+  border-color: #0d6efd;
+  height: 45px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.btn-primary:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.form-text {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.text-primary {
+  color: #0d6efd !important;
+}
+
+.text-light-emphasis {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+}
+
+.joinedLine {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .whiteBox {
+    padding: 2rem 1.2rem;
+  }
+
+  .darkBox {
+    display: none;
+  }
+}
+
+/* General Form Styling */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 10px 12px;
+  font-size: 15px;
+}
+
+/* Phone Input Specific Border */
+.form-group input[type="tel"] {
+  border: 2px solid #8e44ad; /* Purple border */
+}
+
+/* Purple Button and Hover */
+.btn-primary {
+  background-color: #8e44ad;
+  border-color: #8e44ad;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #732d91;
+  border-color: #732d91;
+  color: #fff;
+}
+
+/* Right Side - Extra Text Field and Button */
+.extra-field-wrapper {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.extra-field-wrapper input {
+  flex: 1;
+  height: 45px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0 10px;
+}
+
+.extra-field-wrapper button {
+  background-color: #8e44ad;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.extra-field-wrapper button:hover {
+  background-color: #732d91;
+}
+.panel-heading img {
+  max-width: 140px;
+  margin-bottom: 0;
+}
+
+.panel-heading h2 {
+  font-size: 1.8rem;
+  margin-top: 0; 
+  font-weight: 600;
+}
+
+.panel-body {
+  margin-top: -30px;    /* Moves the form UP closer to the heading */
+}
+
+.whiteBox {
+  padding-top: 2rem;     /* Reduces empty space on top of whiteBox */
+  padding-bottom: 1rem;  /* Optional: reduces space at bottom */
+}
+
+.panel-heading {
+  margin-bottom: 0.5rem; /* Keeps logo + title compact */
+}
+
+.form-group {
+  margin-bottom: 0.8rem; /* Reduce gaps between form inputs if needed */
+}
+
+
+.DarkPanel h1 {
+  font-size: 2.5rem;
+}
+
+.DarkPanel p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.joinedLine {
+  font-weight: 500;
+  font-size: 1.2rem;
+}

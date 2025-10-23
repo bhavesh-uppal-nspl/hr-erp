@@ -1,0 +1,207 @@
+import React, { useCallback, useEffect, useState } from "react";
+import Layout1 from "../../DataLayouts/Layout1";
+import NextWeekIcon from "@mui/icons-material/NextWeek";
+import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
+import { fetchEmployeeLeaveEntitlements, fetchEmployeeLeaves } from "../../../Apis/Employee-api";
+import { MAIN_URL } from "../../../Configurations/Urls";
+import DateRangeIcon from "@mui/icons-material/DateRange";
+import PersonIcon from "@mui/icons-material/Person";
+import CategoryIcon from "@mui/icons-material/Category";
+import useAuthStore from "../../../Zustand/Store/useAuthStore";
+import toast from "react-hot-toast";
+import axios from "axios";
+import TableDataGeneric from "../../../Configurations/TableDataGeneric";
+import { useNavigate, useParams } from "react-router-dom";
+import Layout4 from "../../DataLayouts/Layout4";
+
+
+function EmployeeLeaveEntitlementList() {
+  const [leaves, setLeaves] = useState([]);
+  const { userData } = useAuthStore();
+  const org = userData?.organization;
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const {id} = useParams();
+
+
+  useEffect(() => {
+    if (org?.organization_id) {
+      setLoading(true);
+      fetchEmployeeLeaveEntitlements(org?.organization_id)
+        .then((data) => {
+          let a = data?.orgleaveEntitle;
+          console.log("a of entile is ", a)
+          let b = a.map((item) => {
+            return {
+              ...item,
+              id:item.organization_leave_entitlement_id ,
+         
+              department:item?.department?.department_name ==null ? "":item?.department?.department_name,
+              location:item?.location?.location_name ==null ? "":item?.location?.location_name,
+              leavetype:item?.leavetype?.leave_type_name ==null ? "":item?.leavetype?.leave_type_name,
+              // entitledays:item?.entitled_days ===null ? "":item.entitled_days,
+              workshifttype:item?.workshifttype?.work_shift_type_name ==null ? "":item?.workshifttype?.work_shift_type_name,
+              workshift:item?.workshift?.work_shift_name ==null ? "":item?.workshift?.work_shift_name,
+              requires_approval:item?.requires_approval ==null ? "✖":"✔",
+              is_active:item?.is_active ==null ? "✖":"✔",
+              priority_level:item?.priority_level ==null ? "":item?.priority_level,
+              encashment_allowed:item?.encashment_allowed ==true ? "✔":"✖"
+
+
+            };
+          });
+          setLeaves(b);
+        })
+        .catch((err) => {});
+      setLoading(false);
+    }
+  }, [org]);
+
+
+  let deleteemployeeleave = async (id) => {
+    try {
+      const org_id = org.organization_id;
+      const response = await axios.delete(
+        `${MAIN_URL}/api/organizations/${org_id}/employee-entitlements/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+    } catch (error) { if (error.response && error.response.status === 401) {
+  toast.error("Session Expired!");
+  window.location.href = "/login";
+}
+      console.error("Delete failed:", error);
+      toast.error(
+        error.response?.data?.error || "Failed to delete Employee Leave Entitlement"
+      );
+    }
+  };
+
+
+  
+    const handleDelete = async (id) => {
+      try {
+        const response = await fetch(
+          `${MAIN_URL}/api/organizations/${org?.organization_id}/employee-entitlements/${id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        console.log("Successfully deleted units-types with id:", id);
+        return Promise.resolve();
+      } catch (error) {
+        console.error("Delete failed:", error);
+        return Promise.reject(error);
+      }
+    };
+
+
+    const handleEdit = useCallback(
+
+    (item) => {
+
+         navigate(`/leave/employee-entitlements/edit/${item.id}`);
+
+    },
+
+    [navigate]
+
+  );
+
+  
+
+
+  return (
+    <>
+    <Layout4
+      loading={loading}
+      heading={"Employee Leave Entitlement"}
+      btnName={"Add Employee Leave Entitlement"}
+      Data={leaves}
+      tableHeaders={[
+        { name: "Leave Type", value_key: "leavetype" },
+        {
+          name: "Entitle days",
+          value_key: "entitledays",
+          textStyle: "capitalize",
+        },
+        { name: "Entitle Period", value_key: "entitlement_period" },
+         {
+          name: "Department Name",
+          value_key: "fullname",
+          textStyle: "capitalize",
+        },
+        { name: "Location", value_key: "location" },
+      ]}
+      Icons={[
+        <PersonIcon sx={{ fontSize: 60, color: "grey.500", mb: 2 }} />,
+        <FormatAlignJustifyIcon color="primary" />,
+        <CategoryIcon sx={{ color: "text.secondary" }} />,
+        <DateRangeIcon sx={{ color: "text.secondary" }} />,
+      ]}
+      messages={[
+        "Employee Leave Entitlement",
+        "Employee Leave Entitlement",
+        "Add Employee Leaves Entitlement",
+        "Employee Leaves Entitlement",
+      ]}
+      Route={"/leave/employee-entitlements"}
+      setData={setLeaves}
+      DeleteFunc={deleteemployeeleave}
+    />
+
+    
+ 
+    
+          <TableDataGeneric
+            tableName="Employees Leave Entitlement"
+            primaryKey="organization_leave_entitlement_id"
+            heading="Employee Leave Entitlement"
+            data={leaves}
+              sortname={"holiday_calendar_name"}
+              showActions={true}
+              //  apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/employee-entitlements`}
+            Route="/leave/employee-entitlements"
+            DeleteFunc={handleDelete}
+            EditFunc={handleEdit}
+            token={localStorage.getItem("token")}
+
+            
+            
+               organizationUserId={userData?.organization_user_id} 
+          showLayoutButtons={true}
+          config={{
+            defaultVisibleColumns: [
+              
+            "department",
+            "carry_forward_days",
+            "leavetype",
+            "location",
+          ],
+          mandatoryColumns: [
+            "department",
+            "carry_forward_days",
+            "leavetype",
+            "location",
+          ],
+        }}
+          
+          
+          />
+ 
+    </>
+  );
+}
+
+export default EmployeeLeaveEntitlementList;

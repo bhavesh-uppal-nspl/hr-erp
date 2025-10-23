@@ -1,0 +1,149 @@
+/* OtpVerify.css */
+
+/* General Page Layout */
+.mainSection {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #f9f9f9;
+}
+
+.row.g-0 {
+  width: 100%;
+  height: 100%;
+}
+
+/* OTP Left Panel */
+.otp-box {
+  /* background-color: #ffffff; */
+  padding: 2rem;
+  border-radius: 12px;
+  /* box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); */
+}
+
+.otp-box h2 {
+  font-weight: 600;
+  font-size: 1.8rem;
+}
+
+.otp-box p {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.otp-form {
+  margin-top: 1.5rem;
+}
+
+.otp-inputs {
+  gap: 8px;
+}
+
+.otp-input {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.5rem;
+  font-size: 1.5rem;
+  background-color: #fefefe;
+  outline: none;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.otp-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 3px #007bff50;
+}
+
+.otp-message {
+  font-size: 0.9rem;
+}
+
+/* Verify Button */
+/* .btn-primary {
+  background-color: #007bff;
+  border: none;
+  font-weight: 500;
+} */
+ .otp-submit {
+      background: #5c0e7d;
+    border: none;
+    font-size: 15px;
+    color: white;
+    padding: 13px 30px;
+    border-radius: 50px;
+    width: 40%;
+    margin: 25px 0 0 0;
+}
+
+.otp-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.otp-submit:hover:not(:disabled) {
+  background: #3b36c9; /* Slightly darker on hover */
+}
+
+
+.panel-body form input[type="submit"] {
+  background: #5c0e7d;
+  border: none;
+  font-size: 15px;
+  color: white;
+  padding: 13px 30px;
+  border-radius: 50px;
+  width: 40%;     /* 👈 changed from 100% to 40% */
+  margin: 25px 0 0 0;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+/* Right Side Free Trial (Dark Box) */
+.darkBox {
+  background-color: #0c1a30;
+}
+
+.DarkPanel {
+  padding: 3rem;
+  text-align: center;
+}
+
+.DarkPanel h1 {
+  font-weight: 700;
+  font-size: 2.5rem;
+}
+
+.DarkPanel .lead {
+  font-size: 1.2rem;
+  color: #bbb;
+}
+
+.joinedLine {
+  font-size: 1rem;
+  color: #ddd;
+}
+
+.DarkPanel h6 {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .otp-box {
+    padding: 1.5rem;
+  }
+
+  .DarkPanel {
+    display: none; /* Hide right side for small screens */
+  }
+
+  .otp-input {
+    width: 40px;
+    height: 50px;
+  }
+}

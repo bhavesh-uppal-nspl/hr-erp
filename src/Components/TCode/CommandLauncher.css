@@ -1,0 +1,108 @@
+/* Terminal Wrapper */
+.terminal-wrapper {
+    height: 80vh;
+    width: 1000px;
+    /* background: white; */
+    background: radial-gradient(circle at top left, #1a1a1a, #121212);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* padding: 2rem; */
+  }
+  
+  /* Terminal Core Styling */
+  .terminal {
+    width: 1000px;
+    height: 80vh;
+    background: rgba(20, 20, 20, 0.75);
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(0, 255, 100, 0.2);
+    backdrop-filter: blur(12px);
+    overflow-y: auto;
+    padding: 2rem;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    color: #00ff95;
+    border: 1px solid #00ff95;
+    position: relative;
+    scroll-behavior: smooth;
+  }
+  
+  /* Terminal Title Bar (optional) */
+  .terminal::before {
+    content: "HR_ERP Terminal";
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 0.85rem;
+    color: #999;
+  }
+  
+  /* Line Entries */
+  .terminal-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 6px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  
+  /* Prompt Label */
+  .prompt {
+    margin-right: 10px;
+    color: #00ffc3;
+    font-weight: bold;
+  }
+  
+  /* Input Field */
+  .terminal-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #00ff95;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 700px;
+    caret-color: #00ffff;
+    animation: blink-caret 1s step-end infinite;
+  }
+  
+  @keyframes blink-caret {
+    50% {
+      caret-color: transparent;
+    }
+  }
+  
+  /* Error and Output */
+  .error-text {
+    color: #ff4d4d;
+    font-weight: bold;
+    margin-top: 0.2rem;
+  }
+  
+  /* Scrollbar */
+  .terminal::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .terminal::-webkit-scrollbar-thumb {
+    background-color: #00ff95;
+    border-radius: 6px;
+  }
+  
+  /* Animate lines */
+  .terminal-line span {
+    animation: fadeIn 0.2s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateX(-2%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  

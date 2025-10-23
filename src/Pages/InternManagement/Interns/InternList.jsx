@@ -1,0 +1,263 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import ViewHeadlineIcon from "@mui/icons-material/ViewHeadline";
+import { fetchOrganizationEmployee } from "../../../Apis/Employee-api";
+import CakeIcon from "@mui/icons-material/Cake";
+import axios from "axios";
+import useAuthStore from "../../../Zustand/Store/useAuthStore";
+import toast from "react-hot-toast";
+import PeopleIcon from "@mui/icons-material/People";
+import { MAIN_URL } from "../../../Configurations/Urls";
+import Layout3 from "../../DataLayouts/Layout3";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import Customisetable from "../../../Components/Table/Customisetable";
+import { Avatar } from "@mui/material";
+import CustomisetableReport from "../../../Components/Table/CustomisetableReport";
+import { TableConfig } from "../../../Configurations/TableDataConfig";
+import TableDataGeneric from "../../../Configurations/TableDataGeneric";
+import Layout4 from "../../DataLayouts/Layout4";
+import { fetchInterns } from "../../../Apis/InternManagement";
+
+function InternList({ mode }) {
+  const { userData } = useAuthStore();
+  const org = userData?.organization;
+  console.log("org", org);
+
+  const [intern, setIntern] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+
+  const { id } = useParams();
+
+  const fromDashboard = location.state?.fromDashboard || false;
+
+useEffect(() => {
+  if (org?.organization_id) {
+    setLoading(true);
+    fetchInterns(org?.organization_id)
+      .then((data) => {
+        const interns = data?.intership?.data || [];
+
+        // ✅ Filter out interns where status is "Exited"
+        const activeInterns = interns.filter(
+          (item) => item.status?.internship_status_name !== "Exited"
+        );
+
+        // ✅ Map and transform the filtered data
+        const formatted = activeInterns.map((item) => {
+          const imageUrl = item.profile_image_url ? `${item.profile_image_url}` : "";
+          const date_of_birth = item.date_of_birth
+            ? new Date(item.date_of_birth).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })
+            : "N/A";
+          const date_of_joining = item.date_of_joining
+            ? new Date(item.date_of_joining).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })
+            : "N/A";
+
+          return {
+            ...item,
+            id: item?.intern_id,
+            Intern_name: [item.first_name, item.middle_name, item.last_name]
+              .filter(Boolean)
+              .join(" "),
+            imageUrl,
+            date_of_birth,
+            date_of_joining,
+          };
+        });
+
+        setIntern(formatted);
+      })
+      .catch((err) => console.error("Error fetching interns:", err))
+      .finally(() => setLoading(false));
+  }
+}, [org]);
+
+
+
+  console.log("intern is ", intern)
+
+
+  const deleteIntern = async (id) => {
+    try {
+      const org_id = org.organization_id;
+      const response = await axios.delete(
+        `${MAIN_URL}/api/organizations/${org_id}/interns/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        toast.error("Session Expired!");
+        window.location.href = "/login";
+      }
+    }
+  };
+
+
+  const navigate = useNavigate();
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(
+        `${MAIN_URL}/api/organizations/${org?.organization_id}/interns/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      console.log("Successfully deleted intern with id:", id);
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Delete failed:", error);
+      return Promise.reject(error);
+    }
+  };
+
+  const handleEdit = useCallback(
+    (item) => {
+      navigate(`/organization/intern/intern-details/edit/${item.id}`);
+    },
+
+    [navigate]
+  );
+
+  const carddata = [
+    {
+      key: "Employee_name",
+      type: "String",
+    },
+    {
+      key: "designation",
+      type: "String",
+    },
+    {
+      key: "profile_image_url",
+      type: "photo",
+    },
+  ];
+
+  return (
+    <>
+      <Layout4
+        loading={loading}
+        heading={
+          <div style={{ cursor: "pointer" }} onClick={() => navigate(-1)}>
+            Interns
+          </div>
+        }
+        btnName={"Add Intern"}
+        onAddBtClick={() => null}
+        onEditBtClick={() => null}
+        Data={intern}
+       
+        Icons={[
+          {
+            key: "exitToAppIcon",
+            element: (
+              <ExitToAppIcon sx={{ fontSize: 60, color: "grey.500", mb: 2 }} />
+            ),
+          },
+          {
+            key: "viewHeadlineIcon",
+            element: <ViewHeadlineIcon color="primary" />,
+          },
+          { key: "cakeIcon", element: <CakeIcon sx={{ color: "red" }} /> },
+          {
+            key: "peopleIcon",
+            element: <PeopleIcon sx={{ color: "primary" }} />,
+          },
+        ]}
+        messages={[
+          "Intern details",
+          "Intern details",
+          "Add Intern",
+          "Intern, Deleting This Employee will delete its Entire data from Employees Record of this Organization Permanently",
+        ]}
+        Route={"/organization/intern/intern-details"}
+        setData={setIntern}
+        DeleteFunc={deleteIntern}
+      />
+{
+   fromDashboard ? (
+    <TableDataGeneric
+       tableName="Interns"
+       primaryKey="intern_id"
+       heading="Interns"
+       data={intern}
+       sortname={"intern_name"}
+       showActions={false}
+       CardData={carddata}
+       // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/employee`}
+       Route="/organization/intern/intern-details"
+       DeleteFunc={handleDelete}
+       EditFunc={handleEdit}
+       token={localStorage.getItem("token")}
+     />
+   ) : (
+     
+     <TableDataGeneric
+       tableName="Intern"
+       primaryKey="intern_id"
+       heading="Intern"
+       data={intern}
+       sortname={"Intern_name"}
+       showActions={true}
+       CardData={carddata}
+       Route="/organization/intern/intern-details"
+       DeleteFunc={handleDelete}
+       EditFunc={handleEdit}
+       token={localStorage.getItem("token")}
+
+        
+                organizationUserId={userData?.organization_user_id} 
+          showLayoutButtons={true}
+          config={{
+            defaultVisibleColumns: [
+              "intern_name",
+            "intern_code",
+            "gender",
+            "first_name",
+            "middle_name",
+            "last_name",
+            
+         
+          ],
+          mandatoryColumns: [
+              "intern_name",
+            "intern_code",
+            "gender",
+            "first_name",
+            "middle_name",
+            "last_name",
+            
+           
+           
+          ],
+        }}
+     />
+  ) 
+}
+    </>
+  );
+}
+export default InternList;

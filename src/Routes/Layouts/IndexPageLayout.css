@@ -1,0 +1,39 @@
+
+.DashboardWrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+    cursor: pointer;
+}
+
+#contentBox {
+    width: 100%;
+    padding: 0;
+    min-height: 100vh;
+    transition: all 0.3s;
+    background: #f1f5f9;
+    cursor: pointer;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 3px; /* made smaller */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 100, 100, 0.2); /* lighter */
+  border-radius: 3px; /* smaller radius */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 100, 100, 0.4); /* slightly darker on hover */
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin; /* still thin */
+  scrollbar-color: rgba(100, 100, 100, 0.2) transparent;
+}

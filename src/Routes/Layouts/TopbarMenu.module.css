@@ -1,0 +1,67 @@
+.topbarMenu {
+    position: relative;
+    padding: 40px;
+    /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+  }
+  
+  .menuTrigger {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    transition: background-color 0.3s;
+  }
+  
+  .menuTrigger:hover {
+    background-color: #1565c0;
+  }
+  
+  .menu {
+    position: absolute;
+    top: 70px;
+    right: 0;
+    width: 220px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    z-index: 1000;
+  }
+  
+  .menuItem {
+    padding: 12px 20px;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.3s;
+  }
+  
+  .menuItem:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .submenu {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    margin-left: 2px;
+    background-color: white;
+    width: 220px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .submenuItem {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .submenuItem:hover {
+    background-color: #f0f0f0;
+  }
+  

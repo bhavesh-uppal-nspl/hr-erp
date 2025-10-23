@@ -1,0 +1,76 @@
+
+/* start sidebar */
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 100vh;
+    background: #0f172a;
+    transition: all 0.3s;
+    padding:30px 15px;
+}
+#sidebar.active {
+    margin-left: -250px;
+}
+  
+#sidebar .sidebar-header {
+    padding: 0;
+    display:flex;
+}
+#sidebar .sidebar-header h1{
+    margin:0;
+    padding:0;
+    color:white;
+    font-size:30px;
+}
+#sidebar ul.sidebarList {
+    padding: 20px 0;
+}
+#sidebar ul li.active {
+    font-size:14px;
+    text-transform:uppercase;
+    color:rgb(63 131 248) !important;
+}
+#sidebar ul li.active a{
+    color : rgb(63 131 248) !important;
+}
+#sidebar ul h2 a{
+    text-decoration:none;
+    color:rgb(63 131 248);
+}
+#sidebar ul h2 a i{
+    margin:0 7px 0 0;
+}
+#sidebar ul li{
+    margin:0 0 10px 0;
+}
+#sidebar ul li a {
+    padding: 10px 20px;
+    font-size: 14px;
+    display: block;
+    color:rgb(156 163 175);
+    text-decoration:none;
+    margin:0;
+}
+#sidebar ul li a i{
+    margin:0 7px 0 0; 
+    font-size:18px;
+}
+#sidebar ul li a:hover {
+    color: white;
+    background: #2a3444;
+    border-radius:5px;
+}
+#sidebar ul li a[data-toggle="collapse"] {
+    position: relative;
+}
+#sidebar ul li .dropdown-toggle::after {
+   float:right;
+   margin:12px 0 0 0;
+}
+#sidebar ul ul a {
+    font-size: 14px !important;
+    color:rgb(156 163 175);
+     padding: 10px 20px 10px 50px;
+}
+
+/* end sidebar */
