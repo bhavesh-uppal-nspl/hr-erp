@@ -155,7 +155,7 @@ function InternStipendList() {
               intern_name:
                 `${capitalize(item.intern?.first_name)} ${capitalize(item?.intern.middle_name || "")} ${capitalize(item?.intern.last_name || "")}
              `.trim(),
-              employee_code: item?.intern?.intern_code,
+              intern_code: item?.intern?.intern_code,
               is_active: item?.is_active == 1 ? "✔" : "✖",
             };
           });

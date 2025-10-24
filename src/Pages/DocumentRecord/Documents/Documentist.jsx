@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Layout1 from "../../DataLayouts/Layout1.jsx";
-import NextWeekIcon from '@mui/icons-material/NextWeek';
-import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
+import NextWeekIcon from "@mui/icons-material/NextWeek";
+import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
 import useAuthStore from "../../../Zustand/Store/useAuthStore.js";
-import {fetchWorkShiftTypes} from '../../../Apis/Workshift-api.js'
+import { fetchWorkShiftTypes } from "../../../Apis/Workshift-api.js";
 import axios from "axios";
 import toast from "react-hot-toast";
-import {MAIN_URL } from "../../../Configurations/Urls.js";
-import {fetchUserTypes} from '../../../Apis/UserTypes.js'
+import { MAIN_URL } from "../../../Configurations/Urls.js";
+import { fetchUserTypes } from "../../../Apis/UserTypes.js";
 import { Description } from "@mui/icons-material";
 import Layout4 from "../../DataLayouts/Layout4.jsx";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -52,8 +52,7 @@ const DEFAULT_COLUMNS = [
 ];
 
 function Documentist() {
-
-  const [documents,setDocuments] = useState([]);
+  const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
  const [tableConfig, setTableConfig] = useState(null);
   const [configColumns, setConfigColumns] = useState(DEFAULT_COLUMNS);
@@ -62,7 +61,7 @@ function Documentist() {
   const { userData } = useAuthStore();
   const org = userData?.organization;
 
-  const navigate= useNavigate()
+  const navigate = useNavigate();
 
   // Load table configuration from general-datagrids API
   useEffect(() => {
@@ -127,12 +126,12 @@ function Documentist() {
           console.log(a);
           let b = a.map((item) => {
             return {
-           ...item,
-              id:item?.employee_document_id ,
-                 Employee_name: `${item?.employee?.first_name || ""} ${item?.employee?.middle_name || ""} ${item?.employee?.last_name || ""}`.trim(),
-                 emp_code:item?.employee?.employee_code,
-                 document_type:item?.document_type?.document_type_name
-
+              ...item,
+              id: item?.employee_document_id,
+              Employee_name:
+                `${item?.employee?.first_name || ""} ${item?.employee?.middle_name || ""} ${item?.employee?.last_name || ""}`.trim(),
+              emp_code: item?.employee?.employee_code,
+              document_type: item?.document_type?.document_type_name,
             };
           });
           setDocuments(b);
@@ -142,53 +141,39 @@ function Documentist() {
     }
   }, [org]);
 
-
-
-
-    let deleteStatus = async (id) => {
-      try {
-        const org_id = org.organization_id;
-        const response = await axios.delete(
-          `${MAIN_URL}/api/organizations/${org_id}/employemnt-document/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-      } catch (error) {
-        if (error.response && error.response.status === 401) {
-          toast.error("Session Expired!");
-          window.location.href = "/login";
+  let deleteStatus = async (id) => {
+    try {
+      const org_id = org.organization_id;
+      const response = await axios.delete(
+        `${MAIN_URL}/api/organizations/${org_id}/employemnt-document/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-        console.error("Delete failed:", error);
-        toast.error(
-          error.response?.data?.error || "Failed to delete Attendance Status Type"
-        );
+      );
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        toast.error("Session Expired!");
+        window.location.href = "/login";
       }
-    };
-  
-    
-      const handleDelete = async (id) => {
-        try {
-          const response = await fetch(
-            `${MAIN_URL}/api/organizations/${org?.organization_id}/employemnt-document/${id}`,
-            {
-              method: "DELETE",
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          console.log("Successfully deleted units-types with id:", id);
-          return Promise.resolve();
-        } catch (error) {
-          console.error("Delete failed:", error);
-          return Promise.reject(error);
+      console.error("Delete failed:", error);
+      toast.error(
+        error.response?.data?.error || "Failed to delete Attendance Status Type"
+      );
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(
+        `${MAIN_URL}/api/organizations/${org?.organization_id}/employemnt-document/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
         }
       };
   
@@ -268,10 +253,3 @@ function Documentist() {
 
 
   
-
-
-
-}
-
-
-export default Documentist;

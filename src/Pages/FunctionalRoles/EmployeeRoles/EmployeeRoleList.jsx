@@ -11,6 +11,7 @@ import { fetchEmployeeFunctionalRolesSpecial, fetchOrganizationFunctionalRoles }
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import AlarmAddIcon from "@mui/icons-material/AlarmAdd";
 import LogoutIcon from "@mui/icons-material/Logout";
+import dayjs from "dayjs";
 
 const DEFAULT_COLUMNS = [
   {
@@ -133,6 +134,7 @@ function EmployeeRoleList() {
               function_role:item?.function_role?.functional_role_name,
               role_specialization:item?.role_specialization?.functional_role_specialization_name,
              is_active: item?.is_active == 1 ? "✔" : "✖",
+              assigned_on: formatDate(item?.assigned_on),
            
             };
           });
