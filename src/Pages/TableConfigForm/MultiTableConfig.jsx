@@ -275,8 +275,40 @@ export default function MultiTableConfig() {
         id: "employment_records",
         tablename: "Employment Records",
         tableheading: "employment_records",
-        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/employee-records-all`,
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/employee-records?mode=1`,
         datagridKeyProp: `Employee Records_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "employee_functional_role",
+        tablename: "Employee Functional Roles",
+        tableheading: "employee_functional_role",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/emp-func-role?mode=1`,
+        datagridKeyProp: `Employee Functional Roles_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "employment_stages",
+        tablename: "Employment Stages",
+        tableheading: "employment_stages",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/employment-stages?mode=1`,
+        datagridKeyProp: `Employment Stages_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "employee_document_types",
+        tablename: "Document Types",
+        tableheading: "employee_document_types",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/employemnt-document-type?mode=1`,
+        datagridKeyProp: `Document Types_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "documents",
+        tablename: "Employee Documents",
+        tableheading: "documents",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/employemnt-document?mode=1`,
+        datagridKeyProp: `Employee Documents_grid_${org?.organization_id}`,
       },
   
       {
@@ -288,11 +320,51 @@ export default function MultiTableConfig() {
       },
   
       {
+        id: "employee_shift_assignments",
+        tablename: "Employee WorkShift Assignments",
+        tableheading: "employee_shift_assignments",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/workshift-assignment?mode=1`,
+        datagridKeyProp: `Employee WorkShift Assignments_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "employee_shift_rotation_pattern",
+        tablename: "Employees Shift Rotation Pattern",
+        tableheading: "employee_shift_rotation_pattern",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/workshift-rotation-pattern?mode=1`,
+        datagridKeyProp: `Employees Shift Rotation Pattern_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "employee_shift_rotation_days",
+        tablename: "Employees Rotation Days",
+        tableheading: "employee_shift_rotation_days",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/workshift-rotation-days?mode=1`,
+        datagridKeyProp: `Employees Rotation Days_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "employee_shift_rotation_assignments",
+        tablename: "Employees Rotation Assignments",
+        tableheading: "employee_shift_rotation_assignments",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/workshift-rotation-assignment?mode=1`,
+        datagridKeyProp: `Employees Rotation Assignments_grid_${org?.organization_id}`,
+      },
+  
+      {
         id: "attendande_time_logs",
         tablename: "Attendance Time Logs",
         tableheading: "attendande_time_logs",
-        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/timelogs-all?mode=1`,
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-time-logs?mode=1`,
         datagridKeyProp: `Attendance Time Logs_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "holiday_calender",
+        tablename: "Holiday Calendar",
+        tableheading: "holiday_calender",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/holiday-calendar?mode=1`,
+        datagridKeyProp: `Holiday Calendar_grid_${org?.organization_id}`,
       },
   
       {
@@ -301,6 +373,30 @@ export default function MultiTableConfig() {
         tableheading: "employee-leaves",
         apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/employee-leave?mode=1`,
         datagridKeyProp: `Employees Leaves_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "employee_entitlements",
+        tablename: "Employees Leave Entitlement",
+        tableheading: "employee_entitlements",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/employee-entitlements?mode=1`,
+        datagridKeyProp: `Employees Leave Entitlement_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "leave_summary",
+        tablename: "Leave Summary Report",
+        tableheading: "leave_summary",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/employee-monthlyleave-summary?mode=1`,
+        datagridKeyProp: `Leave Summary Report_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "leave_balance_report",
+        tablename: "Leave Balance Report",
+        tableheading: "leave_balance_report",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/leave-balances/taken?mode=1`,
+        datagridKeyProp: `Leave Balance Report_grid_${org?.organization_id}`,
       },
   
   
@@ -329,12 +425,207 @@ export default function MultiTableConfig() {
       },
   
       {
+        id: "locations",
+        tablename: "Locations",
+        tableheading: "locations",
+        apiFieldsConfig:`${MAIN_URL}/api/organizations/${org?.organization_id}/location?mode=1`,
+        datagridKeyProp: `Locations_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "organization_units",
+        tablename: "Organization Units",
+        tableheading: "organization_units",
+        apiFieldsConfig:`${MAIN_URL}/api/organizations/${org?.organization_id}/units?mode=1`,
+        datagridKeyProp: `Organization Units_grid_${org?.organization_id}`,
+      },
+  
+      {
         id: "designation",
         tablename: "Designation",
         tableheading: "Designation",
         apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/designation?mode=1`,
         datagridKeyProp: `Designations_grid_${org?.organization_id}`,
       },
+  
+      {
+        id: "registration",
+        tablename: "Registrations",
+        tableheading: "registration",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/business-registration?mode=1`,
+        datagridKeyProp: `Registrations_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "attendance_status_types",
+        tablename: "Attendance Status Type",
+        tableheading: "attendance_status_types",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-status-type?mode=1`,
+        datagridKeyProp: `Attendance Status Type_grid_${org?.organization_id}`,
+      },
+  
+      // {
+      //   id: "attendance_deviation_reasons",
+      //   tablename: "Atendance Deviation Reason",
+      //   tableheading: "attendance_deviation_reasons",
+      //   apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/designation?mode=1`,
+      //   datagridKeyProp: `Atendance Deviation Reason_grid_${org?.organization_id}`,
+      // },
+  
+      {
+        id: "attendance_break_types",
+        tablename: "Attendance Break Types",
+        tableheading: "attendance_break_types",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-break-type?mode=1`,
+        datagridKeyProp: `Attendance Break Types_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "attendance_sources",
+        tablename: "Attendance Source",
+        tableheading: "attendance_sources",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-source?mode=1`,
+        datagridKeyProp: `Attendance Source_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "attendance_breaks",
+        tablename: "Attendance Break",
+        tableheading: "attendance_breaks",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-breaks?mode=1`,
+        datagridKeyProp: `Attendance Break_grid_${org?.organization_id}`,
+      },
+  
+      // {
+      //   id: "workshift_breaks",
+      //   tablename: "Workshift Break",
+      //   tableheading: "workshift_breaks",
+      //   apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/designation?mode=1`,
+      //   datagridKeyProp: `Workshift Break_grid_${org?.organization_id}`,
+      // },
+  
+      {
+        id: "leave_policies",
+        tablename: "Organization Leave Policy",
+        tableheading: "leave_policies",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/leave-palicy?mode=1`,
+        datagridKeyProp: `Organization Leave Policy_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "organization_functional_roles",
+        tablename: "Organization Functional Roles",
+        tableheading: "organization_functional_roles",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/func-role?mode=1`,
+        datagridKeyProp: `Organization Functional Roles_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "functional_role_specialization",
+        tablename: "Functional Role Specialization",
+        tableheading: "functional_role_specialization",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/func-role-spec?mode=1`,
+        datagridKeyProp: `Functional Role Specialization_grid_${org?.organization_id}`,
+      },
+
+      {
+        id: "internship_types",
+        tablename: "Internship Types",
+        tableheading: "internship_types",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/internship-type?mode=1`,
+        datagridKeyProp: `Internship Types_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "internship_status",
+        tablename: "Internship Status",
+        tableheading: "internship_status",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/internship-status?mode=1`,
+        datagridKeyProp: `Internship Status_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "interns",
+        tablename: "Interns",
+        tableheading: "interns",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/interns?mode=1`,
+        datagridKeyProp: `Interns_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "intern_exit",
+        tablename: "Intern Exit",
+        tableheading: "intern_exit",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/intern-exit?mode=1`,
+        datagridKeyProp: `Intern Exit_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "intern_leaves",
+        tablename: "Intern Leaves",
+        tableheading: "intern_leaves",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/intern-leaves?mode=1`,
+        datagridKeyProp: `Intern Leaves_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "intern_document_types",
+        tablename: "Intern Document Types",
+        tableheading: "intern_document_types",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/intern-document-type?mode=1`,
+        datagridKeyProp: `Intern Document Types_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "intern_stipend",
+        tablename: "Intern Stipend",
+        tableheading: "intern_stipend",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/intern-stipend?mode=1`,
+        datagridKeyProp: `Intern Stipend_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "intern_time_logs",
+        tablename: "Intern Time Logs",
+        tableheading: "intern_time_logs",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/intern-time-logs?mode=1`,
+        datagridKeyProp: `Intern Time Logs_grid_${org?.organization_id}`,
+      },
+
+      {
+        id: "intern_certificate",
+        tablename: "Intern Certificate",
+        tableheading: "intern_certificate",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/intern-certificate?mode=1`,
+        datagridKeyProp: `Intern Certificate_grid_${org?.organization_id}`,
+      },
+
+      {
+        id: "internship_status",
+        tablename: "Internship Status",
+        tableheading: "internship_status",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/internship-status?mode=1`,
+        datagridKeyProp: `Internship Status_grid_${org?.organization_id}`,
+      },
+  
+      {
+        id: "user_role",
+        tablename: "User Roles",
+        tableheading: "user_role",
+        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/userrole?mode=1`,
+        datagridKeyProp: `User Roles_grid_${org?.organization_id}`,
+      },
+  
+      // {
+      //   id: "settings",
+      //   tablename: "Settings",
+      //   tableheading: "settings",
+      //   apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/designation?mode=1`,
+      //   datagridKeyProp: `Settings_grid_${org?.organization_id}`,
+      // },
+  
+  
+  
   
   
   

@@ -16,11 +16,59 @@ import { useNavigate, useParams } from "react-router-dom";
 import Layout4 from "../../DataLayouts/Layout4";
 import { fetchInternLeaves } from "../../../Apis/InternManagement";
 
+const DEFAULT_COLUMNS = [
+  {
+    field: "intern_code",
+    label: "intern_code",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+  {
+    field: "Intern_name",
+    label: "Intern_name",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+
+  {
+    field: "approval_date",
+    label: "approval_date",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+
+  {
+    field: "approval_by",
+    label: "approval_by",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+];
+
 function InternLeaveList() {
   const [leaves, setLeaves] = useState([]);
   const { userData } = useAuthStore();
   const org = userData?.organization;
   const [loading, setLoading] = useState(true);
+  const [tableConfig, setTableConfig] = useState(null);
+  const [configColumns, setConfigColumns] = useState(DEFAULT_COLUMNS);
+  const [loadingConfig, setLoadingConfig] = useState(true);
 
   const navigate = useNavigate();
 
@@ -31,6 +79,57 @@ function InternLeaveList() {
     return str.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
   };
 
+  // Load table configuration from general-datagrids API
+  useEffect(() => {
+    const loadTableConfiguration = async () => {
+      if (!org?.organization_id) {
+        setLoadingConfig(false);
+        return;
+      }
+
+      try {
+        const configRes = await fetch(`${MAIN_URL}/api/general-datagrids`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (configRes.ok) {
+          const configResponse = await configRes.json();
+          const datagrids = configResponse.datagrids || [];
+          const orgKey = `Intern Leaves_grid_${org.organization_id}`;
+          const savedConfig = datagrids.find(
+            (dg) => dg.datagrid_key === orgKey
+          );
+
+          if (savedConfig) {
+            const serverCfg = savedConfig.datagrid_default_configuration;
+            setTableConfig(serverCfg);
+
+            if (
+              serverCfg?.columns &&
+              Array.isArray(serverCfg.columns) &&
+              serverCfg.columns?.length > 0
+            ) {
+              setConfigColumns(serverCfg.columns);
+            } else {
+              setConfigColumns(DEFAULT_COLUMNS);
+            }
+          } else {
+            setConfigColumns(DEFAULT_COLUMNS);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading table configuration:", error);
+        setConfigColumns(DEFAULT_COLUMNS);
+      } finally {
+        setLoadingConfig(false);
+      }
+    };
+
+    loadTableConfiguration();
+  }, [org?.organization_id]);
+
+  // load data
   useEffect(() => {
     if (org?.organization_id) {
       setLoading(true);
@@ -49,8 +148,6 @@ function InternLeaveList() {
               .filter(Boolean)
               .join(" ");
 
-            
-           
             const startDate =
               item.leave_start_date != null
                 ? dayjs(item.leave_start_date).format("DD-MM-YYYY")
@@ -74,11 +171,17 @@ function InternLeaveList() {
               ...item,
               id: item.intern_leave_id,
               Intern_name: `${fullName}`,
-            
+
               intern_code: item?.intern?.intern_code,
               leave_start_date: startDate,
-              leave_reason:item?.leave_reason?.leave_reason_name== null ? "" : item?.leave_reason?.leave_reason_name,
-              leave_type:item?.leave_type?.leave_type_name== null ? "" : item?.leave_type?.leave_type_name,
+              leave_reason:
+                item?.leave_reason?.leave_reason_name == null
+                  ? ""
+                  : item?.leave_reason?.leave_reason_name,
+              leave_type:
+                item?.leave_type?.leave_type_name == null
+                  ? ""
+                  : item?.leave_type?.leave_type_name,
               leave_category:
                 item?.leave_category?.leave_category_name == null
                   ? ""
@@ -119,7 +222,6 @@ function InternLeaveList() {
                 : "",
 
               approval_date: approval_date,
-           
             };
           });
 
@@ -241,17 +343,15 @@ function InternLeaveList() {
         data={leaves}
         sortname={"leave_duration_type"}
         showActions={true}
-      
         Route="/organization/intern/intern-leaves"
         DeleteFunc={handleDelete}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
+        configss={configColumns}
+        {...(tableConfig && { config: tableConfig })}
       />
     </>
   );
 }
 
 export default InternLeaveList;
-
-
-

@@ -14,17 +14,117 @@ import TableDataGeneric from "../../../Configurations/TableDataGeneric";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout4 from "../../DataLayouts/Layout4";
 
+const DEFAULT_COLUMNS = [
+  {
+    field: "carry_forward_days",
+    label: "carry_forward_days",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+  {
+    field: "department",
+    label: "department",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+
+  {
+    field: "leavetype",
+    label: "leavetype",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+
+  {
+    field: "location",
+    label: "location",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+];
 
 function EmployeeLeaveEntitlementList() {
   const [leaves, setLeaves] = useState([]);
   const { userData } = useAuthStore();
   const org = userData?.organization;
   const [loading, setLoading] = useState(true);
+   const [tableConfig, setTableConfig] = useState(null);
+  const [configColumns, setConfigColumns] = useState(DEFAULT_COLUMNS);
+  const [loadingConfig, setLoadingConfig] = useState(true);
   const navigate = useNavigate();
 
   const {id} = useParams();
 
+// Load table configuration from general-datagrids API
+  useEffect(() => {
+    const loadTableConfiguration = async () => {
+      if (!org?.organization_id) {
+        setLoadingConfig(false);
+        return;
+      }
 
+      try {
+        const configRes = await fetch(
+          `${MAIN_URL}/api/general-datagrids`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        if (configRes.ok) {
+          const configResponse = await configRes.json();
+          const datagrids = configResponse.datagrids || [];
+          const orgKey = `Employees Leave Entitlement_grid_${org.organization_id}`;
+          const savedConfig = datagrids.find(
+            (dg) => dg.datagrid_key === orgKey
+          );
+
+          if (savedConfig) {
+            const serverCfg = savedConfig.datagrid_default_configuration;
+            setTableConfig(serverCfg);
+
+            if (
+              serverCfg?.columns &&
+              Array.isArray(serverCfg.columns) &&
+              serverCfg.columns?.length > 0
+            ) {
+              setConfigColumns(serverCfg.columns);
+            } else {
+              setConfigColumns(DEFAULT_COLUMNS);
+            }
+          } else {
+            setConfigColumns(DEFAULT_COLUMNS);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading table configuration:", error);
+        setConfigColumns(DEFAULT_COLUMNS);
+      } finally {
+        setLoadingConfig(false);
+      }
+    };
+
+    loadTableConfiguration();
+  }, [org?.organization_id]);
+
+  // load data
   useEffect(() => {
     if (org?.organization_id) {
       setLoading(true);
@@ -176,27 +276,8 @@ function EmployeeLeaveEntitlementList() {
             DeleteFunc={handleDelete}
             EditFunc={handleEdit}
             token={localStorage.getItem("token")}
-
-            
-            
-               organizationUserId={userData?.organization_user_id} 
-          showLayoutButtons={true}
-          config={{
-            defaultVisibleColumns: [
-              
-            "department",
-            "carry_forward_days",
-            "leavetype",
-            "location",
-          ],
-          mandatoryColumns: [
-            "department",
-            "carry_forward_days",
-            "leavetype",
-            "location",
-          ],
-        }}
-          
+configss={configColumns}
+        {...(tableConfig && { config: tableConfig })}
           
           />
  

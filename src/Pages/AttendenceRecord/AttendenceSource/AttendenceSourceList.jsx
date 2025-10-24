@@ -21,15 +21,93 @@ import TableDataGeneric from "../../../Configurations/TableDataGeneric";
 import Layout4 from "../../DataLayouts/Layout4";
 import { useNavigate, useParams } from "react-router-dom";
 
+const DEFAULT_COLUMNS = [
+  {
+    field: "attendance_source_name",
+    label: "attendance_source_name",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+  {
+    field: "is_active",
+    label: "is_active",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+];
+
 function AttendenceSourceList() {
   const [source, setSource] = useState([]);
   const { userData } = useAuthStore();
   const org = userData?.organization;
   const [loading, setLoading] = useState(true);
+  const [tableConfig, setTableConfig] = useState(null);
+  const [configColumns, setConfigColumns] = useState(DEFAULT_COLUMNS);
+  const [loadingConfig, setLoadingConfig] = useState(true);
+
   const navigate = useNavigate();
 
-  const {id} = useParams();
+  const { id } = useParams();
 
+  // Load table configuration from general-datagrids API
+  useEffect(() => {
+    const loadTableConfiguration = async () => {
+      if (!org?.organization_id) {
+        setLoadingConfig(false);
+        return;
+      }
+
+      try {
+        const configRes = await fetch(`${MAIN_URL}/api/general-datagrids`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (configRes.ok) {
+          const configResponse = await configRes.json();
+          const datagrids = configResponse.datagrids || [];
+          const orgKey = `Organization Functional Roles_grid_${org.organization_id}`;
+          const savedConfig = datagrids.find(
+            (dg) => dg.datagrid_key === orgKey
+          );
+
+          if (savedConfig) {
+            const serverCfg = savedConfig.datagrid_default_configuration;
+            setTableConfig(serverCfg);
+
+            if (
+              serverCfg?.columns &&
+              Array.isArray(serverCfg.columns) &&
+              serverCfg.columns?.length > 0
+            ) {
+              setConfigColumns(serverCfg.columns);
+            } else {
+              setConfigColumns(DEFAULT_COLUMNS);
+            }
+          } else {
+            setConfigColumns(DEFAULT_COLUMNS);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading table configuration:", error);
+        setConfigColumns(DEFAULT_COLUMNS);
+      } finally {
+        setLoadingConfig(false);
+      }
+    };
+
+    loadTableConfiguration();
+  }, [org?.organization_id]);
+
+  // load data
   useEffect(() => {
     if (org?.organization_id) {
       setLoading(true);
@@ -41,7 +119,7 @@ function AttendenceSourceList() {
             return {
               ...item,
               id: item?.organization_attendance_source_id,
-           
+
               is_active: item?.is_active == 1 ? "✔" : "✖",
             };
           });
@@ -99,17 +177,12 @@ function AttendenceSourceList() {
   };
 
   const handleEdit = useCallback(
-
     (item) => {
-
-         navigate(`/attendance/source/edit/${item.id}`);
-
+      navigate(`/attendance/source/edit/${item.id}`);
     },
 
     [navigate]
-
   );
-
 
   return (
     <>
@@ -148,21 +221,21 @@ function AttendenceSourceList() {
         DeleteFunc={deleteSource}
       />
 
-   
-        <TableDataGeneric
-          tableName="Attendance Source"
-          primaryKey="organization_attendance_source_id"
-          heading="Atendance Sources"
-          data={source}
-          sortname={"attendance_source_name"}
-          showActions={true}
-          // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-sources`}
-          Route="/attendance/source"
-          DeleteFunc={handleDelete}
-            EditFunc={handleEdit}
-          token={localStorage.getItem("token")}
-        />
-     
+      <TableDataGeneric
+        tableName="Attendance Source"
+        primaryKey="organization_attendance_source_id"
+        heading="Atendance Sources"
+        data={source}
+        sortname={"attendance_source_name"}
+        showActions={true}
+        // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-sources`}
+        Route="/attendance/source"
+        DeleteFunc={handleDelete}
+        EditFunc={handleEdit}
+        token={localStorage.getItem("token")}
+        configss={configColumns}
+        {...(tableConfig && { config: tableConfig })}
+      />
     </>
   );
 }

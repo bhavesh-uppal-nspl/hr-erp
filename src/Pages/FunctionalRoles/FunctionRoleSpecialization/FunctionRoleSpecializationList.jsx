@@ -12,17 +12,115 @@ import AutorenewIcon from "@mui/icons-material/Autorenew";
 import AlarmAddIcon from "@mui/icons-material/AlarmAdd";
 import LogoutIcon from "@mui/icons-material/Logout";
 
+const DEFAULT_COLUMNS = [
+  {
+    field: "functional_role_specialization_code",
+    label: "functional_role_specialization_code",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+  {
+    field: "functional_role_specialization_name",
+    label: "functional_role_specialization_name",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+
+  {
+    field: "functional_role",
+    label: "functional_role",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+
+  {
+    field: "is_active",
+    label: "is_active",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+];
 
 function FunctionRoleSpecializationList() {
   const [func, setFunc] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tableConfig, setTableConfig] = useState(null);
+  const [configColumns, setConfigColumns] = useState(DEFAULT_COLUMNS);
+  const [loadingConfig, setLoadingConfig] = useState(true);
   const { userData } = useAuthStore();
 
- const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  const {id} = useParams();
+  const { id } = useParams();
   const org = userData?.organization;
 
+  // Load table configuration from general-datagrids API
+  useEffect(() => {
+    const loadTableConfiguration = async () => {
+      if (!org?.organization_id) {
+        setLoadingConfig(false);
+        return;
+      }
+
+      try {
+        const configRes = await fetch(`${MAIN_URL}/api/general-datagrids`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (configRes.ok) {
+          const configResponse = await configRes.json();
+          const datagrids = configResponse.datagrids || [];
+          const orgKey = `Functional Role Specialization_grid_${org.organization_id}`;
+          const savedConfig = datagrids.find(
+            (dg) => dg.datagrid_key === orgKey
+          );
+
+          if (savedConfig) {
+            const serverCfg = savedConfig.datagrid_default_configuration;
+            setTableConfig(serverCfg);
+
+            if (
+              serverCfg?.columns &&
+              Array.isArray(serverCfg.columns) &&
+              serverCfg.columns?.length > 0
+            ) {
+              setConfigColumns(serverCfg.columns);
+            } else {
+              setConfigColumns(DEFAULT_COLUMNS);
+            }
+          } else {
+            setConfigColumns(DEFAULT_COLUMNS);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading table configuration:", error);
+        setConfigColumns(DEFAULT_COLUMNS);
+      } finally {
+        setLoadingConfig(false);
+      }
+    };
+
+    loadTableConfiguration();
+  }, [org?.organization_id]);
+
+  // load data
   useEffect(() => {
     if (org?.organization_id) {
       setLoading(true);
@@ -32,9 +130,9 @@ function FunctionRoleSpecializationList() {
           let b = a.map((item) => {
             return {
               ...item,
-              id: item.organization_functional_role_specialization_id  ,
-              functional_role:item?.function_role?.functional_role_name,
-                is_active: item?.is_active == 1 ? "✔" : "✖",
+              id: item.organization_functional_role_specialization_id,
+              functional_role: item?.function_role?.functional_role_name,
+              is_active: item?.is_active == 1 ? "✔" : "✖",
             };
           });
           setFunc(b);
@@ -43,7 +141,6 @@ function FunctionRoleSpecializationList() {
       setLoading(false);
     }
   }, [org]);
-
 
   let deletedesignation = async (id) => {
     try {
@@ -62,7 +159,10 @@ function FunctionRoleSpecializationList() {
 
       if (response.status === 200) {
         toast.success(response.data.message);
-        console.log("Organization Functional Roles deleted:", response.data.message);
+        console.log(
+          "Organization Functional Roles deleted:",
+          response.data.message
+        );
       } else {
         const errorMessage =
           response.data.message ||
@@ -72,28 +172,23 @@ function FunctionRoleSpecializationList() {
         toast.error(errorMessage);
         console.warn("Deletion error:", response.status, response.data);
       }
-    } catch (error) { if (error.response && error.response.status === 401) {
-  toast.error("Session Expired!");
-  window.location.href = "/login";
-}
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        toast.error("Session Expired!");
+        window.location.href = "/login";
+      }
       console.error("Delete failed:", error);
       toast.error("Something went wrong. Please try again later.");
     }
   };
 
-
   const handleEdit = useCallback(
-
     (item) => {
-
-         navigate(`/organization/functional-role-specialization/edit/${item.id}`);
-
+      navigate(`/organization/functional-role-specialization/edit/${item.id}`);
     },
 
     [navigate]
-
   );
-
 
   return (
     <>
@@ -151,7 +246,7 @@ function FunctionRoleSpecializationList() {
       />
 
       <TableDataGeneric
-        tableName="Organization Functional Role Specialization"
+        tableName="Functional Role Specialization"
         primaryKey="organization_functional_role_specialization_id "
         heading="Functional Role Specialization"
         data={func}
@@ -161,26 +256,8 @@ function FunctionRoleSpecializationList() {
         DeleteFunc={deletedesignation}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
-
-        
-                organizationUserId={userData?.organization_user_id} 
-          showLayoutButtons={true}
-          config={{
-            defaultVisibleColumns: [
-            "functional_role_specialization_code",
-            "functional_role_specialization_name",
-            "function_role",
-            "is_active",
-         
-          ],
-          mandatoryColumns: [
-            "functional_role_specialization_code",
-            "functional_role_specialization_name",
-            "function_role",
-            "is_active",
-           
-          ],
-        }}
+        configss={configColumns}
+        {...(tableConfig && { config: tableConfig })}
       />
     </>
   );

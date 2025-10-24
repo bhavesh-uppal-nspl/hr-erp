@@ -13,10 +13,48 @@ import AlarmAddIcon from "@mui/icons-material/AlarmAdd";
 import LogoutIcon from "@mui/icons-material/Logout";
 import dayjs from "dayjs";
 
+const DEFAULT_COLUMNS = [
+  {
+    field: "employee_name",
+    label: "employee_name",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+  
+  {
+    field: "functional_role",
+    label: "functional_role",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+
+  {
+    field: "functional_role_specialization",
+    label: "functional_role_specialization",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+];
 
 function EmployeeRoleList() {
   const [func, setFunc] = useState([]);
   const [loading, setLoading] = useState(true);
+ const [tableConfig, setTableConfig] = useState(null);
+  const [configColumns, setConfigColumns] = useState(DEFAULT_COLUMNS);
+  const [loadingConfig, setLoadingConfig] = useState(true);
+
   const { userData } = useAuthStore();
 
  const navigate = useNavigate();
@@ -24,13 +62,60 @@ function EmployeeRoleList() {
   const {id} = useParams();
   const org = userData?.organization;
 
+  // Load table configuration from general-datagrids API
+  useEffect(() => {
+    const loadTableConfiguration = async () => {
+      if (!org?.organization_id) {
+        setLoadingConfig(false);
+        return;
+      }
 
-    const formatDate = (dateStr) => {
-    if (!dateStr) return "";
-    return dayjs(dateStr).format("DD-MM-YYYY"); 
-  };
+      try {
+        const configRes = await fetch(
+          `${MAIN_URL}/api/general-datagrids`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
 
+        if (configRes.ok) {
+          const configResponse = await configRes.json();
+          const datagrids = configResponse.datagrids || [];
+          const orgKey = `Employee Functional Roles_grid_${org.organization_id}`;
+          const savedConfig = datagrids.find(
+            (dg) => dg.datagrid_key === orgKey
+          );
 
+          if (savedConfig) {
+            const serverCfg = savedConfig.datagrid_default_configuration;
+            setTableConfig(serverCfg);
+
+            if (
+              serverCfg?.columns &&
+              Array.isArray(serverCfg.columns) &&
+              serverCfg.columns?.length > 0
+            ) {
+              setConfigColumns(serverCfg.columns);
+            } else {
+              setConfigColumns(DEFAULT_COLUMNS);
+            }
+          } else {
+            setConfigColumns(DEFAULT_COLUMNS);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading table configuration:", error);
+        setConfigColumns(DEFAULT_COLUMNS);
+      } finally {
+        setLoadingConfig(false);
+      }
+    };
+
+    loadTableConfiguration();
+  }, [org?.organization_id]);
+
+  // load data
   useEffect(() => {
     if (org?.organization_id) {
       setLoading(true);
@@ -177,29 +262,8 @@ function EmployeeRoleList() {
         DeleteFunc={deletedesignation}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
-
-        
-                organizationUserId={userData?.organization_user_id} // Pass user ID
-          showLayoutButtons={true}
-          config={{
-            defaultVisibleColumns: [
-            "employee_name",
-            "function_role",
-            "is_active",
-            "assigned_on",
-            "role_specialization",
-
-         
-          ],
-          mandatoryColumns: [
-            "employee_name",
-            "function_role",
-            "is_active",
-            "assigned_on",
-            "role_specialization",
-           
-          ],
-        }}
+        configss={configColumns}
+        {...(tableConfig && { config: tableConfig })}
       />
     </>
   );

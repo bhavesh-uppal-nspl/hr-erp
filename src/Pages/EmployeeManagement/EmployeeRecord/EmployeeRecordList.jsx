@@ -222,8 +222,8 @@ import Layout4 from "../../DataLayouts/Layout4";
 
 const DEFAULT_COLUMNS = [
   {
-    field: "",
-    label: "",
+    field: "employee_name",
+    label: "employee_name",
     visible: true,
     width: 150,
     filterable: true,
@@ -232,8 +232,8 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
-    field: "",
-    label: "",
+    field: "designation",
+    label: "designation",
     visible: true,
     width: 150,
     filterable: true,
@@ -242,8 +242,8 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
-    field: "",
-    label: "",
+    field: "department",
+    label: "department",
     visible: true,
     width: 150,
     filterable: true,
@@ -252,8 +252,8 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
-    field: "",
-    label: "",
+    field: "increment_type",
+    label: "increment_type",
     visible: true,
     width: 150,
     filterable: true,
@@ -360,7 +360,7 @@ function EmployeeRecordList() {
             employee_name: item?.employee
               ? `${capitalize(item.employee.first_name)} ${capitalize(item.employee.middle_name || "")} ${capitalize(item.employee.last_name || "")}`.trim()
               : `Employee #${item.employee_id}`,
-
+            increment_type: item?.employee_increment?.increment_type?.employee_increment_type_name || "",
             start_date: item?.start_date ? formatDate(item.start_date) : "",
             end_date: item?.end_date ? formatDate(item.end_date) : "",
 

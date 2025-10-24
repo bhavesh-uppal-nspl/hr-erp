@@ -159,7 +159,7 @@ const handleEdit = useCallback(
 
    
         <TableDataGeneric
-          tableName="Employees"
+          tableName="Atendance Deviation Reason"
           primaryKey="organization_attendance_deviation_reason_id"
           heading="Atendance Deviation Reason"
           data={leaves}

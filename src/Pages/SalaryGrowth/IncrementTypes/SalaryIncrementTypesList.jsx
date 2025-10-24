@@ -175,8 +175,8 @@ import { fetchIncrementTypes } from "../../../Apis/Salary";
 
 const DEFAULT_COLUMNS = [
   {
-    field: "",
-    label: "",
+    field: "employee_increment_type_name",
+    label: "increment_type",
     visible: true,
     width: 150,
     filterable: true,
@@ -185,28 +185,8 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
-    field: "",
-    label: "",
-    visible: true,
-    width: 150,
-    filterable: true,
-    sortable: true,
-    pinned: "none",
-    required: false,
-  },
-  {
-    field: "",
-    label: "",
-    visible: true,
-    width: 150,
-    filterable: true,
-    sortable: true,
-    pinned: "none",
-    required: false,
-  },
-  {
-    field: "",
-    label: "",
+    field: "description",
+    label: "description",
     visible: true,
     width: 150,
     filterable: true,

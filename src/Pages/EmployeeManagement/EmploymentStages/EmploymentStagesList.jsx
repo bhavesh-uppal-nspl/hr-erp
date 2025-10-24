@@ -4,7 +4,10 @@ import NextWeekIcon from "@mui/icons-material/NextWeek";
 import LocalPoliceIcon from "@mui/icons-material/LocalPolice";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import useAuthStore from "../../../Zustand/Store/useAuthStore";
-import { fetchEmployeeExit, fetchEmployeStages } from "../../../Apis/Employee-api";
+import {
+  fetchEmployeeExit,
+  fetchEmployeStages,
+} from "../../../Apis/Employee-api";
 import { Info } from "@mui/icons-material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AlarmAddIcon from "@mui/icons-material/AlarmAdd";
@@ -15,16 +18,103 @@ import TableDataGeneric from "../../../Configurations/TableDataGeneric";
 import { useCallback } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import Layout4 from "../../DataLayouts/Layout4";
-import {
-  fetchInternStages,
-} from "../../../Apis/InternManagement";
+import { fetchInternStages } from "../../../Apis/InternManagement";
+
+const DEFAULT_COLUMNS = [
+  {
+    field: "employement_stage_name",
+    label: "employement_stage_name",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+  {
+    field: "description",
+    label: "description",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+
+  {
+    field: "employment_status",
+    label: "employment_status",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+];
 
 function EmploymentStagesList() {
   const [exit, setexit] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tableConfig, setTableConfig] = useState(null);
+  const [configColumns, setConfigColumns] = useState(DEFAULT_COLUMNS);
+  const [loadingConfig, setLoadingConfig] = useState(true);
+
   const { userData } = useAuthStore();
   const org = userData?.organization;
 
+  // Load table configuration from general-datagrids API
+  useEffect(() => {
+    const loadTableConfiguration = async () => {
+      if (!org?.organization_id) {
+        setLoadingConfig(false);
+        return;
+      }
+
+      try {
+        const configRes = await fetch(`${MAIN_URL}/api/general-datagrids`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (configRes.ok) {
+          const configResponse = await configRes.json();
+          const datagrids = configResponse.datagrids || [];
+          const orgKey = `Employment Stages_grid_${org.organization_id}`;
+          const savedConfig = datagrids.find(
+            (dg) => dg.datagrid_key === orgKey
+          );
+
+          if (savedConfig) {
+            const serverCfg = savedConfig.datagrid_default_configuration;
+            setTableConfig(serverCfg);
+
+            if (
+              serverCfg?.columns &&
+              Array.isArray(serverCfg.columns) &&
+              serverCfg.columns?.length > 0
+            ) {
+              setConfigColumns(serverCfg.columns);
+            } else {
+              setConfigColumns(DEFAULT_COLUMNS);
+            }
+          } else {
+            setConfigColumns(DEFAULT_COLUMNS);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading table configuration:", error);
+        setConfigColumns(DEFAULT_COLUMNS);
+      } finally {
+        setLoadingConfig(false);
+      }
+    };
+
+    loadTableConfiguration();
+  }, [org?.organization_id]);
+
+  // load employeeLeave data
   useEffect(() => {
     if (org?.organization_id) {
       setLoading(true);
@@ -35,10 +125,9 @@ function EmploymentStagesList() {
           let b = a.map((item) => {
             return {
               ...item,
-              id: item.organization_employment_stage_id ,
-             
+              id: item.organization_employment_stage_id,
+
               Employment_status: item?.status?.employment_stage_name || "",
-             
             };
           });
           setexit(b);
@@ -148,25 +237,8 @@ function EmploymentStagesList() {
         DeleteFunc={deleteExit}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
-
-        
-                   organizationUserId={userData?.organization_user_id} 
-          showLayoutButtons={true}
-          config={{
-            defaultVisibleColumns: [
-            "employment_stage_name",
-            "employment_status",
-            "description",
-
-          
-          ],
-          mandatoryColumns: [
-          "employment_stage_name",
-             "employment_status",
-            "description",
-
-          ],
-        }}
+        configss={configColumns}
+        {...(tableConfig && { config: tableConfig })}
       />
     </>
   );
