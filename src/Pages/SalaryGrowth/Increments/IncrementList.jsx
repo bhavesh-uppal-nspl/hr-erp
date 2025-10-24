@@ -168,8 +168,8 @@ import { fetchLeavepolicy } from "../../../Apis/Leave-api";
 import { fetchIncrements, fetchIncrementTypes } from "../../../Apis/Salary";
 const DEFAULT_COLUMNS = [
   {
-    field: "",
-    label: "",
+    field: "employee_name",
+    label: "employee_name",
     visible: true,
     width: 150,
     filterable: true,
@@ -178,8 +178,8 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
-    field: "",
-    label: "",
+    field: "increment_type",
+    label: "Increment_Type",
     visible: true,
     width: 150,
     filterable: true,
@@ -188,8 +188,8 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
-    field: "",
-    label: "",
+    field: "increment_amount",
+    label: "increment_amount",
     visible: true,
     width: 150,
     filterable: true,
@@ -198,8 +198,8 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
-    field: "",
-    label: "",
+    field: "new_ctc_amount",
+    label: "new_ctc_amount",
     visible: true,
     width: 150,
     filterable: true,
@@ -285,6 +285,9 @@ function IncrementList() {
             return {
               ...item,
               id: item.employee_increment_id,
+              employee_name: item?.employee
+                ? `${item.employee?.first_name}  ${item.employee?.middle_name ?? ''} ${item?.employee.last_name ?? ''}`
+                : "",
               increment_type:
                 item?.increment_type?.employee_increment_type_name == null
                   ? ""

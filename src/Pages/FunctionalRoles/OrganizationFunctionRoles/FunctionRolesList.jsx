@@ -12,17 +12,115 @@ import AutorenewIcon from "@mui/icons-material/Autorenew";
 import AlarmAddIcon from "@mui/icons-material/AlarmAdd";
 import LogoutIcon from "@mui/icons-material/Logout";
 
+const DEFAULT_COLUMNS = [
+  {
+    field: "funtional_role_code",
+    label: "funtional_role_code",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+  {
+    field: "department_name",
+    label: "department_name",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+
+  {
+    field: "functional_role_name",
+    label: "functional_role_name",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+
+  {
+    field: "is_active",
+    label: "is_active",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+];
 
 function FunctionRolesList() {
   const [func, setFunc] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tableConfig, setTableConfig] = useState(null);
+  const [configColumns, setConfigColumns] = useState(DEFAULT_COLUMNS);
+  const [loadingConfig, setLoadingConfig] = useState(true);
   const { userData } = useAuthStore();
 
- const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  const {id} = useParams();
+  const { id } = useParams();
   const org = userData?.organization;
 
+  // Load table configuration from general-datagrids API
+  useEffect(() => {
+    const loadTableConfiguration = async () => {
+      if (!org?.organization_id) {
+        setLoadingConfig(false);
+        return;
+      }
+
+      try {
+        const configRes = await fetch(`${MAIN_URL}/api/general-datagrids`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (configRes.ok) {
+          const configResponse = await configRes.json();
+          const datagrids = configResponse.datagrids || [];
+          const orgKey = `Organization Functional Roles_grid_${org.organization_id}`;
+          const savedConfig = datagrids.find(
+            (dg) => dg.datagrid_key === orgKey
+          );
+
+          if (savedConfig) {
+            const serverCfg = savedConfig.datagrid_default_configuration;
+            setTableConfig(serverCfg);
+
+            if (
+              serverCfg?.columns &&
+              Array.isArray(serverCfg.columns) &&
+              serverCfg.columns?.length > 0
+            ) {
+              setConfigColumns(serverCfg.columns);
+            } else {
+              setConfigColumns(DEFAULT_COLUMNS);
+            }
+          } else {
+            setConfigColumns(DEFAULT_COLUMNS);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading table configuration:", error);
+        setConfigColumns(DEFAULT_COLUMNS);
+      } finally {
+        setLoadingConfig(false);
+      }
+    };
+
+    loadTableConfiguration();
+  }, [org?.organization_id]);
+
+  // load data
   useEffect(() => {
     if (org?.organization_id) {
       setLoading(true);
@@ -32,9 +130,9 @@ function FunctionRolesList() {
           let b = a.map((item) => {
             return {
               ...item,
-              id: item.organization_functional_role_id ,
-              department_name:item?.department?.department_name,
-               is_active: item?.is_active == 1 ? "✔" : "✖",
+              id: item.organization_functional_role_id,
+              department_name: item?.department?.department_name,
+              is_active: item?.is_active == 1 ? "✔" : "✖",
             };
           });
           setFunc(b);
@@ -43,7 +141,6 @@ function FunctionRolesList() {
       setLoading(false);
     }
   }, [org]);
-
 
   let deletedesignation = async (id) => {
     try {
@@ -62,7 +159,10 @@ function FunctionRolesList() {
 
       if (response.status === 200) {
         toast.success(response.data.message);
-        console.log("Organization Functional Roles deleted:", response.data.message);
+        console.log(
+          "Organization Functional Roles deleted:",
+          response.data.message
+        );
       } else {
         const errorMessage =
           response.data.message ||
@@ -72,28 +172,23 @@ function FunctionRolesList() {
         toast.error(errorMessage);
         console.warn("Deletion error:", response.status, response.data);
       }
-    } catch (error) { if (error.response && error.response.status === 401) {
-  toast.error("Session Expired!");
-  window.location.href = "/login";
-}
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        toast.error("Session Expired!");
+        window.location.href = "/login";
+      }
       console.error("Delete failed:", error);
       toast.error("Something went wrong. Please try again later.");
     }
   };
 
-
   const handleEdit = useCallback(
-
     (item) => {
-
-         navigate(`/organization/functional-roles/edit/${item.id}`);
-
+      navigate(`/organization/functional-roles/edit/${item.id}`);
     },
 
     [navigate]
-
   );
-
 
   return (
     <>
@@ -161,24 +256,8 @@ function FunctionRolesList() {
         DeleteFunc={deletedesignation}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
-
-        
-                organizationUserId={userData?.organization_user_id} // Pass user ID
-          showLayoutButtons={true}
-          config={{
-            defaultVisibleColumns: [
-            "document_type_name",
-            "document_type_short_name",
-            "is_active",
-         
-          ],
-          mandatoryColumns: [
-           "document_type_name",
-            "document_type_short_name",
-            "is_active",
-           
-          ],
-        }}
+        configss={configColumns}
+        {...(tableConfig && { config: tableConfig })}
       />
     </>
   );

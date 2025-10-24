@@ -219,7 +219,7 @@ const DEFAULT_COLUMNS = [
   },
   {
     field: "department_short_name",
-    label: "Short Name",
+    label: "short_name",
     visible: true,
     width: 120,
     filterable: true,
