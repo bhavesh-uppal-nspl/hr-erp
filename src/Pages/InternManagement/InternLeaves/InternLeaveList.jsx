@@ -50,8 +50,8 @@ const DEFAULT_COLUMNS = [
   },
 
   {
-    field: "approval_by",
-    label: "approval_by",
+    field: "approved_by",
+    label: "approved_by",
     visible: true,
     width: 150,
     filterable: true,

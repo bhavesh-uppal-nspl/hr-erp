@@ -26,8 +26,8 @@ const DEFAULT_COLUMNS = [
   },
   
   {
-    field: "functional_role",
-    label: "functional_role",
+    field: "function_role",
+    label: "function_role",
     visible: true,
     width: 150,
     filterable: true,
@@ -37,8 +37,8 @@ const DEFAULT_COLUMNS = [
   },
 
   {
-    field: "functional_role_specialization",
-    label: "functional_role_specialization",
+    field: "role_specialization",
+    label: "role_specialization",
     visible: true,
     width: 150,
     filterable: true,
@@ -61,6 +61,18 @@ function EmployeeRoleList() {
 
   const {id} = useParams();
   const org = userData?.organization;
+
+
+ function formatDate(date) {
+  if (!date) return null;
+
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, '0');      // 1 → "01"
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+  const year = d.getFullYear();
+
+  return `${day}-${month}-${year}`;
+}
 
   // Load table configuration from general-datagrids API
   useEffect(() => {
