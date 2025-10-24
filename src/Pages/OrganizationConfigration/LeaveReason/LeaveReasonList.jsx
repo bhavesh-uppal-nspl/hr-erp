@@ -114,8 +114,6 @@ const handleEdit = useCallback(
     />
 
 
-
-
       <TableDataGeneric
         tableName="Leave Reasons"
         primaryKey="organization_leave_reason_id"
