@@ -51,10 +51,10 @@ const DEFAULT_COLUMNS = [
   },
 ];
 
-export  default function Documentist() {
+function Documentist() {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tableConfig, setTableConfig] = useState(null);
+ const [tableConfig, setTableConfig] = useState(null);
   const [configColumns, setConfigColumns] = useState(DEFAULT_COLUMNS);
   const [loadingConfig, setLoadingConfig] = useState(true);
 
@@ -72,10 +72,13 @@ export  default function Documentist() {
       }
 
       try {
-        const configRes = await fetch(`${MAIN_URL}/api/general-datagrids`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+        const configRes = await fetch(
+          `${MAIN_URL}/api/general-datagrids`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
 
         if (configRes.ok) {
           const configResponse = await configRes.json();
@@ -172,83 +175,81 @@ export  default function Documentist() {
             "Content-Type": "application/json",
           },
         }
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      console.log("Successfully deleted units-types with id:", id);
-      return Promise.resolve();
-    } catch (error) {
-      console.error("Delete failed:", error);
-      return Promise.reject(error);
-    }
-  };
-
-  const handleEdit = useCallback(
-    (item) => {
-      navigate(`/employee/documents/edit/${item.id}`);
-    },
-
-    [navigate]
-  );
-
-  return (
-    <>
-      <Layout4
-        loading={loading}
-        heading={"Employee Documents"}
-        btnName={"Add Document"}
-        delete_action={"ATTENDANCE_DELETE"}
-        Data={documents}
-        tableHeaders={[
-          {
-            name: "Document Name",
-            value_key: "attendance_status_type_name",
-            textStyle: "capitalize",
-          },
-          {
-            name: "Status Type Code",
-            value_key: "attendance_status_type_code",
-            textStyle: "capitalize",
-          },
-          {
-            name: "Description",
-            value_key: "description",
-            textStyle: "capitalize",
-          },
-        ]}
-        Icons={[
-          <PersonIcon sx={{ fontSize: 60, color: "grey.500", mb: 2 }} />,
-          <FormatAlignJustifyIcon color="primary" />,
-          <CategoryIcon sx={{ color: "text.secondary" }} />,
-          <DateRangeIcon sx={{ color: "text.secondary" }} />,
-        ]}
-        messages={[
-          "Attendance Status Type",
-          "Attendance Status Type",
-          "Add Attendance Status Type",
-          "Attendance Status Type",
-        ]}
-        Route={"/employee/documents"}
-        setData={setDocuments}
-        DeleteFunc={deleteStatus}
-      />
-
-      <TableDataGeneric
-        tableName="Employee Documents"
-        primaryKey="employee_document_id"
-        heading="Employee Documents"
-        data={documents}
-        sortname={"document_name"}
-        showActions={true}
-        // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-status-type`}
-        Route="/employee/documents"
-        DeleteFunc={handleDelete}
-        EditFunc={handleEdit}
-        token={localStorage.getItem("token")}
-        configss={configColumns}
+      };
+  
+   const handleEdit = useCallback(
+  
+      (item) => {
+  
+           navigate(`/employee/documents/edit/${item.id}`);
+  
+      },
+  
+      [navigate]
+  
+    );
+  
+    return (
+      <>
+        <Layout4
+          loading={loading}
+          heading={"Employee Documents"}
+          btnName={"Add Document"}
+          delete_action={"ATTENDANCE_DELETE"}
+          Data={documents}
+          tableHeaders={[
+            {
+              name: "Document Name",
+              value_key: "attendance_status_type_name",
+              textStyle: "capitalize",
+            },
+            {
+              name: "Status Type Code",
+              value_key: "attendance_status_type_code",
+              textStyle: "capitalize",
+            },
+            {
+              name: "Description",
+              value_key: "description",
+              textStyle: "capitalize",
+            },
+          ]}
+          Icons={[
+            <PersonIcon sx={{ fontSize: 60, color: "grey.500", mb: 2 }} />,
+            <FormatAlignJustifyIcon color="primary" />,
+            <CategoryIcon sx={{ color: "text.secondary" }} />,
+            <DateRangeIcon sx={{ color: "text.secondary" }} />,
+          ]}
+          messages={[
+            "Attendance Status Type",
+            "Attendance Status Type",
+            "Add Attendance Status Type",
+            "Attendance Status Type",
+          ]}
+          Route={"/employee/documents"}
+          setData={setDocuments}
+          DeleteFunc={deleteStatus}
+        />
+  
+  
+          <TableDataGeneric
+            tableName="Employee Documents"
+            primaryKey="employee_document_id"
+            heading="Employee Documents"
+            data={documents}
+            sortname={"document_name"}
+            showActions={true}
+            // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-status-type`}
+            Route="/employee/documents"
+            DeleteFunc={handleDelete}
+            EditFunc={handleEdit}
+            token={localStorage.getItem("token")}
+            configss={configColumns}
         {...(tableConfig && { config: tableConfig })}
-      />
-    </>
-  );
-}
+          />
+  
+      </>
+    );
+
+
+  

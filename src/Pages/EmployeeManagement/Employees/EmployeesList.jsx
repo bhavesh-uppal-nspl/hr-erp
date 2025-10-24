@@ -332,7 +332,7 @@ console.log("Filtered employees: ", employee);
               heading="Employees"
               data={employee}
               sortname={"name"}
-              showActions={true}
+              showActions={false}
               CardData={carddata}
               Route="/organization/employee/employee-details"
               DeleteFunc={handleDelete}

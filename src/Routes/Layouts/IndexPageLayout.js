@@ -340,7 +340,7 @@ export default function RouteProtector({ children }) {
 
         {
           route: "/organization/employee/employee-exits",
-          title: "Employee Exits",
+          title: "Employee Exit",
           icon: <LockIcon />,
         },
         {
@@ -350,7 +350,7 @@ export default function RouteProtector({ children }) {
         },
          {
           route: "/organization/employee/functional-role",
-          title: "Employee Functional Roles",
+          title: "Employee Functional Role",
           icon: <PeopleAltOutlined />,
         },
          {
@@ -391,7 +391,7 @@ export default function RouteProtector({ children }) {
 
         {
           route: "/payroll/employee-salary-structure",
-          title: "Payroll Salary Structures",
+          title: "Payroll Salary Structure",
           icon: <LockIcon />,
         },
         {
@@ -476,7 +476,7 @@ export default function RouteProtector({ children }) {
         },
         {
           route: "/payroll/account-mapping",
-          title: "Payroll Account Mappings",
+          title: "Payroll Account Mapping",
           icon: <LockIcon />,
         },
 
@@ -541,7 +541,7 @@ export default function RouteProtector({ children }) {
 
         {
           route: "/organization/work-shift-rotation-pattern",
-          title: "Employee Shift Rotation Patterns",
+          title: "Employee Shift Rotation Pattern",
           icon: <CalendarMonthIcon />,
         },
         {
@@ -624,7 +624,7 @@ export default function RouteProtector({ children }) {
 
         {
           route: "/employee-leave-summary",
-          title: "Leave Summaries",
+          title: "Leave Summary",
           icon: <EditIcon />,
         },
 
@@ -743,7 +743,7 @@ export default function RouteProtector({ children }) {
         },
         {
           route: "/organization/functional-role-specialization",
-          title: "Functional Role Specializations",
+          title: "Functional Role Specialization",
           icon: <PeopleAltOutlined />,
         },
       ],
@@ -761,12 +761,12 @@ export default function RouteProtector({ children }) {
         },
         {
           route: "/organization-configration/business-registration-type",
-          title: "Business Registration Types",
+          title: "Business Registration Type",
           icon: <ApartmentIcon />,
         },
         {
           route: "/organization-configration/unit-types",
-          title: "Business Unit Types",
+          title: "Business Unit Type",
           icon: <SegmentIcon />,
         },
         {
@@ -791,12 +791,12 @@ export default function RouteProtector({ children }) {
         },
         {
           route: "/organization-configration/employement-type",
-          title: "Employment Types",
+          title: "Employment Type",
           icon: <SegmentIcon />,
         },
         {
           route: "/organization-configration/employement-exit-reason-type",
-          title: "Exit Reason Types",
+          title: "Exit Reason Type",
           icon: <SegmentIcon />,
         },
 
@@ -812,7 +812,7 @@ export default function RouteProtector({ children }) {
         },
         {
           route: "/organization-configration/leave-category",
-          title: "Leave Categories",
+          title: "Leave Category",
           icon: <CategoryIcon />,
         },
 
@@ -823,12 +823,12 @@ export default function RouteProtector({ children }) {
         },
         {
           route: "/organization-configration/leave-reason-type",
-          title: "Leave Reason Types",
+          title: "Leave Reason Type",
           icon: <AddIcon />,
         },
         {
           route: "/organization-configration/leave-reason",
-          title: "Leave Reasons",
+          title: "Leave Reason",
           icon: <AddIcon />,
         },
         {
@@ -838,7 +838,7 @@ export default function RouteProtector({ children }) {
         },
         {
           route: "/organization-configration/work-model",
-          title: "Work Models",
+          title: "Work Model",
           icon: <SettingsSuggestIcon />,
         },
         {
@@ -872,7 +872,7 @@ export default function RouteProtector({ children }) {
 
          {
           route: "/intern/internship/status",
-          title: "Internship Statuses",
+          title: "Internship Status",
           icon: <SegmentIcon />,
         },
          {
@@ -882,7 +882,7 @@ export default function RouteProtector({ children }) {
         },
         {
           route: "/organization/intern/intern-exit",
-          title: "Intern Exits",
+          title: "Intern Exit",
           icon: <SegmentIcon />,
         },
          {
@@ -913,7 +913,7 @@ export default function RouteProtector({ children }) {
         },
          {
           route: "/intern/certificates",
-          title: "Intern Certificates",
+          title: "Intern Certificate",
           icon: <SegmentIcon />,
         },
          {
@@ -943,7 +943,7 @@ export default function RouteProtector({ children }) {
 
         {
           route: "/application/user-role-permission",
-          title: "User Role Permissions",
+          title: "User Role Permission",
           icon: <ApartmentIcon />,
         },
       ],

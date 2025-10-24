@@ -274,7 +274,6 @@ function SalaryIncrementTypesList() {
             return {
               ...item,
               id: item.organization_employee_increment_type_id,
-              description: item?.description || "",
               is_active: item?.is_active == null ? "✖" : "✔️",
             };
           });

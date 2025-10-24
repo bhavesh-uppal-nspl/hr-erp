@@ -5276,7 +5276,7 @@ const Customisetable = ({
                               fontSize="small"
                               sx={{
                                 ml: 0.5,
-                                color: "black",
+                                color: colors.primary,
                                 opacity: 0.8,
                                 transform: "rotate(-20deg)",
                               }}
@@ -5392,7 +5392,7 @@ const Customisetable = ({
                                 }}
                                 sx={{
                                   cursor: "pointer",
-                                  color: theme.palette.mode === "dark" ? "skyblue" : "#4a75f4ff",
+                                  color: theme.palette.mode === "dark" ? "skyblue" : "blue",
                                   textDecoration: "underline",
                                 }}
                                 title={title}
@@ -5713,7 +5713,7 @@ const Customisetable = ({
                               fontSize="small"
                               sx={{
                                 ml: 0.5,
-                                color: "black",
+                                color: colors.primary,
                                 opacity: 0.8,
                                 transform: "rotate(-20deg)",
                               }}
@@ -5839,7 +5839,7 @@ const Customisetable = ({
                                 }}
                                 sx={{
                                   cursor: "pointer",
-                                  color: theme.palette.mode === "dark" ? "skyblue" : "#4a75f4ff",
+                                  color: theme.palette.mode === "dark" ? "skyblue" : "blue",
                                   textDecoration: "underline",
                                 }}
                                 title={title}

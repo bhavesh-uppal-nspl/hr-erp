@@ -54,7 +54,8 @@ function EmployeeForm({ mode, setEmployeeId, employeeId }) {
       );
       console.log("fll is ", fl);
 
-    
+      
+
       setEmployeeData({ ["organization_employment_stage_id"]: fl.organization_employment_stage_id });
       setEmployeeData({ ["organization_employment_status_id"]: fl?.organization_employment_status_id });
       return;
@@ -68,6 +69,7 @@ function EmployeeForm({ mode, setEmployeeId, employeeId }) {
     const fetchDepartmentLocations = async () => {
       if (!Employee?.organization_department_id || !org?.organization_id)
         return;
+
       try {
         const res = await axios.get(
           `${MAIN_URL}/api/department-locations/all`,

@@ -35,7 +35,7 @@ function EmployeeExitForm({ mode }) {
     notice_period_end: "",
     last_working_date: "",
     relieving_date: "",
-    organization_employment_exit_reason_id: "",
+    organization_employment_exit_reason_id: 0,
     exit_interview_done: "",
     comments: "",
     organization_employment_exit_reason_type_id: "",
@@ -204,10 +204,10 @@ function EmployeeExitForm({ mode }) {
       errors.comments = "Comments cannot exceed 500 characters.";
     }
 
-    // if (typeof formData.exit_interview_done !== "boolean") {
-    //   errors.exit_interview_done =
-    //     "Exit interview done field must be true or false.";
-    // }
+    if (typeof formData.exit_interview_done !== "boolean") {
+      errors.exit_interview_done =
+        "Exit interview done field must be true or false.";
+    }
 
     if (!formData.organization_employment_exit_reason_id)
       errors.organization_employment_exit_reason_id =

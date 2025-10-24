@@ -151,7 +151,7 @@ function IntershipStatusList() {
         loading={loading}
         heading={"Internship Status"}
         btnName={"Add Status"}
-        delete_action={""}
+        delete_action={"ATTENDANCE_DELETE"}
         Data={types}
         tableHeaders={[
           {
@@ -193,7 +193,7 @@ function IntershipStatusList() {
         heading="Intership Status"
         data={types}
         sortname={"internship_status_name"}
-        showActions={true}
+        showActions={false}
         // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-status-type`}
         Route="/intern/internship/status"
         DeleteFunc={deleteStatus}

@@ -14,8 +14,8 @@ import LogoutIcon from "@mui/icons-material/Logout";
 
 const DEFAULT_COLUMNS = [
   {
-    field: "functional_role_code",
-    label: "functional_role_code",
+    field: "funtional_role_code",
+    label: "funtional_role_code",
     visible: true,
     width: 150,
     filterable: true,
@@ -133,7 +133,6 @@ function FunctionRolesList() {
               id: item.organization_functional_role_id,
               department_name: item?.department?.department_name,
               is_active: item?.is_active == 1 ? "✔" : "✖",
-              functional_role_code:item?.functional_role_code || ""
             };
           });
           setFunc(b);

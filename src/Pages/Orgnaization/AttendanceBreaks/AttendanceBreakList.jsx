@@ -26,8 +26,8 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
-    field: "break_duration_minutes",
-    label: "break_duration_minutes",
+    field: "break_duration_mintues",
+    label: "",
     visible: true,
     width: 150,
     filterable: true,
@@ -136,7 +136,7 @@ function AttendanceBreakList() {
             return {
               ...item,
               id: item.organization_attendance_break_id,
-              break_duration_minutes:`${item?.break_duration_minutes} mins`,
+
               breaktype: item?.break_type?.attendance_break_type_name,
               break_start_time: convertTo12HourFormat(item?.break_start_time),
               break_end_time: convertTo12HourFormat(item?.break_end_time),
