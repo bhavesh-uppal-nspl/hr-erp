@@ -87,8 +87,6 @@ function EmployeeForm({ mode, setEmployeeId, employeeId }) {
     fetchDepartmentLocations();
   }, [Employee?.organization_department_id, org?.organization_id]);
 
-  // fetch all department designation
-
   useEffect(() => {
     const fetchDepartmentDesignation = async () => {
       if (!Employee?.organization_department_id || !org?.organization_id)
