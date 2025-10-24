@@ -34,6 +34,9 @@ function WorkShiftTypeList() {
             return {
              ...item,
                 id:item.organization_work_shift_type_id,
+                work_shift_type_name:item?.work_shift_type_name,
+                work_shift_type_short_name:item?.work_shift_type_short_name,
+
           
              
 
@@ -127,8 +130,8 @@ const handleEdit = useCallback(
                       organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}
         config={{
-          defaultVisibleColumns: ["work_shift_name","work_shift_start_name","work_shift_end_name","work_shift_type_name",],
-          mandatoryColumns: ["work_shift_name","work_shift_start_name","work_shift_end_name","work_shift_type_name"],
+          defaultVisibleColumns: ["work_shift_type_name","work_shift_type_short_name",],
+          mandatoryColumns: ["work_shift_type_name","work_shift_type_short_name",],
         }}
             />
      
