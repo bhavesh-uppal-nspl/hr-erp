@@ -24,7 +24,7 @@ const DEFAULT_COLUMNS = [
     pinned: "none",
     required: false,
   },
-  
+ 
   {
     field: "function_role",
     label: "function_role",
