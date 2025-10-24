@@ -1277,30 +1277,6 @@ export default function Dashboard() {
 
   const allWidgetConfigs = [
     {
-      id: "totalworkforce",
-      title: "Total Workforce",
-      icon: null,
-      color: "#3B82F6",
-      group: "Total Workforce",
-      value: employees.length,
-    },
-    {
-      id: "totalEmployees",
-      title: "Employees",
-      icon: null,
-      color: "#3B82F6",
-      group: "Total Workforce",
-      value: employees.length,
-    },
-   {
-      id: "totalFreelancers",
-      title: "Freelancers",
-      icon: null,
-      color: "#10B981",
-      group: "Total Workforce",
-      value: freelancers.length,
-    },
-    {
       id: "totalEmployees",
       title: "Employees",
       icon: null,
@@ -1485,34 +1461,70 @@ export default function Dashboard() {
     setAnchorEl(event.currentTarget);
   };
 
-
   const handleWidgetClick = (widgetId, widgetTitle) => {
-    if (widgetId === "totalworkforce") {
-      navigate("/organization/employee/employee-details", { state: { fromDashboard: true, widgetId } });
-      return;
-    }
+    // Employees group
     if (widgetId === "totalEmployees" || widgetId === "newJoiningThisMonth") {
-      navigate("/organization/employee/employee-details", { state: { fromDashboard: true, widgetId } });
+      navigate("/organization/employee/employee-details", {
+        state: { fromDashboard: true, widgetId },
+      });
       return;
     }
-    if (widgetId === "totalFreelancers" || widgetId === "newJoiningThisMonthFreelancers") {
-      navigate("/organization/freelancer/freelancer-details", { state: { fromDashboard: true, widgetId } });
+
+    // Freelancers group
+    // Freelancers group
+    if (
+      widgetId === "totalFreelancers" ||
+      widgetId === "newJoiningThisMonthFreelancers"
+    ) {
+      navigate("/organization/freelancer/freelancer-details", {
+        state: { fromDashboard: true, widgetId },
+      });
       return;
     }
-    if (widgetId === "totalInterns" || widgetId === "newJoiningThisMonthInterns") {
-      navigate("/organization/intern/intern-details", { state: { fromDashboard: true, widgetId } });
+
+    // Interns group - NEW navigation logic
+    if (
+      widgetId === "totalInterns" ||
+      widgetId === "newJoiningThisMonthInterns"
+    ) {
+      navigate("/organization/intern/intern-details", {
+        state: { fromDashboard: true, widgetId },
+      });
       return;
     }
-    if (widgetId === "birthdayThisMonth" || widgetId === "workAnniversariesThisMonth") {
-      navigate("/organization/employee/employee-details", { state: { fromDashboard: true, widgetId } });
+
+    // Occasions group
+    if (
+      widgetId === "birthdayThisMonth" ||
+      widgetId === "workAnniversariesThisMonth"
+    ) {
+      navigate("/organization/employee/employee-details", {
+        state: { fromDashboard: true, widgetId },
+      });
       return;
     }
-    if (widgetId === "presentToday" || widgetId === "absentToday" || widgetId === "lateCheckInsToday") {
-      navigate("/attendance/time-logs", { state: { fromDashboard: true, widgetId } });
+
+    // Time & Attendance group
+    if (
+      widgetId === "presentToday" ||
+      widgetId === "absentToday" ||
+      widgetId === "lateCheckInsToday"
+    ) {
+      navigate("/attendance/time-logs", {
+        state: { fromDashboard: true, widgetId },
+      });
       return;
     }
-    if (widgetId === "onLeaveToday" || widgetId === "upcomingLeaves" || widgetId === "pendingLeaveRequests") {
-      navigate("/leave/employee-leaves", { state: { fromDashboard: true, widgetId } });
+
+    // Leaves group
+    if (
+      widgetId === "onLeaveToday" ||
+      widgetId === "upcomingLeaves" ||
+      widgetId === "pendingLeaveRequests"
+    ) {
+      navigate("/leave/employee-leaves", {
+        state: { fromDashboard: true, widgetId },
+      });
       return;
     }
   };
@@ -1704,9 +1716,6 @@ export default function Dashboard() {
               (w) => w.group === "Occasions" && visibleWidgetIds.includes(w.id)
             ) ||
             allWidgetConfigs.some(
-              (w) => w.group === "Total Workforce" && visibleWidgetIds.includes(w.id)
-            ) ||
-            allWidgetConfigs.some(
               (w) => w.group === "Interns" && visibleWidgetIds.includes(w.id)
             ) ||
             allWidgetConfigs.some(
@@ -1722,240 +1731,6 @@ export default function Dashboard() {
               (w) => w.group === "Leaves" && visibleWidgetIds.includes(w.id)
             )) && (
             <Grid container spacing={2}>
-              {/* Employees */}
-              {allWidgetConfigs
-                .filter((w) => w.group === "Total Workforce")
-                .some((w) => visibleWidgetIds.includes(w.id)) && (
-                <Grid item xs={12} md={6}>
-                  <Typography
-                    variant="h6"
-                    component="h2"
-                    sx={{
-                      fontWeight: "semibold",
-                      color: "text.primary",
-                      mb: 3,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                    }}
-                  >
-                    Total Workforce
-                  </Typography>
-                  <Grid container spacing={2}>
-                    {allWidgetConfigs
-                      .filter(
-                        (w) =>
-                          w.group === "Total Workforce" &&
-                          visibleWidgetIds.includes(w.id)
-                      )
-                      .map((widget) => (
-                        <Grid item xs={12} sm={12} md={6} key={widget.id}>
-                          <Card
-                            sx={{
-                              bgcolor:
-                                theme.palette.mode === "dark"
-                                  ? "rgba(255, 255, 255, 0.05)"
-                                  : "rgba(255, 255, 255, 0.8)",
-                              backdropFilter: "blur(4px)",
-                              border: "none",
-                              boxShadow: 3,
-                              transition: "all 0.3s ease-in-out",
-                              "&:hover": {
-                                boxShadow: 6,
-                                transform: "scale(1.02)",
-                              },
-                              height: "160px",
-                              width: { xs: "80vw", sm: "50vw", lg: "17vw" },
-                              margin: "0 auto",
-                              cursor: "pointer",
-                            }}
-                            onClick={() =>
-                              handleWidgetClick(widget.id, widget.title)
-                            }
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                handleWidgetClick(widget.id, widget.title);
-                              }
-                            }}
-                          >
-                            <CardContent sx={{ p: 3 }}>
-                              {widget.id === "totalworkforce" ? (
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "center",
-                                    height: "100%",
-                                  }}
-                                >
-                                  <Tooltip title={widget.title} placement="top">
-                                    <Typography
-                                      variant="subtitle1"
-                                      sx={{
-                                        fontWeight: "semibold",
-                                        color: "text.primary",
-                                        mb: 0.5,
-                                        display: "block",
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        maxWidth: "100%",
-                                      }}
-                                    >
-                                      {widget.title}
-                                    </Typography>
-                                  </Tooltip>
-                                  <Typography
-                                    variant="subtitle2"
-                                    sx={{
-                                      color: "text.secondary",
-                                      fontWeight: "medium",
-                                      mb: 2,
-                                    }}
-                                  >
-                                    Total
-                                  </Typography>
-                                  <Typography
-                                    variant="h4"
-                                    sx={{
-                                      fontWeight: "semibold",
-                                      color: "text.primary",
-                                    }}
-                                  >
-                                    {widget.value}
-                                  </Typography>
-                                </Box>
-                              ) : widget.id === "totalEmployees" ? (
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "center",
-                                    height: "100%",
-                                  }}
-                                >
-                                  <Tooltip title="Total Employess" placement="top">
-                                    <Typography
-                                      variant="subtitle1"
-                                      sx={{
-                                        fontWeight: "semibold",
-                                        color: "text.primary",
-                                        mb: 0.5,
-                                        display: "block",
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        maxWidth: "100%",
-                                      }}
-                                    >
-                                      Employees
-                                    </Typography>
-                                  </Tooltip>
-                                  <Typography
-                                    variant="subtitle2"
-                                    sx={{
-                                      color: "text.secondary",
-                                      fontWeight: "medium",
-                                      mb: 2,
-                                    }}
-                                  >
-                                    Total
-                                  </Typography>
-                                  <Typography
-                                    variant="h4"
-                                    sx={{
-                                      fontWeight: "semibold",
-                                      color: "text.primary",
-                                    }}
-                                  >
-                                    {widget.value}
-                                  </Typography>
-                                </Box>
-                              ) : widget.id === "totalFreelancers" ? (
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "center",
-                                    height: "100%",
-                                  }}
-                                >
-                                  <Tooltip title="Total Employess" placement="top">
-                                    <Typography
-                                      variant="subtitle1"
-                                      sx={{
-                                        fontWeight: "semibold",
-                                        color: "text.primary",
-                                        mb: 0.5,
-                                        display: "block",
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        maxWidth: "100%",
-                                      }}
-                                    >
-                                      Freelancers
-                                    </Typography>
-                                  </Tooltip>
-                                  <Typography
-                                    variant="subtitle2"
-                                    sx={{
-                                      color: "text.secondary",
-                                      fontWeight: "medium",
-                                      mb: 2,
-                                    }}
-                                  >
-                                    Total
-                                  </Typography>
-                                  <Typography
-                                    variant="h4"
-                                    sx={{
-                                      fontWeight: "semibold",
-                                      color: "text.primary",
-                                    }}
-                                  >
-                                    {widget.value}
-                                  </Typography>
-                                </Box>
-                              ) : (
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                  }}
-                                >
-                                  <Box>
-                                    <Typography
-                                      variant="subtitle1"
-                                      sx={{
-                                        color: "text.secondary",
-                                        fontWeight: "medium",
-                                        mb: 2,
-                                      }}
-                                    >
-                                      {widget.title}
-                                    </Typography>
-                                    <Typography
-                                      variant="h4"
-                                      sx={{
-                                        fontWeight: "semibold",
-                                        color: "text.primary",
-                                      }}
-                                    >
-                                      {widget.value}
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </Grid>
-                      ))}
-                  </Grid>
-                </Grid>
-              )}
               {/* Employees */}
               {allWidgetConfigs
                 .filter((w) => w.group === "Employees")

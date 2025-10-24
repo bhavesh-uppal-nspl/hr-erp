@@ -22,8 +22,8 @@ import { fetchInternStages } from "../../../Apis/InternManagement";
 
 const DEFAULT_COLUMNS = [
   {
-    field: "employement_stage_name",
-    label: "employement_stage_name",
+    field: "employment_stage_name",
+    label: "employment_stage_name",
     visible: true,
     width: 150,
     filterable: true,
@@ -43,8 +43,8 @@ const DEFAULT_COLUMNS = [
   },
 
   {
-    field: "employment_status",
-    label: "employment_status",
+    field: "Employment_status",
+    label: "Employment_status",
     visible: true,
     width: 150,
     filterable: true,
@@ -127,7 +127,7 @@ function EmploymentStagesList() {
               ...item,
               id: item.organization_employment_stage_id,
 
-              Employment_status: item?.status?.employment_stage_name || "",
+              Employment_status: item?.status?.employment_status_name || "",
             };
           });
           setexit(b);

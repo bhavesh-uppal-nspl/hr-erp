@@ -44,8 +44,8 @@ const DEFAULT_COLUMNS = [
   },
   
   {
-    field: "has_predefined_value",
-    label: "Has Predefined Value",
+    field: "has_predefined_values",
+    label: "has_predefined_values",
     visible: true,
     width: 150,
     filterable: true,

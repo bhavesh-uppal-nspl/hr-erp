@@ -33,7 +33,7 @@ function LeaveReasonList() {
               return {
                ...item,
                 id:item.organization_leave_reason_id,
-                reason_type:item?.leavereasontype[0]?.leave_reason_type_name,
+                leavereasontype:item?.leavereasontype[0]?.leave_reason_type_name,
               
                 description:item?.description==null ? "" :item?.description
               
@@ -112,6 +112,8 @@ const handleEdit = useCallback(
       setData={setLeaveReason}
       DeleteFunc={deletereason}
     />
+
+
 
 
       <TableDataGeneric

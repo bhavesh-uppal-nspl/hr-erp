@@ -300,7 +300,7 @@ function InternList({ mode }) {
           heading="Interns"
           data={intern}
           sortname={"intern_name"}
-          showActions={false}
+          showActions={true}
           CardData={carddata}
           // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/employee`}
           Route="/organization/intern/intern-details"

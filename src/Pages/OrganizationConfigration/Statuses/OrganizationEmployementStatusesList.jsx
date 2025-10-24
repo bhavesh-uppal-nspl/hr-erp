@@ -89,7 +89,7 @@ function OrganizationEmployementStatusesList() {
       heading={"Employment Status"}
       btnName={"Employment Status"}
       Data={statuses}
-      delete_action={"ORG_CONFIG_DELETE"}
+      delete_action={""}
       tableHeaders={[
         {
           name: "Employment Status Types",
@@ -103,10 +103,10 @@ function OrganizationEmployementStatusesList() {
         <BusinessIcon sx={{ color: "text.secondary" }} />,
       ]}
       messages={[
-        "employment status",
-        "employment statuses",
+        "Employment status",
+        "Employment statuses",
         "Add Employment status",
-        "employment status",
+        "Employment status",
       ]}
       Route={"/organization-configration/employee-status"}
       setData={setStatuses}
@@ -121,7 +121,7 @@ function OrganizationEmployementStatusesList() {
             heading="Employment Status"
             data={statuses}
               sortname={"employment_status_name"}
-              showActions={false}
+              showActions={true}
               //  apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/employment-status`}
             Route="/organization-configration/employee-status"
             DeleteFunc={deleteemploymentstatus}

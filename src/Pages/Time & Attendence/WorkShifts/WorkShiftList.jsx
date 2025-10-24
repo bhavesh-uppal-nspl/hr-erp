@@ -382,7 +382,8 @@ function WorkShiftList() {
               carddescription: `${formatTimeWithAMPM(item.work_shift_start_time)} — ${formatTimeWithAMPM(item.work_shift_end_time)}`,
               work_duration_minutes: `${convertMinutesToHours(item?.work_duration_minutes)}`,
               is_active: item?.is_active == 1 ? "✔" : "✖",
-              break_duration_minutes: `${item?.break_duration_minutes} min`,
+           break_duration_minutes: `${item?.break_duration_minutes ?? 0} min`,
+
             };
           });
           setShifts(b);
