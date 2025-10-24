@@ -171,8 +171,8 @@ function LeaveSummaryMonthlyReport() {
     
     
           <TableDataGeneric
-            tableName="Employees"
-            primaryKey="organization_leave_entitlement_id"
+            tableName="Employee Leave Monthly Summary Report"
+            primaryKey="employee_leave_monthly_summary_id"
             heading="Employee Leave Monthly Summary Report"
             data={leaves}
               sortname={"employee_name"}

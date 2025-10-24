@@ -145,7 +145,7 @@ function WorkshiftRotationDayList() {
     
         
               <TableDataGeneric
-                tableName="Employees"
+                tableName="Shift Rotation Days"
                 primaryKey="organization_work_shift_rotation_day_id"
                 heading="Workshift Rotation Days"
                 data={shifts}

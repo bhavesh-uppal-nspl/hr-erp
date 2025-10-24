@@ -11,6 +11,7 @@ import { fetchEmployeeFunctionalRolesSpecial, fetchOrganizationFunctionalRoles }
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import AlarmAddIcon from "@mui/icons-material/AlarmAdd";
 import LogoutIcon from "@mui/icons-material/Logout";
+import dayjs from "dayjs";
 
 
 function EmployeeRoleList() {
@@ -22,6 +23,13 @@ function EmployeeRoleList() {
 
   const {id} = useParams();
   const org = userData?.organization;
+
+
+    const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    return dayjs(dateStr).format("DD-MM-YYYY"); 
+  };
+
 
   useEffect(() => {
     if (org?.organization_id) {
@@ -41,6 +49,7 @@ function EmployeeRoleList() {
               function_role:item?.function_role?.functional_role_name,
               role_specialization:item?.role_specialization?.functional_role_specialization_name,
              is_active: item?.is_active == 1 ? "✔" : "✖",
+              assigned_on: formatDate(item?.assigned_on),
            
             };
           });
@@ -168,6 +177,29 @@ function EmployeeRoleList() {
         DeleteFunc={deletedesignation}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
+
+        
+                organizationUserId={userData?.organization_user_id} // Pass user ID
+          showLayoutButtons={true}
+          config={{
+            defaultVisibleColumns: [
+            "employee_name",
+            "function_role",
+            "is_active",
+            "assigned_on",
+            "role_specialization",
+
+         
+          ],
+          mandatoryColumns: [
+            "employee_name",
+            "function_role",
+            "is_active",
+            "assigned_on",
+            "role_specialization",
+           
+          ],
+        }}
       />
     </>
   );
