@@ -105,11 +105,24 @@ function InternContactForm({ mode }) {
                 <Grid item xs={12} md={8}>
                   <Paper elevation={4} sx={{ p: 3 }}>
                     <Grid container spacing={2}>
-                      <TextField
+
+
+
+<Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                    <TextField
                         fullWidth
                         label="Personal Phone No"
                         name="personal_phone_number"
                         type="text"
+                          disabled={mode ==="view"}
                         value={section?.mainData?.personal_phone_number}
                         onChange={(e) => handleChange(e, idx)}
                         error={!!ContactErrors?.[idx]?.personal_phone_number}
@@ -126,6 +139,7 @@ function InternContactForm({ mode }) {
                         fullWidth
                         type="text" // change from "number" to "text"
                         label="Alternate Phone No"
+                          disabled={mode ==="view"}
                         name="alternate_personal_phone_number"
                         value={
                           section?.mainData?.alternate_personal_phone_number
@@ -148,6 +162,7 @@ function InternContactForm({ mode }) {
                       <TextField
                         fullWidth
                         label="Email"
+                          disabled={mode ==="view"}
                         type="email"
                         name="personal_email"
                         value={section?.mainData?.personal_email}
@@ -158,9 +173,25 @@ function InternContactForm({ mode }) {
                         required
                       />
 
+
+                </Box>
+
+
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+
                       <TextField
                         fullWidth
                         label="Emergency Person Name"
+                          disabled={mode ==="view"}
                         name="emergency_contact_name"
                         value={section?.mainData?.emergency_contact_name}
                         onChange={(e) => handleChange(e, idx)}
@@ -173,12 +204,13 @@ function InternContactForm({ mode }) {
                       />
 
                       <FormControl
+                        disabled={mode ==="view"}
                         fullWidth
                         required
                         error={
                           !!ContactErrors?.[idx]?.emergency_contact_relation
                         }
-                        margin="normal"
+                      
                       >
                         <InputLabel id="emergency_contact_relation-label">
                           Relationship
@@ -208,6 +240,7 @@ function InternContactForm({ mode }) {
 
                       <TextField
                         fullWidth
+                          disabled={mode ==="view"}
                         type="text"
                         label="Emergency Person Phone No"
                         name="emergency_contact_phone"
@@ -225,110 +258,9 @@ function InternContactForm({ mode }) {
                         }}
                       />
 
-                      {/* 
-                      <TextField
-                        fullWidth
-                        type="text"
-                        label="Emergency Person Phone No 2"
-                        name="emergency_person_phone_number_2"
-                        value={
-                          section?.mainData?.emergency_person_phone_number_2
-                        }
-                        onChange={(e) => handleChange(e, idx)}
-                        error={
-                          !!ContactErrors?.[idx]
-                            ?.emergency_person_phone_number_2
-                        }
-                        helperText={
-                          ContactErrors?.[idx]?.emergency_person_phone_number_2
-                        }
-                        inputProps={{
-                          maxLength: 20, // Limit to 20 digits
-                          inputMode: "numeric", // Opens number pad on mobile
-                          pattern: "[0-9]*", // Accept digits only
-                        }}
-                      /> */}
-                      {/* 
-                      <FormControl
-                        fullWidth
-                        error={
-                          !!ContactErrors?.[idx]?.emergency_person_relation_2
-                        }
-                        sx={{ marginTop: 2 }}
-                      >
-                        <InputLabel id="emergency-person-relation-2-label">
-                          Emergency Person Relation 2
-                        </InputLabel>
-
-                        <Select
-                          labelId="emergency-person-relation-2-label"
-                          id="emergency_person_relation_2"
-                          name="emergency_person_relation_2"
-                          value={
-                            section?.mainData?.emergency_person_relation_2 || ""
-                          }
-                          label="Emergency Person Relation 2"
-                          onChange={(e) => handleChange(e, idx)}
-                        >
-                          <MenuItem value="Parent">Parent</MenuItem>
-                          <MenuItem value="Spouse">Spouse</MenuItem>
-                          <MenuItem value="Sibling">Sibling</MenuItem>
-                          <MenuItem value="Child">Child</MenuItem>
-                          <MenuItem value="Friend">Friend</MenuItem>
-                          <MenuItem value="Other">Other</MenuItem>
-                        </Select>
-
-                        {ContactErrors?.[idx]?.emergency_person_relation_2 && (
-                          <FormHelperText>
-                            {ContactErrors?.[idx]?.emergency_person_relation_2}
-                          </FormHelperText>
-                        )}
-                      </FormControl> */}
-
-                      {/*                       
-                        <TextField
-                        fullWidth
-                        
-                        label="Emergency Person Relation 2"
-                        name="emergency_person_relation_2"
-                        value={section?.mainData?.emergency_person_relation_2}
-                        onChange={(e) => handleChange(e, idx)}
-                        error={!!ContactErrors?.[idx]?.emergency_person_relation_2}
-                        helperText={
-                          ContactErrors?.[idx]?.emergency_person_relation_2
-                        }
-                        inputProps={{ maxLength: 100 }}
-                      /> */}
-
-                      {/* <TextField
-                        fullWidth
-                        type="text"
-                        label="Work Phone No"
-                        name="work_phone_number"
-                        value={section?.mainData?.work_phone_number}
-                        onChange={(e) => {
-                          const input = e.target.value;
-                          // ✔ Allow only digits, max 15 characters
-                          if (/^\d{0,15}$/.test(input)) {
-                            handleChange(e, idx);
-                          }
-                        }}
-                        error={!!ContactErrors?.[idx]?.work_phone_number}
-                        helperText={ContactErrors?.[idx]?.work_phone_number}
-                      /> */}
-                      {/* 
-                      <TextField
-                        fullWidth
-                        type="email"
-                        label="Work Email"
-                        name="work_email"
-                        value={section?.mainData?.work_email}
-                        onChange={(e) => handleChange(e, idx)}
-                        error={!!ContactErrors?.[idx]?.work_email}
-                        helperText={ContactErrors?.[idx]?.work_email}
-                        inputProps={{ maxLength: 100 }}
-                        required
-                      /> */}
+                </Box>
+                       
+                       
                     </Grid>
                   </Paper>
                 </Grid>
@@ -338,6 +270,7 @@ function InternContactForm({ mode }) {
         ))}
 
         <Button
+          disabled={mode ==="view"}
           style={{ marginTop: 9 }}
           variant="contained"
           onClick={() => {

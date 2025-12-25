@@ -122,3 +122,25 @@ export async function fetchEmployeeLanguages(orgId) {
     }
   }
 }
+
+
+
+
+// fetch education streeam by level and degree
+export async function fetchEmployeeEducationStreamByLevelDegree(orgId, levelId, degreeId) {
+  try {
+    const response = await axios.get(
+      `${MAIN_URL}/api/organizations/${orgId}/education-stream/by-level-degree/${levelId}/${degreeId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    return response.data.streams; // important: return only the array
+  } catch (error) {
+    console.error("Failed to fetch streams:", error);
+    throw error;
+  }
+}

@@ -134,7 +134,7 @@ function WorkshiftAssignmentList() {
               id: item.employee_work_shift_assignment_id,
               employee_code: item?.employee?.employee_code,
               employee_name: item?.employee
-                ? `${item.employee.first_name}  ${item.employee.middle_name} ${item.employee.last_name}`
+                ? `${item.employee.first_name}  ${item.employee.middle_name || ""} ${item.employee.last_name || ""}`
                 : "",
               assignment_date: item?.assignment_date,
               remarks: item?.remarks || "",
@@ -207,13 +207,27 @@ function WorkshiftAssignmentList() {
     [navigate]
   );
 
+
+      const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/work-shift-assignment/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
+
+
+
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Employee WorkShift Assignments"}
         btnName={"Add WorkShift"}
-        delete_action={"SHIFT_DELETE"}
+        delete_action={"SHIFT_ASSIGNMENT_DELETE"}
+        add_action={"SHIFT_ASSIGNMENT_ADD"}
         Data={shifts}
         tableHeaders={[
           {
@@ -263,6 +277,8 @@ function WorkshiftAssignmentList() {
         Route="/organization/work-shift"
         DeleteFunc={handleDelete}
         EditFunc={handleEdit}
+        handleShow={handleShow}
+        edit_delete_action={["SHIFT_ASSIGNMENT_DELETE", "SHIFT_ASSIGNMENT_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

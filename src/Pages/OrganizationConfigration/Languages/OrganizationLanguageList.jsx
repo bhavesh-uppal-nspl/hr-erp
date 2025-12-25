@@ -54,6 +54,18 @@ function OrganizationLanguageList() {
           },
         }
       );
+         if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Language";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -78,6 +90,15 @@ function OrganizationLanguageList() {
 
 
 
+                        const handleShow = useCallback(
+      (item) => {
+        navigate(`/organization-configration/languages/view/${item.id}`)
+      },
+      [navigate],
+    )
+
+
+
 
   return (
     <>
@@ -86,7 +107,8 @@ function OrganizationLanguageList() {
         heading={"Languages"}
         btnName={"Add Languages"}
         Data={Languages}
-        delete_action={"ORG_CONFIG_DELETE"}
+        delete_action={"LANGUAGE_DELETE"}
+        add_action={"LANGUAGE_ADD"}
         tableHeaders={[
           {
             name: "Language Code",
@@ -130,7 +152,9 @@ function OrganizationLanguageList() {
               Route="/organization-configration/languages"
               DeleteFunc={deleteLanguages}
                EditFunc={handleEdit}
+               handleShow={handleShow}
               token={localStorage.getItem("token")}
+              edit_delete_action={["LANGUAGE_DELETE", "LANGUAGE_EDIT"]}
 
               
                   organizationUserId={userData?.organization_user_id} // Pass user ID

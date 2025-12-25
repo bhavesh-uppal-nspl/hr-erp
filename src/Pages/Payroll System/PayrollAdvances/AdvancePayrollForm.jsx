@@ -194,7 +194,7 @@ function AdvancePayrollForm({ mode }) {
                 >
                   {employee?.map((option) => {
                     const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.employee_code || ""}`.trim();
+                      `${option?.name || ""} -- ${option?.employee_code || ""}`.trim();
                     return (
                       <MenuItem
                         key={option?.employee_id}
@@ -387,7 +387,7 @@ function AdvancePayrollForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

@@ -96,6 +96,7 @@ function PayrollRunEmployeeList() {
         loading={loading}
         heading={"Payroll Employee Runs"}
         btnName={"Add Runs"}
+        add_action={"PAYROLL_RUN_EMPLOYEE_ADD"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
@@ -132,6 +133,7 @@ function PayrollRunEmployeeList() {
         heading="Payroll Employee Runs"
         data={Break}
         sortname={"status"}
+        edit_delete_action={["PAYROLL_RUN_EMPLOYEE_DELETE", "PAYROLL_RUN_EMPLOYEE_EDIT"]}
         showActions={true}
         Route="/payroll/employee-runs"
         DeleteFunc={deleteBreak}

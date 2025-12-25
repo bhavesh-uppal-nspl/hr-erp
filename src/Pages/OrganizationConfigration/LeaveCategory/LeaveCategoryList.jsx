@@ -54,6 +54,19 @@ function LeaveCategoryList() {
           },
         }
       );
+
+         if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Category";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -80,6 +93,15 @@ function LeaveCategoryList() {
   );
 
 
+                     const handleShow = useCallback(
+      (item) => {
+        navigate(`/organization-configration/leave-category/view/${item.id}`)
+      },
+      [navigate],
+    )
+
+
+
 
   return (
     <>
@@ -87,8 +109,9 @@ function LeaveCategoryList() {
         loading={loading}
         heading={"Leave Categories"}
         btnName={"Add Leave Category"}
+        add_action={"LEAVE_CATEGORY_ADD"}
         Data={leaveCategory}
-        delete_action={"ORG_CONFIG_DELETE"}
+        delete_action={"LEAVE_CATEGORY_DELETE"}
         tableHeaders={[
           {
             name: "Leave Category",
@@ -128,6 +151,8 @@ function LeaveCategoryList() {
                 Route="/organization-configration/leave-category"
               DeleteFunc={deleteCalendar}
                 EditFunc={handleEdit}
+                handleShow={handleShow}
+                edit_delete_action={["LEAVE_CATEGORY_DELETE", "LEAVE_CATEGORY_EDIT"]}
               token={localStorage.getItem("token")}
                    organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}

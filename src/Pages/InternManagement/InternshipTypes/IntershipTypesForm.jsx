@@ -43,7 +43,7 @@ function IntershipTypesForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" ) && id) {
       setLoading(true);
       getdataById();
     }
@@ -145,6 +145,7 @@ function IntershipTypesForm({ mode }) {
                   name="internship_type_name"
                   value={formData.internship_type_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.internship_type_name}
                   helperText={formErrors.internship_type_name}
                   inputProps={{ maxLength: 100 }}
@@ -161,7 +162,7 @@ function IntershipTypesForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

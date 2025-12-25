@@ -33,10 +33,11 @@ function LeaveReasonList() {
             return {
              ...item,
              id:item.organization_leave_type_id,
-              max_days_allowed: item?.max_days_allowed == 1 ? "✔" : "✖",
+              max_days_allowed: item?.max_days_allowed >1 ? `${item?.max_days_allowed} days`: `${item?.max_days_allowed} day`,
               carry_forward: item?.carry_forward == 1 ? "✔" : "✖",
               requires_approval: item?.requires_approval == 1 ? "✔" : "✖",
               is_active: item?.is_active == 1 ? "✔" : "✖",
+              leave_code: item?.leave_code ? item.leave_code  : '-',
           
               description: item?.description== null ? "" :item?.description
              
@@ -57,6 +58,21 @@ function LeaveReasonList() {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },}
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Leave Type";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
+
+
     } catch (error) { if (error.response && error.response.status === 401) {
   toast.error("Session Expired!");
   window.location.href = "/login";
@@ -82,6 +98,16 @@ function LeaveReasonList() {
 
   );
 
+
+
+                       const handleShow = useCallback(
+      (item) => {
+        navigate(`/organization-configration/leave-types/view/${item.id}`)
+      },
+      [navigate],
+    )
+
+
     
     
 
@@ -91,8 +117,9 @@ function LeaveReasonList() {
       loading={loading}
       heading={"Leave Types"}
       btnName={"Add Leave Type"}
+      add_action={"LEAVE_TYPE_ADD"}
       Data={leaveTypes}
-       delete_action={"ORG_CONFIG_DELETE"}
+       delete_action={"LEAVE_TYPE_DELETE"}
        tableHeaders={[
         {name : "Leave Types" , value_key : "leave_type_name",textStyle: "capitalize", },
           {name : "Leave Type Code" , value_key : "leave_type_code" },
@@ -122,7 +149,7 @@ function LeaveReasonList() {
   
       
       <TableDataGeneric
-        tableName="Employees"
+        tableName="Leave Types"
         primaryKey="organization_leave_type_id"
         heading="Leave Type"
         data={leaveTypes}
@@ -132,7 +159,9 @@ function LeaveReasonList() {
         Route="/organization-configration/leave-types"
         DeleteFunc={deletetypes}
           EditFunc={handleEdit}
+          handleShow={handleShow}
         token={localStorage.getItem("token")}
+        edit_delete_action={["LEAVE_TYPE_DELETE", "LEAVE_TYPE_EDIT"]}
 
                     organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}

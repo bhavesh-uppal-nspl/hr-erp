@@ -89,6 +89,7 @@ function PayrollAdjustmentTypeList() {
     <>
       <Layout4
         loading={loading}
+        add_action={"PAYROLL_ADJUSTMENT_TYPE_ADD"}
         heading={"Payroll Adjustment Types"}
         btnName={"Add Types"}
         Data={Break}
@@ -127,6 +128,7 @@ function PayrollAdjustmentTypeList() {
         heading="Payroll Adjustment Types"
         data={Break}
         sortname={"adjustment_type_name"}
+        edit_delete_action={["PAYROLL_ADJUSTMENT_TYPE_DELETE", "PAYROLL_ADJUSTMENT_TYPE_EDIT"]}
         showActions={true}
         Route="/payroll/adjustment-types"
         DeleteFunc={deleteBreak}

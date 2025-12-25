@@ -396,6 +396,16 @@ export default function PersonalizationPage({ onClose }) {
   // UPDATED: Added intern widgets
   const allWidgetConfigs = [
     {
+      id: "totalworkforce",
+      title: "Total Workforce",
+      icon: null,
+      color: "3B82F6", // blue color consistent with workforce
+      group: "Total Workforce",
+      value: totalEmployees, // or employees.length as in your code
+      description:
+        "Total number of employees including all types in the organization",
+    },
+    {
       id: "totalEmployees",
       title: "Employees",
       icon: null,
@@ -672,6 +682,7 @@ export default function PersonalizationPage({ onClose }) {
       .filter(Boolean);
 
     const groupIcons = {
+      "Total Workforce": People,
       Employees: People,
       Interns: People, // ADDED: Icon for Interns group
       Freelancers: People,

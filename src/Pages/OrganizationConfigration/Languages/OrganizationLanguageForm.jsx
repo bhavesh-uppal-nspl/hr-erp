@@ -45,7 +45,7 @@ function OrganizationLanguageForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -140,6 +140,7 @@ function OrganizationLanguageForm({ mode }) {
                   fullWidth
                   label="Language Name"
                   name="language_name"
+                  disabled={mode === "view"}
                   value={formData.language_name}
                   onChange={handleChange}
                   error={!!formErrors.language_name}
@@ -153,6 +154,7 @@ function OrganizationLanguageForm({ mode }) {
                   name="language_code"
                   value={formData.language_code}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.language_code}
                   helperText={formErrors.language_code}
                   required
@@ -164,6 +166,7 @@ function OrganizationLanguageForm({ mode }) {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
                 />
@@ -176,7 +179,7 @@ function OrganizationLanguageForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

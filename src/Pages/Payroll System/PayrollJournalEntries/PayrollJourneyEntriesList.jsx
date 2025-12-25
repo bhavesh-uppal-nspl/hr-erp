@@ -96,6 +96,7 @@ function PayrollJourneyEntriesList() {
         heading={"Payroll Journey Entries"}
         btnName={"Add Entries"}
         Data={Break}
+        add_action={"PAYROLL_JOURNEY_ENTRY_ADD"}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
           {
@@ -131,6 +132,7 @@ function PayrollJourneyEntriesList() {
         heading="Payroll Journal Entries"
         data={Break}
         sortname={"account_name"}
+        edit_delete_action={["PAYROLL_JOURNEY_ENTRY_DELETE", "PAYROLL_JOURNEY_ENTRY_EDIT"]}
         showActions={true}
         Route="/payroll/journal-entries"
         DeleteFunc={deleteBreak}

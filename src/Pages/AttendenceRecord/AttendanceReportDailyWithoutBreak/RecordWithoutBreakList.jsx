@@ -126,6 +126,8 @@ const formatMinutesToHours = (minutes) => {
   return (
     <Layout1
       loading={loading}
+      add_action={"ADD_ACTION"}
+      edit_action={"EDIT_ACTION"}
        heading={
           <div>
              Daily Attendance Report
@@ -139,9 +141,9 @@ const formatMinutesToHours = (minutes) => {
             </div>
           </div>
         }
-      btnName={"Report"}
+      btnName={null}
       Data={leaves}
-      delete_action={"LEAVE_DELETE"}
+      delete_action={"DELETE_ACTION"}
       tableHeaders={[
              { name: "Emp Code", value_key: "employee_code"},
         { name: "Employee Name", value_key: "employee_name", textStyle: "capitalize" },
@@ -159,10 +161,10 @@ const formatMinutesToHours = (minutes) => {
         <DateRangeIcon sx={{ color: "text.secondary" }} />,
       ]}
       messages={[
-        "Employee Attendance Record",
-        "Employee Attendance Record",
-        "Add Employee Attendance Record",
-        "Employee Attendance Record, On Deleting Employee Time Log ,  The Related Atendance Deviation ,, Attendance Report , Attandence Overtime Report all Deleted permanently",
+        "",
+        "",
+        "",
+        "",
       ]}
       Route={"/attendance/employee-recordss"}
       setData={setLeaves}

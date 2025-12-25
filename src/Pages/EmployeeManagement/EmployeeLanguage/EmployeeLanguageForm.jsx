@@ -73,27 +73,6 @@ function EmployeeLanguageForm({ mode, employeeId }) {
         console.log("ee", err);
       });
   }, []);
-  // console.log("langiage id is ", LanguageId)
-  // useEffect(() => {
-  //   let getdataById = async () => {
-  //     const response = await axios.get(
-  //       `${MAIN_URL}/api/organizations/${org.organization_id}/employee-language/${LanguageId}`,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //         },
-  //       }
-  //     );
-  //     console.log("espffffonse", response)
-  //     let a = response.data.education;
-  //     setsection?.mainData?(a);
-  //     setLoading(false);
-  //   };
-  //   if (LanguageId) {
-  //     setLoading(true);
-  //     getdataById();
-  //   }
-  // }, [mode, id]);
 
   console.log(" Languages is ", Languages);
 
@@ -107,62 +86,7 @@ function EmployeeLanguageForm({ mode, employeeId }) {
     setLanguageData(name, checked, idx);
   };
 
-  // const handleSubmit = async (e) => {
-  //    e.preventDefault();
-  //   if (!validateForm()) return;
-  //   setbtnLoading(true);
 
-  //   try {
-  //     if (mode === "edit") {
-  //       await axios.put(
-  //         `${MAIN_URL}/api/organizations/${org.organization_id}/employee-language/${id}`,
-  //         section?.mainData?,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //           },
-  //         }
-  //       );
-  //     } else {
-  //    const response=  await axios.post(
-  //         `${MAIN_URL}/api/organizations/${org.organization_id}/employee-language`,
-  //         section?.mainData?,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //           },
-  //         }
-  //       );
-
-  //       console.log("responsessssssssssss", response)
-  //       const createLanguage = response?.data?.employeeLanguage;
-  //       if (createLanguage?.employee_language_id) {
-  //         setLanguageId(createLanguage?.employee_language_id);
-  //       }
-  //     }
-
-  //     toast.success(
-  //       mode === "edit"
-  //         ? "Employee Language Detail Updated!"
-  //         : "Employee Language Detail Created!"
-  //     );
-  //     setLanguageError({});
-  //   } catch (err) {
-  //     console.error(err);
-  //     if (err.response?.status === 422) {
-  //       const validationErrors = err.response.data.errors || {};
-  //       setLanguageError(validationErrors);
-  //       const errorMessages = Object.values(validationErrors)
-  //         .map((arr) => arr[0])
-  //         .join(" ");
-  //       toast.error(errorMessages || "Validation failed.");
-  //     } else {
-  //       toast.error("Something went wrong.");
-  //     }
-  //   } finally {
-  //     setbtnLoading(false);
-  //   }
-  // };
 
   const handleSubmit = async (e) => {
     // setLanguageData(section?.mainData?);
@@ -213,7 +137,21 @@ function EmployeeLanguageForm({ mode, employeeId }) {
                   <Grid item xs={12} md={8}>
                     <Paper elevation={4} sx={{ p: 3 }}>
                       <Grid container spacing={2}>
+
+
+
+                        <Box
+  sx={{
+    display: "flex",
+    justifyContent: "center",  // centers the row
+    gap: 2,                    // space between fields
+    width: "60%",             // ensures proper centering
+  }}
+>
+
+
                         <TextField
+                        disabled ={mode==="view"}
                           select
                           fullWidth
                           required
@@ -235,6 +173,9 @@ function EmployeeLanguageForm({ mode, employeeId }) {
                           ))}
                         </TextField>
 
+
+</Box>
+
                         <Box>
                           <FormGroup row>
                             {[
@@ -250,6 +191,8 @@ function EmployeeLanguageForm({ mode, employeeId }) {
                                 key={item?.name}
                                 control={
                                   <Checkbox
+                                  disabled ={mode==="view"}
+                                  
                                     icon={<RadioButtonUncheckedIcon />}
                                     checkedIcon={<CheckCircleOutlineIcon />}
                                     checked={!!section?.mainData?.[item?.name]}
@@ -271,9 +214,14 @@ function EmployeeLanguageForm({ mode, employeeId }) {
                         </Box>
 
                         <TextField
+                        disabled ={mode==="view"}
+                     
+
                           fullWidth
                           label="Description"
                           name="description"
+                          multiline
+                          rows={4}
                           value={section?.mainData?.description}
                           onChange={e => handleChange(e,idx)}
                           error={!!LanguageError?.[idx]?.description}
@@ -288,7 +236,10 @@ function EmployeeLanguageForm({ mode, employeeId }) {
             </Accordion>
           ))}
 
-          <Button style={{marginTop:9}} variant="contained" onClick={() =>{ setExpanded(`Language ${Language?.length+1}`); addLanguage()}}>
+          <Button
+          disabled ={mode==="view"}
+          
+          style={{marginTop:9}} variant="contained" onClick={() =>{ setExpanded(`Language ${Language?.length+1}`); addLanguage()}}>
             Add More
           </Button>
         </Box>

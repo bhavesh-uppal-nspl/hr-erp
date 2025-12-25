@@ -20,10 +20,9 @@ function AttendanceDeviationReasonList() {
   const { userData } = useAuthStore();
   const org = userData?.organization;
   const [loading, setLoading] = useState(true);
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  const {id} = useParams();
-
+  const { id } = useParams();
 
   useEffect(() => {
     if (org?.organization_id) {
@@ -37,9 +36,11 @@ function AttendanceDeviationReasonList() {
             return {
               ...item,
               id: item.organization_attendance_deviation_reason_id,
-            
-              deviation_reason_type:item?.deviation_reason_type?.deviation_reason_type_name || "",
-               is_active: item?.is_active == 1 ? "✔" : "✖",
+              attendance_deviation_reason_name: item?.attendance_deviation_reason_name,
+
+              deviation_reason_type:
+                item?.deviation_reason_type?.deviation_reason_type_name || "",
+              is_active: item?.is_active == 1 ? "✔" : "✖",
             };
           });
 
@@ -90,10 +91,19 @@ function AttendanceDeviationReasonList() {
           },
         }
       );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+
+      if (response.status === 200) {
+        toast.success(response.data.message);
+      } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Deviation Reason";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
       }
-      console.log("Successfully deleted units-types with id:", id);
+
       return Promise.resolve();
     } catch (error) {
       console.error("Delete failed:", error);
@@ -101,19 +111,21 @@ function AttendanceDeviationReasonList() {
     }
   };
 
-
-  
-const handleEdit = useCallback(
-
+  const handleEdit = useCallback(
     (item) => {
-
-         navigate(`/attendance/deviation-reason/edit/${item.id}`);
-
+      navigate(`/attendance/deviation-reason/edit/${item.id}`);
     },
 
     [navigate]
-
   );
+
+
+const handleShow = useCallback(
+    (item) => {
+      navigate(`/attendance/deviation-reason/view/${item.id}`)
+    },
+    [navigate],
+  )
 
   return (
     <>
@@ -121,8 +133,9 @@ const handleEdit = useCallback(
         loading={loading}
         heading={"Attendance Deviation Reason"}
         btnName={"Add Deviation Reason"}
+        add_action={"ATENDANCE_DEVIATION_REASON_ADD"}
         Data={leaves}
-        delete_action={"LEAVE_DELETE"}
+        delete_action={"ATENDANCE_DEVIATION_REASON_DELETE"}
         tableHeaders={[
           {
             name: "Deviation Reason",
@@ -157,21 +170,21 @@ const handleEdit = useCallback(
         DeleteFunc={deleteemployeeleave}
       />
 
-   
-        <TableDataGeneric
-          tableName="Atendance Deviation Reason"
-          primaryKey="organization_attendance_deviation_reason_id"
-          heading="Atendance Deviation Reason"
-          data={leaves}
-          sortname={"attendance_deviation_reason_name"}
-          showActions={true}
-          // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-deviation-reason`}
-          Route="/attendance/deviation-reason"
-          DeleteFunc={handleDelete}
-          EditFunc={handleEdit}
-          token={localStorage.getItem("token")}
-        />
-  
+      <TableDataGeneric
+        tableName="Atendance Deviation Reason"
+        primaryKey="organization_attendance_deviation_reason_id"
+        heading="Atendance Deviation Reason"
+        data={leaves}
+        sortname={"attendance_deviation_reason_name"}
+        showActions={true}
+        // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-deviation-reason`}
+        Route="/attendance/deviation-reason"
+        DeleteFunc={handleDelete}
+        handleShow={handleShow}
+        edit_delete_action={["ATENDANCE_DEVIATION_REASON_DELETE", "ATENDANCE_DEVIATION_REASON_EDIT"]}
+        EditFunc={handleEdit}
+        token={localStorage.getItem("token")}
+      />
     </>
   );
 }

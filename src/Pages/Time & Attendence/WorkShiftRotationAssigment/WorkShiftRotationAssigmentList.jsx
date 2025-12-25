@@ -134,7 +134,7 @@ function WorkshiftRotationAssignmentList() {
               id: item.employee_work_shift_rotation_assignment_id,
               employee_code: item?.employee?.employee_code,
               employee_name: item?.employee
-                ? `${item.employee?.first_name}  ${item.employee?.middle_name} ${item?.employee.last_name}`
+                ? `${item.employee?.first_name}  ${item.employee?.middle_name || ""} ${item?.employee.last_name || ""}`
                 : "",
               effective_start_date: item?.effective_end_date,
               effective_end_date: item?.effective_end_date,
@@ -161,6 +161,18 @@ function WorkshiftRotationAssignmentList() {
           },
         }
       );
+       if (response.status === 200) {
+              toast.success(response.data.message);
+              console.log("Workshift Rotation Assignment Deleted:", response.data.message);
+            } else {
+              const errorMessage =
+                response.data.message ||
+                response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+                "Failed to delete Workshift Rotation Assignment";
+      
+              toast.error(errorMessage);
+              console.warn("Deletion error:", response.status, response.data);
+            }
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -202,14 +214,25 @@ function WorkshiftRotationAssignmentList() {
     [navigate]
   );
 
+
+   
+      const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/work-shift-rotation-assignment/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"WorkShift Rotation Assignments"}
         btnName={"Add WorkShift"}
-        delete_action={"SHIFT_DELETE"}
+        delete_action={"SHIFT_ROTATION_ASSIGNMENT_DELETE"}
         Data={shifts}
+        add_action={"SHIFT_ROTATION_ASSIGNMENT_ADD"}
         tableHeaders={[
           {
             name: "Employee Name",
@@ -250,7 +273,9 @@ function WorkshiftRotationAssignmentList() {
         // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/workshift-rotation-assignment`}
         Route="/organization/work-shift-rotation-assignment"
         DeleteFunc={handleDelete}
+        handleShow={handleShow}
         EditFunc={handleEdit}
+        edit_delete_action={["SHIFT_ROTATION_ASSIGNMENT_DELETE", "SHIFT_ROTATION_ASSIGNMENT_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

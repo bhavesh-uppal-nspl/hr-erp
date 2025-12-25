@@ -177,6 +177,19 @@ function InternStipendList() {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Intern Stipend";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -200,11 +213,21 @@ function InternStipendList() {
     [navigate]
   );
 
+
+               const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/intern/intern-stipend/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Intern Stipend"}
+        delete_action={"INTERN_STIPEND_DELETE"}
         btnName={"Add Record"}
         Data={exit}
         tableHeaders={[
@@ -266,6 +289,7 @@ function InternStipendList() {
         Route="/organization/intern/intern-stipend"
         DeleteFunc={deleteExit}
         EditFunc={handleEdit}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

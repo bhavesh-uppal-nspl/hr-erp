@@ -9,6 +9,7 @@ import {
   CircularProgress,
   FormControlLabel,
   Switch,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -98,7 +99,7 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
 
   useEffect(() => {
     {
-      fetchOrganizationLocation(org.organization_id)
+      fetchOrganizationLocation(org?.organization_id)
         .then((data) => {
           setLocation(data?.locations);
         })
@@ -120,7 +121,7 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
           {
             params: {
               department_id: formData.organization_department_id,
-              organization_id: org.organization_id,
+              organization_id: org?.organization_id,
             },
           }
         );
@@ -247,7 +248,7 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode ==="view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -287,7 +288,6 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
     if (!formData.carry_forward_days) {
       errors.carry_forward_days = "Carry forward days are required.";
     }
-   
 
     setFormErrors(errors);
     return Object.keys(errors)?.length === 0;
@@ -343,23 +343,6 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
       setbtnLoading(false);
     }
   };
-  // const calculateTotalLeaveHours = (startTime, endTime) => {
-  //   if (!startTime || !endTime) return "0 hours 0 minutes";
-
-  //   const refDate = "2000-01-01"; // arbitrary fixed date
-  //   const start = dayjs(`${refDate} ${startTime}`, "YYYY-MM-DD HH:mm:ss");
-  //   const end = dayjs(`${refDate} ${endTime}`, "YYYY-MM-DD HH:mm:ss");
-
-  //   if (!start.isValid() || !end.isValid() || end.isBefore(start)) {
-  //     return "0 hours 0 minutes";
-  //   }
-
-  //   const diffMinutes = end.diff(start, "minute");
-  //   const hours = Math.floor(diffMinutes / 60);
-  //   const minutes = diffMinutes % 60;
-
-  //   return ` ${hours} hours ${minutes} minutes `;
-  // };
 
   return (
     <Box px={4} py={4}>
@@ -381,34 +364,55 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Leave Type"
-                  name="organization_leave_type_id"
-                  value={formData?.organization_leave_type_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_leave_type_id}
-                  helperText={formErrors.organization_leave_type_id}
-                  required
+               
+
+               
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {leavetype?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_leave_type_id}
-                        value={option.organization_leave_type_id}
-                      >
-                        {option.leave_type_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+                    <Autocomplete
+                  fullWidth
+                  options={leavetype || []}
+                  getOptionLabel={(option) => option.leave_type_name || ""}
+                  value={
+                    leavetype?.find(
+                      (option) =>
+                        option.organization_leave_type_id ===
+                        formData.organization_leave_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_leave_type_id",
+                        value: newValue?.organization_leave_type_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || leavetype?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Exit Type"
+                      error={!!formErrors.organization_leave_type_id}
+                      helperText={formErrors.organization_leave_type_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
 
                 <TextField
                   select
                   fullWidth
                   label="Entitlement Period"
                   name="entitlement_period"
+                  disabled = {mode === "view"}
                   value={formData?.entitlement_period}
                   onChange={(e) => {
                     handleChange(e);
@@ -437,6 +441,7 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
                   type="number"
                   label="Entitled Days"
                   name="entitled_days"
+                    disabled = {mode === "view"}
                   value={formData?.entitled_days || ""}
                   onChange={(e) => {
                     let value =
@@ -482,11 +487,27 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
                   }}
                 />
 
+                </Box>
+
+
+
+                 
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                  
                 <TextField
                   fullWidth
                   type="number"
                   label="Max Accumulated Days"
                   name="max_accumulated_days"
+                    disabled = {mode === "view"}
                   value={formData?.max_accumulated_days || ""}
                   onChange={(e) => {
                     let value =
@@ -536,6 +557,7 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
                   fullWidth
                   type="number"
                   label="Carry Forward Days"
+                    disabled = {mode === "view"}
                   name="carry_forward_days"
                   value={formData?.carry_forward_days || ""}
                   onChange={(e) => {
@@ -582,9 +604,13 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
                   }}
                 />
 
-                <FormControlLabel
+                </Box>
+
+
+                   <FormControlLabel
                   control={
                     <Switch
+                    disabled={mode === "view"}
                       checked={
                         formData?.requires_approval === 1 ||
                         formData?.requires_approval === "1"
@@ -599,6 +625,7 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
                 <FormControlLabel
                   control={
                     <Switch
+                      disabled = {mode === "view"}
                       checked={
                         formData?.encashment_allowed === 1 ||
                         formData?.encashment_allowed === "1"
@@ -610,289 +637,336 @@ function EmployeeLeaveEntitlmentForm({ mode }) {
                   label="Encashment Allowed"
                 />
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Department Name"
-                  name="organization_department_id"
-                  value={formData?.organization_department_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_department_id}
-                  helperText={formErrors.organization_department_id}
-                >
-                  {department?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_department_id}
-                        value={option.organization_department_id}
-                      >
-                        {option?.department_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Designation Name"
-                  name="organization_designation_id"
-                  value={formData?.organization_designation_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_designation_id}
-                  helperText={formErrors.organization_designation_id}
-                >
-                  {designation?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_designation_id}
-                        value={option.organization_designation_id}
-                      >
-                        {option?.designation_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Organization Location"
-                  name="organization_location_id"
-                  value={formData?.organization_location_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_location_id}
-                  helperText={formErrors.organization_location_id}
+                 
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {location?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_location_id}
-                        value={option.organization_location_id}
-                      >
-                        {option?.location_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Employment Type"
-                  name="organization_employment_type_id"
-                  value={formData?.organization_employment_type_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_employment_type_id}
-                  helperText={formErrors.organization_employment_type_id}
-                >
-                  {empType?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_employment_type_id}
-                        value={option.organization_employment_type_id}
-                      >
-                        {option?.employment_type_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+                 
 
-                <TextField
-                  select
+                <Autocomplete
                   fullWidth
-                  label="Employment Status"
-                  name="organization_employment_status_id"
-                  value={formData?.organization_employment_status_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_employment_status_id}
-                  helperText={formErrors.organization_employment_status_id}
-                >
-                  {empStatus?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_employment_status_id}
-                        value={option.organization_employment_status_id}
-                      >
-                        {option?.employment_status_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-
-                <TextField
-                  select
-                  fullWidth
-                  label="WorkShift"
-                  name="organization_work_shift_id"
-                  value={formData?.organization_work_shift_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_work_shift_id}
-                  helperText={formErrors.organization_work_shift_id}
-                >
-                  {workshift?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option?.organization_work_shift_id}
-                        value={option.organization_work_shift_id}
-                      >
-                        {option?.work_shift_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-
-                <TextField
-                  select
-                  fullWidth
-                  label="WorkShift Type"
-                  name="organization_work_shift_type_id"
-                  value={formData?.organization_work_shift_type_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_work_shift_type_id}
-                  helperText={formErrors.organization_work_shift_type_id}
-                >
-                  {workshiftType?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_work_shift_type_id}
-                        value={option.organization_work_shift_type_id}
-                      >
-                        {option?.work_shift_type_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-
-                {/* <TextField
-                  select
-                  fullWidth
-                  label="Business Registration Type"
-                  name="organization_business_registration_type_id"
-                  value={formData?.organization_business_registration_type_id}
-                  onChange={handleChange}
-                  error={
-                    !!formErrors.organization_business_registration_type_id
+                  options={department || []}
+                  getOptionLabel={(option) => option.department_name || ""}
+                  value={
+                    department?.find(
+                      (option) =>
+                        option.organization_department_id ===
+                        formData.organization_department_id
+                    ) || null
                   }
-                  helperText={
-                    formErrors.organization_business_registration_type_id
-                  }
-                  
-                >
-                  {businessRegType?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_business_registration_type_id}
-                        value={
-                          option.organization_business_registration_type_id
-                        }
-                      >
-                        {option?.business_registration_type_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField> */}
-                {/* 
-                <TextField
-                  select
-                  fullWidth
-                  label="Business Ownership Type"
-                  name="organization_business_ownership_type_id"
-                  value={formData?.organization_business_ownership_type_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_business_ownership_type_id}
-                  helperText={
-                    formErrors.organization_business_ownership_type_id
-                  }
-                  
-                >
-                  {businessOwnType?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_business_ownership_type_id}
-                        value={option.organization_business_ownership_type_id}
-                      >
-                        {option?.organization_business_ownership_type_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField> */}
-
-                {/* <TextField
-                  fullWidth
-                  type="number"
-                  label="Priority Levels"
-                  name="priority_level"
-                  value={formData?.priority_level}
-                  onChange={handleChange}
-                  error={!!formErrors.priority_level}
-                  helperText={formErrors.priority_level}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ step: "0.01", max: "100" }}
-                /> */}
-
-                {/* <FormControlLabel
-                  control={
-                    <Switch
-                      checked={
-                        formData?.is_active === 1 || formData?.is_active === "1"
-                      }
-                      onChange={handleSwitchChange("is_active")}
-                      color="primary"
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_department_id",
+                        value: newValue?.organization_department_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || department?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Department"
+                      error={!!formErrors.organization_department_id}
+                      helperText={formErrors.organization_department_id}
+                      required
+                      fullWidth
                     />
-                  }
-                  label="Is Active"
-                /> */}
+                  )}
+                />
 
+                              
+                <Autocomplete
+  fullWidth
+  options={designation || []}
+  getOptionLabel={(option) => option?.designation_name || ""}
+  value={
+    designation?.find(
+      (d) => d.organization_designation_id === formData?.organization_designation_id
+    ) || null
+  }
+  onChange={(event, newValue) => {
+    handleChange({
+      target: {
+        name: "organization_designation_id",
+        value: newValue?.organization_designation_id || "",
+      },
+    });
+  }}
+  disabled={designation?.length === 0}
+  isOptionEqualToValue={(option, value) =>
+    option.organization_designation_id === value.organization_designation_id
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Designation Name"
+      name="organization_designation_id"
+      error={!!formErrors.organization_designation_id}
+      helperText={formErrors.organization_designation_id}
+      fullWidth
+    />
+  )}
+/>
+
+
+            
+<Autocomplete
+  fullWidth
+  options={location || []}
+  getOptionLabel={(option) => option.location_name || ""}
+  value={
+    location?.find(
+      (option) =>
+        option.organization_location_id ===
+        formData.organization_location_id
+    ) || null
+  }
+  onChange={(event, newValue) => {
+    handleChange({
+      target: {
+        name: "organization_location_id",
+        value: newValue?.organization_location_id || "",
+      },
+    });
+  }}
+  disabled={
+    mode === "view" ||
+    !formData.organization_designation_id ||
+    location?.length === 0
+  }
+  isOptionEqualToValue={(option, value) =>
+    option.organization_location_id === value.organization_location_id
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Location"
+      error={!!formErrors.organization_location_id}
+      helperText={formErrors.organization_location_id}
+      required
+      fullWidth
+    />
+  )}
+/>
+
+
+
+                </Box>
+
+              
+
+
+              
+ 
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                   <Autocomplete
+                  fullWidth
+                  options={empType || []}
+                  getOptionLabel={(option) => option.employment_type_name || ""}
+                  value={
+                    empType?.find(
+                      (option) =>
+                        option.organization_employment_type_id ===
+                        formData.organization_employment_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_employment_type_id",
+                        value: newValue?.organization_employment_type_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || empType?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Employment Type"
+                      error={!!formErrors.organization_employment_type_id}
+                      helperText={formErrors.organization_employment_type_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+              
+
+                <Autocomplete
+                  fullWidth
+                  options={empStatus || []}
+                  getOptionLabel={(option) =>
+                    option.employment_status_name || ""
+                  }
+                  value={
+                    empStatus?.find(
+                      (option) =>
+                        option.organization_employment_status_id ===
+                        formData.organization_employment_status_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_employment_status_id",
+                        value:
+                          newValue?.organization_employment_status_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || empStatus?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Employment Status"
+                      error={!!formErrors.organization_employment_status_id}
+                      helperText={formErrors.organization_employment_status_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+              
+
+                <Autocomplete
+                  fullWidth
+                  options={workshift || []}
+                  getOptionLabel={(option) => option.work_shift_name || ""}
+                  value={
+                    workshift?.find(
+                      (option) =>
+                        option.organization_work_shift_id ===
+                        formData.organization_work_shift_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_work_shift_id",
+                        value: newValue?.organization_work_shift_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || workshift?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Exit Reason Category"
+                      error={!!formErrors.organization_work_shift_id}
+                      helperText={formErrors.organization_work_shift_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+                </Box>
+ 
+
+               
+               
+
+              
+              
+
+                <Autocomplete
+                  fullWidth
+                  options={workshiftType || []}
+                  getOptionLabel={(option) =>
+                    option.work_shift_type_name || ""
+                  }
+                  value={
+                    workshiftType?.find(
+                      (option) =>
+                        option.organization_work_shift_type_id ===
+                        formData.organization_work_shift_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_work_shift_type_id",
+                        value: newValue?.organization_work_shift_type_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || workshiftType?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="WorkShift Type"
+                      error={!!formErrors.organization_work_shift_type_id}
+                      helperText={formErrors.organization_work_shift_type_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
               </Grid>
 
-        
-        
-                      <Grid container spacing={2} mt={2}>
-                        <Grid item>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            size="medium"
-                            onClick={handleSubmit}
-                            disabled={loading || btnLoading}
-                            sx={{
-                              borderRadius: 2,
-                              minWidth: 120,
-                              textTransform: "capitalize",
-                              fontWeight: 500,
-                            }}
-                          >
-                            {loading || btnLoading ? (
-                              <CircularProgress size={22} sx={{ color: "#fff" }} />
-                            ) : (
-                              "Submit"
-                            )}
-                          </Button>
-                        </Grid>
-        
-                        {mode === "edit" && (
-                          <Grid item>
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              size="medium"
-                              onClick={() => navigate(-1)}
-                              sx={{
-                                borderRadius: 2,
-                                minWidth: 120,
-                                textTransform: "capitalize",
-                                fontWeight: 500,
-                                backgroundColor: "#1976d2",
-                                "&:hover": { backgroundColor: "#115293" },
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                          </Grid>
-                        )}
-                      </Grid>
+              <Grid container spacing={2} mt={2}>
+                <Grid item>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="medium"
+                    onClick={handleSubmit}
+                    disabled={loading || btnLoading || mode === "view"}
+                    sx={{
+                      borderRadius: 2,
+                      minWidth: 120,
+                      textTransform: "capitalize",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {loading || btnLoading ? (
+                      <CircularProgress size={22} sx={{ color: "#fff" }} />
+                    ) : (
+                      "Submit"
+                    )}
+                  </Button>
+                </Grid>
+
+                {mode === "edit" && (
+                  <Grid item>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="medium"
+                      onClick={() => navigate(-1)}
+                      sx={{
+                        borderRadius: 2,
+                        minWidth: 120,
+                        textTransform: "capitalize",
+                        fontWeight: 500,
+                        backgroundColor: "#1976d2",
+                        "&:hover": { backgroundColor: "#115293" },
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
+                )}
+              </Grid>
             </Paper>
           </Grid>
         </Grid>

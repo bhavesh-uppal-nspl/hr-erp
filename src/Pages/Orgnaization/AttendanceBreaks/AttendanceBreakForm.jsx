@@ -12,6 +12,7 @@ import {
   Alert,
   FormControlLabel,
   Switch,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -74,7 +75,7 @@ function AttendanceBreakForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -187,31 +188,54 @@ function AttendanceBreakForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Break Type"
-                  name="organization_attendance_break_type_id"
-                  value={formData.organization_attendance_break_type_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_attendance_break_type_id}
-                  helperText={formErrors.organization_attendance_break_type_id}
-                  required
-                >
-                  {BreakType?.map((option) => (
-                    <MenuItem
-                      key={option.organization_attendance_break_type_id}
-                      value={option.organization_attendance_break_type_id}
-                    >
-                      {option?.attendance_break_type_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+               
+
+                 <Autocomplete
+                fullWidth
+                  options={BreakType || []}
+                  getOptionLabel={(option) =>
+                    option.attendance_break_type_name || ""
+                  }
+                  value={
+                    BreakType?.find(
+                      (option) =>
+                        option.organization_attendance_break_type_id ===
+                        formData.organization_attendance_break_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_attendance_break_type_id",
+                        value:
+                          newValue?.organization_attendance_break_type_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || BreakType?.length === 0 }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Break Type"
+                      error={
+                        !!formErrors.organization_attendance_break_type_id
+                      }
+                      helperText={
+                        formErrors.organization_attendance_break_type_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
 
                 <TextField
                   fullWidth
                   label="Break Name"
                   name="attendance_break_name"
+                  disabled={mode === "view"}
                   value={formData.attendance_break_name}
                   onChange={handleChange}
                   error={!!formErrors.attendance_break_name}
@@ -223,6 +247,7 @@ function AttendanceBreakForm({ mode }) {
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   {/* Start Time */}
                   <TimePicker
+                  disabled={mode === "view"}
                     label="Start Time"
                     views={["hours", "minutes"]}
                     ampm={true}
@@ -257,6 +282,7 @@ function AttendanceBreakForm({ mode }) {
 
                   {/* End Time */}
                   <TimePicker
+                  disabled={mode === "view"}
                     label="End Time"
                     views={["hours", "minutes"]}
                     ampm={true}
@@ -293,6 +319,7 @@ function AttendanceBreakForm({ mode }) {
                 <FormControlLabel
                   control={
                     <Switch
+                    disabled={mode === "view"}
                       checked={
                         formData.is_paid === "1" || formData.is_paid === true
                       }
@@ -313,7 +340,9 @@ function AttendanceBreakForm({ mode }) {
                 ) || formData.break_duration_minutes === "" ? (
                   <TextField
                     select
+                 
                     fullWidth
+                    disabled={mode === "view"}
                     label="Break Duration (minutes)"
                     name="break_duration_minutes"
                     value={formData.break_duration_minutes}
@@ -348,6 +377,7 @@ function AttendanceBreakForm({ mode }) {
                     InputProps={{
                       endAdornment: (
                         <Button
+                        disabled={mode === "view"}
                           size="small"
                           onClick={() =>
                             setFormData((prev) => ({
@@ -366,6 +396,7 @@ function AttendanceBreakForm({ mode }) {
                 <TextField
                   fullWidth
                   label="Description"
+                  disabled={mode === "view"}
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
@@ -387,7 +418,7 @@ function AttendanceBreakForm({ mode }) {
                                  color="primary"
                                  size="medium"
                                  onClick={handleSubmit}
-                                 disabled={loading || btnLoading}
+                                 disabled={loading || btnLoading || mode === "view"}
                                  sx={{
                                    borderRadius: 2,
                                    minWidth: 120,

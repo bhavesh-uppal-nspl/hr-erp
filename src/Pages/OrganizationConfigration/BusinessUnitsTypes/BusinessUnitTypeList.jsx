@@ -92,14 +92,24 @@ function BusinessUnitTypeList() {
     [navigate]
   );
 
+
+                   const handleShow = useCallback(
+        (item) => {
+          navigate(`/organization-configration/unit-types/view/${item.id}`)
+        },
+        [navigate],
+      )
+  
+
   return (
     <>
       <Layout4
         loading={loading}
+        add_action={"BUSINESS_UNIT_TYPE_ADD"}
         heading={"Business Unit Types"}
         btnName={"Add Business Unit Type"}
         Data={unitTypes}
-        delete_action={"ORG_CONFIG_DELETE"}
+        delete_action={"BUSINESS_UNIT_TYPE_DELETE"}
         tableHeaders={[
           {
             name: "Business Unit Type Name", 
@@ -133,6 +143,8 @@ function BusinessUnitTypeList() {
         DeleteFunc={deleteunittypes}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
+        edit_delete_action={["BUSINESS_UNIT_TYPE_DELETE", "BUSINESS_UNIT_TYPE_EDIT"]}
+        handleShow={handleShow}
         organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}
         // Optional: Explicitly define visible columns

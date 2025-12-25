@@ -10,6 +10,7 @@ import {
   TextField,
   FormHelperText,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -68,7 +69,7 @@ const [Status , setStatus]=useState([])
             },
           }
         );
-        const a = response.data.intership;
+        const a = response?.data?.stages;
         setFormData(a);
       } catch (error) {
         console.error("Error fetching employee exit data:", error);
@@ -77,7 +78,7 @@ const [Status , setStatus]=useState([])
       }
     };
 
-    if (mode === "edit" && id) {
+   if (org?.organization_id && id && (mode === "edit" || mode === "view")) {
       setLoading(true);
       getdataById();
     }
@@ -137,7 +138,7 @@ const [Status , setStatus]=useState([])
       }
 
       toast.success(
-        mode === "edit" ? "Intern Stages  Updated!" : "Intern Stages Created!"
+        mode === "edit" ? "Employment Stages  Updated!" : "Employment Stages Created!"
       );
       setFormErrors({});
       navigate(-1);
@@ -157,6 +158,8 @@ const [Status , setStatus]=useState([])
       setbtnLoading(false);
     }
   };
+
+  console.log("mode is ", mode)
 
   return (
     <Box px={4} py={4}>
@@ -184,7 +187,7 @@ const [Status , setStatus]=useState([])
 
 
                 
-
+{/* 
                 <TextField
                   select
                   fullWidth
@@ -192,6 +195,9 @@ const [Status , setStatus]=useState([])
                   name="organization_employment_status_id "
                   value={formData?.organization_employment_status_id }
                   onChange={handleChange}
+                  disabled={mode === "view"   ||  Status?.length === 0}
+                      
+
                   error={!!formErrors.organization_employment_status_id }
                   helperText={formErrors.organization_employment_status_id }
                 >
@@ -203,7 +209,50 @@ const [Status , setStatus]=useState([])
                       {option.employment_status_name}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextField> */}
+
+
+
+                <Autocomplete
+                fullWidth
+                  options={Status || []}
+                  getOptionLabel={(option) =>
+                    option.employment_status_name || ""
+                  }
+                  value={
+                    Status?.find(
+                      (option) =>
+                        option.organization_employment_status_id ===
+                        formData.organization_employment_status_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_employment_status_id",
+                        value:
+                          newValue?.organization_employment_status_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || Status?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Employment Status"
+                      error={
+                        !!formErrors.organization_employment_status_id
+                      }
+                      helperText={
+                        formErrors.organization_employment_status_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
 
               
               
@@ -215,6 +264,9 @@ const [Status , setStatus]=useState([])
                   onChange={handleChange}
                   error={!!formErrors.employment_stage_name}
                   helperText={formErrors.employment_stage_name}
+                  disabled={mode === "view"}
+                      
+
                 
                 />
                 <TextField
@@ -227,6 +279,9 @@ const [Status , setStatus]=useState([])
                   helperText={formErrors.description}
                   multiline
                   rows={2} // Makes it two lines high
+                  disabled={mode === "view"}
+                      
+
                 
                 />
 
@@ -239,7 +294,7 @@ const [Status , setStatus]=useState([])
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       mt: 3,
                       borderRadius: 2,

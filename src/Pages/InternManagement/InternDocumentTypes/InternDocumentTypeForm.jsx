@@ -45,7 +45,7 @@ function InternDocumentTypeForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if (mode === "edit" || mode === "view" && id) {
       setLoading(true);
       getdataById();
     }
@@ -145,6 +145,7 @@ function InternDocumentTypeForm({ mode }) {
                   fullWidth
                   label="Document Type"
                   name="document_type_name"
+                  disabled={mode === "view"}
                   value={formData.document_type_name}
                   onChange={handleChange}
                   error={!!formErrors.document_type_name}
@@ -157,6 +158,7 @@ function InternDocumentTypeForm({ mode }) {
                   fullWidth
                   label="Document Type ShortName"
                   name="document_type_short_name"
+                  disabled={mode === "view"}
                   
                   value={formData.document_type_short_name}
                   onChange={handleChange}
@@ -173,7 +175,7 @@ function InternDocumentTypeForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

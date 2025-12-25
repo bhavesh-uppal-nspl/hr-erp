@@ -60,7 +60,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
     }
   };
 
-  console.log("gyfgyguyg", DropDownData?.InternStages);
+  // console.log("gyfgyguyg", DropDownData?.InternStages);
 
   useEffect(() => {
     const fetchDepartmentLocations = async () => {
@@ -175,10 +175,50 @@ function InternForm({ mode, setEmployeeId, InternId }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
+
+
+
+                 <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "32.5%", // ensures proper centering
+                  }}
+                >
+
+                   <TextField
+                  fullWidth
+                  label="Intern code"
+                  name="intern_code"
+                  value={Intern?.intern_code}
+                  onChange={handleChange}
+                  disabled={mode ==="view"}
+                  error={!!InternErrors?.intern_code}
+                  helperText={InternErrors?.intern_code}
+                  inputProps={{ maxLength: 10 }}
+                  required
+                />
+
+
+                </Box>
+
+
+
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                    <TextField
                   fullWidth
                   label="First Name"
                   name="first_name"
+                    disabled={mode === "view"}
                   value={Intern?.first_name}
                   onChange={(e) => {
                     const onlyLetters = e.target.value.replace(
@@ -194,9 +234,11 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   required
                   inputProps={{ maxLength: 30 }}
                 />
+
                 <TextField
                   fullWidth
                   label="Middle Name"
+                    disabled={mode === "view"}
                   name="middle_name"
                   value={Intern?.middle_name}
                   onChange={(e) => {
@@ -212,9 +254,11 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   helperText={InternErrors?.middle_name}
                   inputProps={{ maxLength: 30 }}
                 />
+
                 <TextField
                   fullWidth
                   label="Last Name"
+                    disabled={mode === "view"}
                   name="last_name"
                   value={Intern?.last_name}
                   onChange={(e) => {
@@ -230,23 +274,31 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   helperText={InternErrors.last_name}
                   inputProps={{ maxLength: 30 }}
                 />
-                <TextField
-                  fullWidth
-                  label="Intern code"
-                  name="intern_code"
-                  value={Intern?.intern_code}
-                  onChange={handleChange}
-                  error={!!InternErrors?.intern_code}
-                  helperText={InternErrors?.intern_code}
-                  inputProps={{ maxLength: 10 }}
-                  required
-                />
+
+
+
+                </Box>
+
+
+              
+               <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                    mb:3
+                  }}
+                >
+
+                  
                 <TextField
                   fullWidth
                   type="date"
                   label="Date of Birth"
                   name="date_of_birth"
                   value={Intern?.date_of_birth}
+                    disabled={mode === "view"}
                   onChange={handleChange}
                   error={!!InternErrors?.date_of_birth}
                   helperText={InternErrors?.date_of_birth}
@@ -259,6 +311,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   label="Gender"
                   name="gender"
                   value={Intern?.gender}
+                    disabled={mode === "view"}
                   onChange={handleChange}
                   error={!!InternErrors?.gender}
                   helperText={InternErrors?.gender}
@@ -277,6 +330,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   label="Marital Status"
                   name="marital_status"
                   value={Intern?.marital_status}
+                    disabled={mode === "view"}
                   onChange={handleChange}
                   error={!!InternErrors?.marital_status}
                   helperText={InternErrors?.marital_status}
@@ -289,6 +343,20 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   ))}
                 </TextField>
 
+
+                </Box>
+
+
+                 <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+
                 <TextField
                   select
                   fullWidth
@@ -298,6 +366,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   onChange={handleChange}
                   error={!!InternErrors?.organization_unit_id}
                   helperText={InternErrors.organization_unit_id}
+                      disabled={DropDownData?.Units?.length === 0 || mode === "view"}
                 >
                   {(DropDownData?.Units || []).map((option) => (
                     <MenuItem
@@ -319,6 +388,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   error={!!InternErrors?.organization_department_id}
                   helperText={InternErrors.organization_department_id}
                   required
+                  disabled={DropDownData?.departments?.length === 0 || mode === "view"}
                 >
                   {(DropDownData?.departments || []).map((option) => (
                     <MenuItem
@@ -340,6 +410,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   error={!!InternErrors?.organization_department_location_id}
                   helperText={InternErrors?.organization_department_location_id}
                   required
+                      disabled={departmentlocation?.length === 0 || mode === "view"}
                 >
                   {(departmentlocation || []).map((option) => (
                     <MenuItem
@@ -351,6 +422,22 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   ))}
                 </TextField>
 
+
+                </Box>
+
+
+
+
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                  
                 <TextField
                   select
                   fullWidth
@@ -361,6 +448,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   error={!!InternErrors?.organization_internship_type_id}
                   helperText={InternErrors?.organization_internship_type_id}
                   required
+                     disabled={DropDownData?.InternshipTypes?.length === 0 || mode === "view"}
                 >
                   {(DropDownData?.InternshipTypes || []).map((option) => (
                     <MenuItem
@@ -382,6 +470,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   error={!!InternErrors?.organization_work_shift_id}
                   helperText={!!InternErrors?.organization_work_shift_id}
                   required
+                  disabled={DropDownData?.WorkShifts?.length === 0 || mode === "view"}
                 >
                   {DropDownData?.WorkShifts?.map((option) => (
                     <MenuItem
@@ -403,6 +492,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   error={!!InternErrors.organization_internship_stage_id}
                   helperText={InternErrors.organization_internship_stage_id}
                   required
+                   disabled={DropDownData?.InternStages?.length === 0 || mode === "view"}
                 >
                   {DropDownData?.InternStages?.map((option) => (
                     <MenuItem
@@ -414,13 +504,31 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   ))}
                 </TextField>
 
-                <TextField
+
+                </Box>
+               
+
+
+
+
+               
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                    <TextField
                   fullWidth
                   type="date"
                   label="Date of Joining"
                   name="internship_start_date"
                   value={Intern?.internship_start_date}
                   onChange={handleChange}
+                    disabled={mode === "view"}
                   error={!!InternErrors?.internship_start_date}
                   helperText={InternErrors?.internship_start_date}
                   required
@@ -430,8 +538,9 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                 <TextField
                   fullWidth
                   type="date"
-                  label="End Date"
+                  label="Internship End Date"
                   name="internship_end_date"
+                    disabled={mode === "view"}
                   value={Intern?.internship_end_date}
                   onChange={handleChange}
                   error={!!InternErrors?.internship_end_date}
@@ -440,6 +549,10 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   InputLabelProps={{ shrink: true }}
                 />
 
+
+                  
+                </Box>
+
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "10px" }}
                 >
@@ -447,6 +560,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   <FormControlLabel
                     control={
                       <Switch
+                        disabled={mode === "view"}
                         checked={Intern?.is_paid === 1}
                         onChange={(e) =>
                           setInternData({ is_paid: e.target.checked ? 1 : 0 })
@@ -459,10 +573,23 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   />
                 </div>
 
+
+                
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                  
                 <TextField
                   fullWidth
                   type="number"
                   label="Stipend Amount"
+                  
                   name="stipend_amount"
                   value={Intern?.stipend_amount || ""}
                   onChange={(e) => {
@@ -478,7 +605,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                     step: "0.01", // ensures increments by 0.01
                     min: 0, // prevent negative values
                   }}
-                  disabled={Intern?.is_paid !== 1}
+                  disabled={Intern?.is_paid !== 1 || mode === "view"}
                 />
 
                 <TextField
@@ -488,6 +615,7 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                   name="mentor_employee_id"
                   value={Intern?.mentor_employee_id || ""}
                   onChange={handleChange}
+                    disabled={mode === "view"}
                   error={!!InternErrors?.mentor_employee_id}
                   helperText={InternErrors?.mentor_employee_id}
                 >
@@ -495,20 +623,21 @@ function InternForm({ mode, setEmployeeId, InternId }) {
                     <em>Select a Manager</em>
                   </MenuItem>
                   {DropDownData?.Employees?.map((option) => {
-                    const firstName = option?.first_name
-                      ? option?.first_name.charAt(0).toUpperCase() +
-                        option?.first_name?.slice(1)
-                      : "";
+                    const firstName = option?.name ||  "";
                     return (
                       <MenuItem
                         key={option?.employee_id}
                         value={option?.employee_id}
                       >
-                        {`${option?.designation?.designation_name || ""} -> ${firstName}`}
+                        {`${firstName || ""} ( ${option?.designation} )`}
                       </MenuItem>
                     );
                   })}
                 </TextField>
+
+
+                </Box>
+
               </Grid>
             </Paper>
           </Grid>

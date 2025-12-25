@@ -53,3 +53,25 @@ export const fetchOrganizations = async (client_id) => {
     throw error;
   }
 };
+
+
+
+
+
+export const getOrganizationBySerach = async (client_id, search = "") => {
+  const response = await axios.get(
+    `${MAIN_URL}/api/organizations/v1`,
+    {
+      params: {
+         client_id: client_id ,
+        search: search || undefined,
+      },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+

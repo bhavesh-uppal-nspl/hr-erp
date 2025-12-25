@@ -43,7 +43,7 @@ function IntershipStatusForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -145,6 +145,7 @@ function IntershipStatusForm({ mode }) {
                   name="internship_status_name"
                   value={formData.internship_status_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.internship_status_name}
                   helperText={formErrors.internship_status_name}
                   inputProps={{ maxLength: 100 }}
@@ -161,7 +162,7 @@ function IntershipStatusForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

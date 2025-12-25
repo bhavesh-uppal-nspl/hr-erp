@@ -92,6 +92,7 @@ function PayrollSlabsList() {
       <Layout4
         loading={loading}
         heading={"Payroll Component Slabs"}
+        add_action={"PAYROLL_COMPONENT_SLAB_ADD"}
         btnName={"Add Slab"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
@@ -130,6 +131,7 @@ function PayrollSlabsList() {
         data={Break}
         sortname={"slab_value_type"}
         showActions={true}
+        edit_delete_action={["PAYROLL_COMPONENT_SLAB_DELETE", "PAYROLL_COMPONENT_SLAB_EDIT"]}
         // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/workshift-breaks`}
         Route="/payroll/component-slab"
         DeleteFunc={deleteBreak}

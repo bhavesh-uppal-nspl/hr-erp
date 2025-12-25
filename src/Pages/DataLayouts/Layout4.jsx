@@ -1,5 +1,5 @@
 // Layout1.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -27,6 +27,7 @@ import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import usePermissionDataStore from "../../Zustand/Store/usePermissionDataStore";
 import NotAllowed from "../../Exceptions/NotAllowed";
+import { Bold } from "lucide-react";
 
 const Layout4 = ({
   loading,
@@ -41,13 +42,23 @@ const Layout4 = ({
   DeleteFunc,
   showActions,
   showHeaders,
-  delete_action
+  delete_action,
+  add_action,
 }) => {
-
   const navigate = useNavigate();
   const [view, setView] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState(null);
-   const { Permission, setPermission } = usePermissionDataStore();
+  const { Permission, setPermission } = usePermissionDataStore();
+
+  // Check if user has ADD permission
+  const hasAddPermission = useMemo(() => {
+    // If no add_action specified, show button by default
+    if (!add_action) {
+      return true;
+    }
+    // Check if permission exists in Permission array
+    return Permission && Array.isArray(Permission) && Permission.includes(add_action);
+  }, [add_action, Permission]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [perPage, setPerPage] = useState(6);
@@ -58,19 +69,17 @@ const Layout4 = ({
   const totalPages = Math.ceil(Data?.length / perPage);
 
   const confirmDelete = async () => {
-
-     const permissionArray = Object.values(Permission);
-        if (!permissionArray.includes(delete_action)) {
-           setDeleteDialog(null);
-          setShowNotAllowed(true)
-          return
-        }
+    const permissionArray = Object.values(Permission);
+    if (!permissionArray.includes(delete_action)) {
+      setDeleteDialog(null);
+      setShowNotAllowed(true);
+      return;
+    }
     await DeleteFunc(deleteDialog).catch(() => toast.error("Delete failed"));
     setData((prev) => prev.filter((i) => i.id !== deleteDialog));
     toast.success(`${messages[3]} deleted`);
     setDeleteDialog(null);
   };
-
 
   const changeView = (_, v) => v && setView(v);
   const changePage = (delta) => {
@@ -78,14 +87,11 @@ const Layout4 = ({
     if (np >= 0 && np < totalPages) setPage(np);
   };
 
-
-  if(showNotAllowed)
-  {
-    return <NotAllowed/>
+  if (showNotAllowed) {
+    return <NotAllowed />;
   }
 
   return (
-    
     <Box p={4}>
       {loading ? (
         <CircularProgress />
@@ -97,22 +103,22 @@ const Layout4 = ({
             alignItems="center"
             mb={-3}
           >
-            <Typography variant="h5">{heading}</Typography>
+            <Typography  fontWeight="bold" variant="h5">{heading}</Typography>
             <Box display="flex" gap={1} alignItems="center">
               <ToggleButtonGroup
                 value={view}
                 exclusive
                 onChange={changeView}
                 size="small"
-              >
-              
-              </ToggleButtonGroup>
-              <Button
-                variant="contained"
-                onClick={() => navigate(`${Route}/add`)}
-              >
-                {btnName}
-              </Button>
+              ></ToggleButtonGroup>
+              {btnName && hasAddPermission && (
+                <Button
+                  variant="contained"
+                  onClick={() => navigate(`${Route}/add`)}
+                >
+                  {btnName}
+                </Button>
+              )}
             </Box>
           </Box>
 
@@ -256,7 +262,7 @@ const Layout4 = ({
               </Button>
             </Box>
           )} */}
-{/* 
+          {/* 
           <Dialog open={!!deleteDialog} onClose={() => setDeleteDialog(null)}>
             <DialogTitle>Confirm Delete</DialogTitle>
             <DialogContent>

@@ -96,69 +96,77 @@ function EmployeeAddressForm({ mode, employeeId }) {
     }
   }, []);
 
-  const handleChange = (e , idx) => {
+  const handleChange = (e, idx) => {
     const { name, value } = e.target;
 
     setAddressData(name, value, idx);
   };
-  
+
   return (
-    <Box px={4} >
-    
-        <Box>
-          {Address?.map((item, id) => ({
-            name: `Address ${id + 1}`,
-            mainData: item,
-          }))?.map((section, idx) => (
-            <Accordion
-              sx={{ mb: 2 }}
-              key={section.name}
-              expanded={expanded === section.name}
-              onChange={handleChangeAccoridan(section.name)}
-            >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    width: "100%",
-                  }}
+    <Box px={4}>
+      <Box>
+        {Address?.map((item, id) => ({
+          name: `Address ${id + 1}`,
+          mainData: item,
+        }))?.map((section, idx) => (
+          <Accordion
+            sx={{ mb: 2 }}
+            key={section.name}
+            expanded={expanded === section.name}
+            onChange={handleChangeAccoridan(section.name)}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ fontSize: "15px", fontWeight: "bold" }}
                 >
-                  <Typography
-                    variant="h6"
-                    sx={{ fontSize: "15px", fontWeight: "bold" }}
-                  >
-                    {section.name}
-                  </Typography>
-                  {idx != 0 && (
-                    <DeleteOutlineIcon
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeAddress(idx);
-                      }}
-                      sx={{ color: "error.main", ml: 2 }}
-                    />
-                  )}
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails>
-                {expanded === section.name && (
-                  <Grid item xs={12} md={8}>
-                    <Paper elevation={4} sx={{ p: 3 }}>
-                      <Grid container spacing={2}>
+                  {section.name}
+                </Typography>
+                {idx != 0 && (
+                  <DeleteOutlineIcon
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeAddress(idx);
+                    }}
+                    sx={{ color: "error.main", ml: 2 }}
+                  />
+                )}
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              {expanded === section.name && (
+                <Grid item xs={12} md={8}>
+                  <Paper elevation={4} sx={{ p: 3 }}>
+                    <Grid container spacing={2}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // centers the row
+                          gap: 2, // space between fields
+                          width: "100%", // ensures proper centering
+                        }}
+                      >
                         <FormControl
                           fullWidth
                           error={
-                            !!AddressErrors?.[idx]?.organization_employee_address_type_id
+                            !!AddressErrors?.[idx]
+                              ?.organization_employee_address_type_id
                           }
-                          sx={{ marginTop: 2 }}
                         >
                           <InputLabel id="employee-address-type-label">
                             Employee Address Type
                           </InputLabel>
 
                           <Select
+                            disabled={mode === "view"}
                             labelId="employee-address-type-label"
                             id="organization_employee_address_type_id"
                             name="organization_employee_address_type_id"
@@ -168,42 +176,42 @@ function EmployeeAddressForm({ mode, employeeId }) {
                             }
                             label="Employee Address Type"
                             onChange={(e) => handleChange(e, idx)}
-                             required
-                            >
+                            required
+                          >
                             {employeeAddressType?.map((option) => (
                               <MenuItem
-                              key={
-                                option?.organization_employee_address_type_id
-                              }
-                              value={
-                                option?.organization_employee_address_type_id
-                              }
+                                key={
+                                  option?.organization_employee_address_type_id
+                                }
+                                value={
+                                  option?.organization_employee_address_type_id
+                                }
                               >
                                 {option?.employee_address_type_name}
                               </MenuItem>
                             ))}
-                            
                           </Select>
 
-                          {AddressErrors?.[idx]?.organization_employee_address_type_id && (
+                          {AddressErrors?.[idx]
+                            ?.organization_employee_address_type_id && (
                             <FormHelperText>
                               {
-                                AddressErrors?.[idx]?.organization_employee_address_type_id
+                                AddressErrors?.[idx]
+                                  ?.organization_employee_address_type_id
                               }
                             </FormHelperText>
                           )}
-                          
-                          
                         </FormControl>
 
                         <FormControl
+                          disabled={mode === "view"}
                           fullWidth
                           required
                           error={
-                            !!AddressErrors?.[idx]?.organization_residential_ownership_type_id
+                            !!AddressErrors?.[idx]
+                              ?.organization_residential_ownership_type_id
                           }
-                          sx={{ marginTop: 2 }}
-                          >
+                        >
                           <InputLabel id="employee-ownership-type-label">
                             {" "}
                             Residential Ownership Type
@@ -215,12 +223,11 @@ function EmployeeAddressForm({ mode, employeeId }) {
                             name="organization_residential_ownership_type_id"
                             value={
                               section?.mainData
-                              ?.organization_residential_ownership_type_id ||
+                                ?.organization_residential_ownership_type_id ||
                               ""
                             }
                             label="Employee Ownership Type"
                             onChange={(e) => handleChange(e, idx)}
-                            
                           >
                             {residentailtype?.map((option) => (
                               <MenuItem
@@ -235,22 +242,20 @@ function EmployeeAddressForm({ mode, employeeId }) {
                               </MenuItem>
                             ))}
                           </Select>
-                          
 
-                          {AddressErrors?.[idx]?.organization_residential_ownership_type_id && (
+                          {AddressErrors?.[idx]
+                            ?.organization_residential_ownership_type_id && (
                             <FormHelperText>
                               {
-                                AddressErrors?.[idx]?.organization_residential_ownership_type_id
+                                AddressErrors?.[idx]
+                                  ?.organization_residential_ownership_type_id
                               }
                             </FormHelperText>
                           )}
-                          
                         </FormControl>
 
-                       
-                       
-                       
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Postal code"
                           name="postal_code"
@@ -259,10 +264,20 @@ function EmployeeAddressForm({ mode, employeeId }) {
                           error={!!AddressErrors?.[idx]?.postal_code}
                           helperText={AddressErrors?.[idx]?.postal_code}
                           required
-                           inputProps={{ maxLength: 20 }}
+                          inputProps={{ maxLength: 20 }}
                         />
+                      </Box>
 
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // centers the row
+                          gap: 2, // space between fields
+                          width: "100%", // ensures proper centering
+                        }}
+                      >
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Address Line 1"
                           name="address_line1"
@@ -271,10 +286,11 @@ function EmployeeAddressForm({ mode, employeeId }) {
                           error={!!AddressErrors?.[idx]?.address_line1}
                           helperText={AddressErrors?.[idx]?.address_line1}
                           required
-                           inputProps={{ maxLength: 100 }}
+                          inputProps={{ maxLength: 100 }}
                         />
 
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Address Line 2"
                           name="address_line2"
@@ -282,10 +298,11 @@ function EmployeeAddressForm({ mode, employeeId }) {
                           onChange={(e) => handleChange(e, idx)}
                           error={!!AddressErrors?.[idx]?.address_line2}
                           helperText={AddressErrors?.[idx]?.address_line2}
-                           inputProps={{ maxLength: 100 }}
+                          inputProps={{ maxLength: 100 }}
                         />
 
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Address Line 3"
                           name="address_line3"
@@ -293,10 +310,20 @@ function EmployeeAddressForm({ mode, employeeId }) {
                           onChange={(e) => handleChange(e, idx)}
                           error={!!AddressErrors?.[idx]?.address_line3}
                           helperText={AddressErrors?.[idx]?.address_line3}
-                           inputProps={{ maxLength: 100 }}
+                          inputProps={{ maxLength: 100 }}
                         />
+                      </Box>
 
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          gap: 2,
+                          width: "33%",
+                        }}
+                      >
                         <Autocomplete
+                          disabled={mode === "view"}
                           options={cityOptions}
                           getOptionLabel={(option) =>
                             typeof option === "string"
@@ -329,19 +356,27 @@ function EmployeeAddressForm({ mode, employeeId }) {
                             />
                           )}
                         />
-                      </Grid>
-                    </Paper>
-                  </Grid>
-                )}
-              </AccordionDetails>
-            </Accordion>
-          ))}
+                      </Box>
+                    </Grid>
+                  </Paper>
+                </Grid>
+              )}
+            </AccordionDetails>
+          </Accordion>
+        ))}
 
-          <Button style={{marginTop:9}} variant="contained" onClick={() =>{ setExpanded(`Address ${Address?.length+1}`); addAddress()}}>
-            Add More
-          </Button>
-        </Box>
-    
+        <Button
+          disabled={mode === "view"}
+          style={{ marginTop: 9 }}
+          variant="contained"
+          onClick={() => {
+            setExpanded(`Address ${Address?.length + 1}`);
+            addAddress();
+          }}
+        >
+          Add More
+        </Button>
+      </Box>
     </Box>
   );
 }

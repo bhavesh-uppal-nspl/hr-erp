@@ -226,7 +226,7 @@ function PayrollReimbursementTypeForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

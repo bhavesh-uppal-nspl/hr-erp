@@ -125,6 +125,19 @@ function IntershipTypesList() {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Internship Type";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -132,7 +145,7 @@ function IntershipTypesList() {
       }
       console.error("Delete failed:", error);
       toast.error(
-        error.response?.data?.error || "Failed to delete Attendance Status Type"
+        error.response?.data?.error || "Failed to delete Internship Type"
       );
     }
   };
@@ -144,13 +157,21 @@ function IntershipTypesList() {
     [navigate]
   );
 
+
+             const handleShow = useCallback(
+    (item) => {
+      navigate(`/intern/internship/types/view/${item.id}`)
+    },
+    [navigate],
+  )
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Internship Types"}
         btnName={"Add Type"}
-        delete_action={"ATTENDANCE_DELETE"}
+        delete_action={"INTERNSHIP_TYPE_DELETE"}
         Data={types}
         tableHeaders={[
           {
@@ -188,7 +209,7 @@ function IntershipTypesList() {
 
       <TableDataGeneric
         tableName="Internship Types"
-        primaryKey="organization_internship_type_id "
+        primaryKey="organization_internship_type_id"
         heading="Intership Types"
         data={types}
         sortname={"internship_type_name"}
@@ -197,6 +218,7 @@ function IntershipTypesList() {
         Route="/intern/internship/types"
         DeleteFunc={deleteStatus}
         EditFunc={handleEdit}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

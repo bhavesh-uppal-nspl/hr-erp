@@ -44,8 +44,8 @@ function ExpandedSideOption({ collapsed, item, onNavigate }) {
                 backgroundColor: location.pathname === child.route ? "action.selected" : "transparent",
               }}
             >
-              <ListItemIcon sx={{ minWidth: "35px" }}>{child.icon}</ListItemIcon>
-              <ListItemText primary={child.title} />
+              <ListItemIcon sx={{ minWidth: "25px" }}>{child.icon}</ListItemIcon>
+              <ListItem   sx={{fontSize: "15px !important" ,  py: 0.5, }}>{child.title} </ListItem> 
             </ListItem>
           ))}
         </List>

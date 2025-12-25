@@ -95,6 +95,7 @@ function PayrollLoanTransactionList() {
     <>
       <Layout4
         loading={loading}
+        add_action={"PAYROLL_LOAN_TRANSACTION_ADD"}
         heading={"Payroll Loans Transactions"}
         btnName={"Add Loan Transactions"}
         Data={Break}
@@ -133,6 +134,7 @@ function PayrollLoanTransactionList() {
         heading="Payroll Loan Transactions"
         data={Break}
         sortname={"payment_mode"}
+        edit_delete_action={["PAYROLL_LOAN_TRANSACTION_DELETE", "PAYROLL_LOAN_TRANSACTION_EDIT"]}
         showActions={true}
         Route="/payroll/loan-transactions"
         DeleteFunc={deleteBreak}

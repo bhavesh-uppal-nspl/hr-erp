@@ -137,29 +137,71 @@ function EmploymentStagesList() {
     }
   }, [org]);
 
-  let deleteExit = async (id) => {
-    try {
-      const org_id = org.organization_id;
-      const response = await axios.delete(
-        `${MAIN_URL}/api/organizations/${org_id}/employment-stages/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
+let deleteExit = async (id) => {
+  try {
+    const org_id = org.organization_id;
+
+    const response = await axios.delete(
+      `${MAIN_URL}/api/organizations/${org_id}/employment-stages/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    // SUCCESS CASE (200)
+    toast.success(response.data.message || "Stage deleted successfully");
+    console.log("Employment Stage deleted:", response.data.message);
+
+  } catch (error) {
+    console.error("Delete failed:", error);
+
+    // -------------------------
+    // 🔥 HANDLE ALL ERROR CASES
+    // -------------------------
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+
+      // SESSION EXPIRED
+      if (status === 401) {
         toast.error("Session Expired!");
         window.location.href = "/login";
+        return;
       }
-      console.error("Delete failed:", error);
-      toast.error(
-        error.response?.data?.error ||
-          "Failed to delete Intern Stipend Details "
-      );
+
+      // CUSTOM BACKEND MESSAGE: Already Assigned (400)
+      if (status === 400 && data.message?.includes("already assigned")) {
+        toast.error("This Stage is already assigned and cannot be deleted.");
+        return;
+      }
+
+      // VALIDATION ERROR (422)
+      if (status === 422) {
+        let firstError =
+          data.errors?.[Object.keys(data.errors)[0]]?.[0] ||
+          "Validation failed.";
+        toast.error(firstError);
+        return;
+      }
+
+      // FOREIGN KEY CONSTRAINT (409)
+      if (status === 409) {
+        toast.error(data.error || "This Stage is linked to other records.");
+        return;
+      }
+
+      // GENERAL ERROR
+      toast.error(data.message || data.error || "Failed to delete Stage");
+      return;
     }
-  };
+
+    // NETWORK ERROR
+    toast.error("Network error! Please try again.");
+  }
+};
+
 
   const navigate = useNavigate();
   const { id } = useParams();
@@ -170,11 +212,20 @@ function EmploymentStagesList() {
     [navigate]
   );
 
+  const handleShow = useCallback(
+    (item) => {
+      navigate(`/employment/employee-stages/view/${item.id}`)
+    },
+    [navigate],
+  )
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Employment Stages"}
+        add_action={"EMPLOYEE_STAGE_ADD"}
+        delete_action={"EMPLOYEE_STAGE_DELETE"}
         btnName={"Add Stages"}
         Data={exit}
         tableHeaders={[
@@ -236,6 +287,7 @@ function EmploymentStagesList() {
         Route="/employement/employee-stages"
         DeleteFunc={deleteExit}
         EditFunc={handleEdit}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

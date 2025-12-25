@@ -118,7 +118,19 @@ function EmployeeBankForm({ mode, employeeId }) {
                 <Grid item xs={12} md={8}>
                   <Paper elevation={4} sx={{ p: 3 }}>
                     <Grid container spacing={2}>
-                      <TextField
+
+                      <Box
+  sx={{
+    display: "flex",
+    justifyContent: "center",  // centers the row
+    gap: 2,                    // space between fields
+    width: "100%",             // ensures proper centering
+  }}
+>
+
+
+  <TextField
+                       disabled ={mode==="view"}
                         fullWidth
                         label="A/C Holder Name"
                         name="account_holder_name"
@@ -145,17 +157,22 @@ function EmployeeBankForm({ mode, employeeId }) {
                           PaymentMethodErrors?.[idx]?.account_holder_name
                         }
                         required
+                      
                         inputProps={{
                           style: { textTransform: "uppercase" },
                           maxLength: 100,
                         }}
                       />
                       <FormControl
+                       disabled ={mode==="view"}
                         fullWidth
                         required
+                        
                         error={!!PaymentMethodErrors?.[idx]?.account_type}
-                        sx={{ mt: 2 }} // Shorter syntax for margin top
+                        // sx={{ mt: 2}} // Shorter syntax for margin top
                       >
+
+
                         <InputLabel id="account-type-label">
                           A/C Type
                         </InputLabel>
@@ -167,6 +184,8 @@ function EmployeeBankForm({ mode, employeeId }) {
                           value={section?.mainData?.account_type || ""}
                           label="A/C Type"
                           onChange={(e) => handleChange(e, idx)}
+                        
+
                         >
                           <MenuItem value="Savings">Savings</MenuItem>
                           <MenuItem value="Current">Current</MenuItem>
@@ -179,7 +198,11 @@ function EmployeeBankForm({ mode, employeeId }) {
                           </FormHelperText>
                         )}
                       </FormControl>
+
+
+
                       <TextField
+                       disabled ={mode==="view"}
                         fullWidth
                         label="Bank Name"
                         name="bank_name"
@@ -205,9 +228,30 @@ function EmployeeBankForm({ mode, employeeId }) {
                           style: { textTransform: "uppercase" },
                           maxLength: 100,
                         }}
+                      
+
                         required
                       />
+
+
+</Box>
+
+
+
+
+           <Box
+  sx={{
+    display: "flex",
+    justifyContent: "center",  // centers the row
+    gap: 2,                    // space between fields
+    width: "100%",             // ensures proper centering
+  }}
+>
+
+
+
                       <TextField
+                       disabled ={mode==="view"}
                         fullWidth
                         label="A/C Number"
                         name="account_number"
@@ -220,9 +264,14 @@ function EmployeeBankForm({ mode, employeeId }) {
                           pattern: "[0-9]*",
                           maxLength: 20,
                         }}
+                      
+
                         required
                       />
+
+
                       <TextField
+                       disabled ={mode==="view"}
                         fullWidth
                         label="IFSC Code"
                         name="ifsc_code"
@@ -234,11 +283,25 @@ function EmployeeBankForm({ mode, employeeId }) {
                           style: { textTransform: "uppercase" }, // visually show uppercase
                           maxLength: 11, // IFSC codes are exactly 11 characters
                         }}
+                      
+
                         required
                       />
+
+
+  </Box>         
+
+
+
+
+
                       <FormControl
+                       disabled ={mode==="view"}
                         component="fieldset"
-                        sx={{ marginTop: 2 }}
+                        sx={{ marginTop: 2 ,"& .Mui-disabled": {
+    WebkitTextFillColor: "rgba(0,0,0,0.7)",
+    color: "rgba(0,0,0,0.7)",
+  },}}
                         error={!!PaymentMethodErrors[idx]?.is_primary}
                       >
                         <FormControlLabel
@@ -258,7 +321,23 @@ function EmployeeBankForm({ mode, employeeId }) {
                           </FormHelperText>
                         )}
                       </FormControl>
+
+
+
+
+<Box
+  sx={{
+    display: "flex",
+    justifyContent: "center", 
+    gap: 2,                 
+    width: "100%",             
+  }}
+>
+
+
+
                       <TextField
+                       disabled ={mode==="view"}
                         fullWidth
                         label="Payment QR Code URL"
                         name="qr_code_url"
@@ -270,7 +349,10 @@ function EmployeeBankForm({ mode, employeeId }) {
                         type="url"
                         inputProps={{ maxLength: 512 }}
                       />
+
+
                       <TextField
+                       disabled ={mode==="view"}
                         fullWidth
                         label="UPI ID"
                         name="upi_id"
@@ -282,18 +364,27 @@ function EmployeeBankForm({ mode, employeeId }) {
                         inputProps={{
                           maxLength: 50,
                           pattern: "^[\\w.-]{2,50}@[a-zA-Z]{2,50}$",
-                        }} // regex for UPI
+                        }} 
                       />
+
+
+</Box>
+
                       
                       <TextField
+                       disabled ={mode==="view"}
                         fullWidth
                         label="Remarks"
                         name="remarks"
+                        multiline
+                        rows={4}
                         value={section?.mainData?.remarks}
                         onChange={(e) => handleChange(e, idx)}
                         error={!!PaymentMethodErrors?.[idx]?.remarks}
                         helperText={PaymentMethodErrors?.[idx]?.remarks}
                         inputProps={{ maxLength: 200 }}
+                      
+
                       />
                     </Grid>
                   </Paper>
@@ -304,6 +395,7 @@ function EmployeeBankForm({ mode, employeeId }) {
         ))}
 
         <Button
+        disabled ={mode==="view"}
           style={{ marginTop: 9 }}
           variant="contained"
           onClick={() => {

@@ -92,6 +92,7 @@ function PayrollReimbursementTypeList() {
         loading={loading}
         heading={"Payroll Reimbursement Types"}
         btnName={"Add Type"}
+        add_action={"PAYROLL_REIMBURSEMENT_TYPE_ADD"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
@@ -130,6 +131,7 @@ function PayrollReimbursementTypeList() {
         sortname={"reimbursement_type_name"}
         showActions={true}
         Route="/payroll/reimbursement-types"
+        edit_delete_action={["PAYROLL_REIMBURSEMENT_TYPE_DELETE", "PAYROLL_REIMBURSEMENT_TYPE_EDIT"]}
         DeleteFunc={deleteBreak}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}

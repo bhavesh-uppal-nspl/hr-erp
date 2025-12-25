@@ -1,5 +1,9 @@
 // src/Routes/router.jsx
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 import Login from "../Pages/AuthPages/Login/Login";
 import Dashboard from "../Pages/DashBoard/Dashboard";
 import PageNotFound from "../Exceptions/PageNotFound";
@@ -43,8 +47,8 @@ import OrganizationEmployementTypesForm from "../Pages/OrganizationConfigration/
 import OrganizationEmployementStatusesList from "../Pages/OrganizationConfigration/Statuses/OrganizationEmployementStatusesList";
 import OrganizationEmployementStatusesForm from "../Pages/OrganizationConfigration/Statuses/OrganizationEmployementStatusesForm";
 import OrganizationEmployementTypesList from "../Pages/OrganizationConfigration/Types/OrganizationEmployementTypesList";
-import OrganizationEmployeeAddressTypeForm from "../Pages/OrganizationConfigration/AddressType/OrganizationEmployeeAddressTypeForm"
-import OrganizationEmployeeAddressTypeList from "../Pages/OrganizationConfigration/AddressType/OrganizationEmployeeAddressTypeList"
+import OrganizationEmployeeAddressTypeForm from "../Pages/OrganizationConfigration/AddressType/OrganizationEmployeeAddressTypeForm";
+import OrganizationEmployeeAddressTypeList from "../Pages/OrganizationConfigration/AddressType/OrganizationEmployeeAddressTypeList";
 import HolidayCalendarForm from "../Pages/LeaveManagement/Holiday-Calendar/HolidayCalendarForm";
 import HolidayCalendarList from "../Pages/LeaveManagement/Holiday-Calendar/HolidayCalendarList";
 import HolidayTypesList from "../Pages/OrganizationConfigration/HolidayTypes/HolidayTypesList";
@@ -57,9 +61,9 @@ import LeaveTypeList from "../Pages/OrganizationConfigration/LeaveType/LeaveType
 import LeaveTypeForm from "../Pages/OrganizationConfigration/LeaveType/LeaveTypeForm";
 import LeaveReasonList from "../Pages/OrganizationConfigration/LeaveReason/LeaveReasonList";
 import LeaveReasonForm from "../Pages/OrganizationConfigration/LeaveReason/LeaveReasonForm";
-import MyProfile from '../Pages/MyProfile/MyProfilePage'
-import EmployeeList from '../Pages/EmployeeManagement/Employees/EmployeesList'
-import EmployeeForm from '../Pages/EmployeeManagement/Employees/EmployeesForm'
+import MyProfile from "../Pages/MyProfile/MyProfilePage";
+import EmployeeList from "../Pages/EmployeeManagement/Employees/EmployeesList";
+import EmployeeForm from "../Pages/EmployeeManagement/Employees/EmployeesForm";
 import EmployeeAddressList from "../Pages/EmployeeManagement/EmployeeAddress/EmployeeAddressList";
 import EmployeeAddressForm from "../Pages/EmployeeManagement/EmployeeAddress/EmployeeAddressForm";
 import EmployeeExitList from "../Pages/EmployeeManagement/EmployeeExits/EmployeeExitList";
@@ -73,7 +77,7 @@ import UserRoleForm from "../Pages/User Management/UserRoles/UserRoleForm";
 import UserModuleList from "../Pages/ApplicationManagement/UserModules/UserModuleList";
 import UserModuleForm from "../Pages/ApplicationManagement/UserModules/UserModulesForm";
 import UserList from "../Pages/User Management/User/UserList";
-import UserForm from "../Pages/User Management/User/UserForm"
+import UserForm from "../Pages/User Management/User/UserForm";
 import ApplicationErrorLogList from "../Pages/ApplicationManagement/ApplicationErrorLogs/ApplicationErrorLogList";
 import ApplicationErrorLogForm from "../Pages/ApplicationManagement/ApplicationErrorLogs/ApplicationErrorLogForm";
 import RoleAssignmentList from "../Pages/User Management/RoleAssignment/RoleAssignmentList";
@@ -260,12 +264,49 @@ import InternStaagesList from "../Pages/InternManagement/InternStages/InternStaa
 import InternStagesForm from "../Pages/InternManagement/InternStages/InternStagesForm";
 import EmploymentStagesList from "../Pages/EmployeeManagement/EmploymentStages/EmploymentStagesList";
 import EmploymentStagesForm from "../Pages/EmployeeManagement/EmploymentStages/EmploymentStagesForm";
-
-
-
+import EmploymentCategoryList from "../Pages/OrganizationConfigration/EmploymentCategory/EmploymentCategoryList";
+import EmploymentCategoryForm from "../Pages/OrganizationConfigration/EmploymentCategory/EmploymentCategoryForm";
+import SettingActual from "../Pages/SystemModules/Settings/SettingActual";
+import EmployeeTransferForm from "../Pages/ToolsAndUtility/EmployeeTransferForm";
+import InternRoleList from "../Pages/FunctionalRoles/InternRoles/InternRoleList";
+import InternRoleForm from "../Pages/FunctionalRoles/InternRoles/InternRoleForm";
+import OrganizationEntityList from "../Pages/Orgnaization/OrganizationEntity/OrganizationEntityList";
+import OrganizationEntityForm from "../Pages/Orgnaization/OrganizationEntity/OrganizationEntityForm";
+import WorkShiftDayList from "../Pages/Time & Attendence/WorkShiftDays/WorkShiftDayList";
+import WorkShiftDayForm from "../Pages/Time & Attendence/WorkShiftDays/WorkShiftDayForm";
+import WorkModelDayList from "../Pages/Time & Attendence/WorkModelDays/WorkModelDayList";
+import WorkModelDayForm from "../Pages/Time & Attendence/WorkModelDays/WorkModelDayForm";
+import SkillCategoryList from "../Pages/Skills/SkillCategory/SkillCategoryList";
+import SkillCategoryForm from "../Pages/Skills/SkillCategory/SkillCategoryForm";
+import SkillSubCategoryForm from "../Pages/Skills/SkillSubCategory/SkillSubCategoryForm";
+import SkillForm from "../Pages/Skills/Skills/SkillForm";
+import SkillGroupList from "../Pages/Skills/SkillGroup/SkillGroupList";
+import SkillGroupForm from "../Pages/Skills/SkillGroup/SkillGroupForm";
+import SkillElementForm from "../Pages/Skills/SkillElement/SkillElementForm";
+import FunctionalRoleSkillList from "../Pages/Skills/FunctionalRoleSkill/FunctionalRoleSkillList";
+import FunctionalRoleSkillForm from "../Pages/Skills/FunctionalRoleSkill/FunctionalRoleSkillForm";
+import RoleSkillElementList from "../Pages/Skills/RoleSkillElement/RoleSkillElementList";
+import RoleSkillElementForm from "../Pages/Skills/RoleSkillElement/RoleSkillElementForm";
+import PersonalizeDataGrid from "../Components/Table/PersonalizeDataGrid";
+import { MAIN_URL } from "../Configurations/Urls";
+import useAuthStore from "../Zustand/Store/useAuthStore";
+import NotAuthorized from "../Exceptions/NotAuthorized";
+import LearningProviderTypeList from "../Pages/Learning/LearningProviderTypes/LearningProviderTypeList";
+import LearningProviderTypeForm from "../Pages/Learning/LearningProviderTypes/LearningProviderTypeForm";
+import LearningProviderList from "../Pages/Learning/LearningProviders/LearningProviderList";
+import LearningProviderForm from "../Pages/Learning/LearningProviders/LearningProviderForm";
+import LearningResourcesList from "../Pages/Learning/LearningResources/LearningResourcesList";
+import LearningResourcesForm from "../Pages/Learning/LearningResources/LearningResourcesForm";
+import LearningFunctionalRoleList from "../Pages/Learning/LearningFunctionalRole/LearningFunctionalRoleList";
+import LearningFunctionalRoleForm from "../Pages/Learning/LearningFunctionalRole/LearningFunctionalRoleForm";
+import ResourceSkillElementList from "../Pages/Learning/LearningResourceSkillElement/ResourceSkillElementList";
+import ResourceSkillElementForm from "../Pages/Learning/LearningResourceSkillElement/ResourceSkillElementForm";
+import UserPermissionList from "../Pages/User Management/UserPermission/UserPermissionList";
+import UserPermissionForm from "../Pages/User Management/UserPermission/UserPermissionForm";
+import ViewUserPermissionForm from "../Pages/User Management/UserPermission/ViewUserPermissionForm";
 
 // Routes
-const router = createBrowserRouter([
+const router = (org)=>createBrowserRouter([
   {
     path: "/",
     element: (
@@ -275,12 +316,10 @@ const router = createBrowserRouter([
     ),
   },
 
-  {
-    path: "/organization/employee/employee-details",
-    element: (
-        <CustomisetableReport />
-    ),
-  },
+  // {
+  //   path: "/organization/employee/employee-details",
+  //   element: <CustomisetableReport />,
+  // },
   {
     path: "dashboard/Personalize-dashboard",
     element: (
@@ -291,42 +330,27 @@ const router = createBrowserRouter([
   },
   {
     path: "/EmployeesForm",
-    element: (
-        <EmployeesForm />
-    ),
+    element: <EmployeesForm />,
   },
 
-   {
+  {
     path: "/email-register",
-    element: (
-   
-        <FreeTrialPage/>
-   
-    ),
+    element: <FreeTrialPage />,
   },
 
- {
+  {
     path: "/otp-verify",
-    element: (
-   
-        <OtpVerify/>
-   
-    ),
+    element: <OtpVerify />,
   },
 
   {
     path: "/organization-details",
-    element: (
-   
-        <OrganizationDetails/>
-   
-    ),
+    element: <OrganizationDetails />,
   },
-
 
   {
     path: "/users",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -349,7 +373,7 @@ const router = createBrowserRouter([
 
   {
     path: "/employee/increment-types",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -367,11 +391,70 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <SalaryIncrementTypesForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <SalaryIncrementTypesForm mode="view" />,
+      },
     ],
   },
+
+  {
+    path: "/organization/work-shift-days",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <WorkShiftDayList />,
+      },
+      {
+        path: "add",
+        element: <WorkShiftDayForm />,
+      },
+      {
+        path: "edit/:id",
+        element: <WorkShiftDayForm mode="edit" />,
+      },
+       {
+        path: "view/:id",
+        element: <WorkShiftDayForm mode="view" />,
+      },
+    ],
+  },
+
+  {
+    path: "/organization/work-model-days",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <WorkModelDayList />,
+      },
+      {
+        path: "add",
+        element: <WorkModelDayForm />,
+      },
+      {
+        path: "edit/:id",
+        element: <WorkModelDayForm mode="edit" />,
+      },
+       {
+        path: "view/:id",
+        element: <WorkModelDayForm mode="view" />,
+      },
+    ],
+  },
+
   {
     path: "/intern/internship/types",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -383,17 +466,21 @@ const router = createBrowserRouter([
       },
       {
         path: "add",
-        element: < IntershipTypesForm/>,
+        element: <IntershipTypesForm />,
       },
       {
         path: "edit/:id",
         element: <IntershipTypesForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <IntershipTypesForm mode="view" />,
+      },
     ],
   },
   {
     path: "/intern/certificates",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -405,17 +492,21 @@ const router = createBrowserRouter([
       },
       {
         path: "add",
-        element: < InternCertificateForm/>,
+        element: <InternCertificateForm />,
       },
       {
         path: "edit/:id",
         element: <InternCertificateForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <InternCertificateForm mode="view" />,
+      },
     ],
   },
   {
     path: "/organization/functional-roles",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -427,17 +518,21 @@ const router = createBrowserRouter([
       },
       {
         path: "add",
-        element: < FunctionalRoleForm/>,
+        element: <FunctionalRoleForm />,
       },
       {
         path: "edit/:id",
         element: <FunctionalRoleForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <FunctionalRoleForm mode="view" />,
+      },
     ],
   },
   {
     path: "/organization/functional-role-specialization",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -449,17 +544,21 @@ const router = createBrowserRouter([
       },
       {
         path: "add",
-        element: < FunctionRoleSpecializationForm/>,
+        element: <FunctionRoleSpecializationForm />,
       },
       {
         path: "edit/:id",
         element: <FunctionRoleSpecializationForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <FunctionRoleSpecializationForm mode="view" />,
+      },
     ],
   },
   {
     path: "/organization/employee/functional-role",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -471,18 +570,22 @@ const router = createBrowserRouter([
       },
       {
         path: "add",
-        element: < EmployeeRoleForm/>,
+        element: <EmployeeRoleForm />,
       },
       {
         path: "edit/:id",
         element: <EmployeeRoleForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <EmployeeRoleForm mode="view" />,
+      },
     ],
   },
 
-   {
+  {
     path: "/intern/internship/status",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -494,17 +597,20 @@ const router = createBrowserRouter([
       },
       {
         path: "add",
-        element: < IntershipStatusForm/>,
+        element: <IntershipStatusForm />,
       },
       {
         path: "edit/:id",
         element: <IntershipStatusForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <IntershipStatusForm mode="view" />,
+      },
     ],
   },
 
-
-   ...Configurations?.map((item) => {
+  ...Configurations?.map((item) => {
     return {
       path: item.route,
       element: (
@@ -529,10 +635,9 @@ const router = createBrowserRouter([
     };
   }),
 
-
-   {
+  {
     path: "/intern/document/types",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -544,17 +649,21 @@ const router = createBrowserRouter([
       },
       {
         path: "add",
-        element: < InternDocumentTypeForm/>,
+        element: <InternDocumentTypeForm />,
       },
       {
         path: "edit/:id",
         element: <InternDocumentTypeForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <InternDocumentTypeForm mode="view" />,
+      },
     ],
   },
-   {
+  {
     path: "/organization/intern/intern-stipend",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -566,17 +675,21 @@ const router = createBrowserRouter([
       },
       {
         path: "add",
-        element: < InternStipendForm/>,
+        element: <InternStipendForm />,
       },
       {
         path: "edit/:id",
         element: <InternStipendForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <InternStipendForm mode="view" />,
+      },
     ],
   },
-   {
+  {
     path: "/intern/attendance/time-logs",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -588,18 +701,22 @@ const router = createBrowserRouter([
       },
       {
         path: "add",
-        element: < InternAttendanceTimelogsForm/>,
+        element: <InternAttendanceTimelogsForm />,
       },
       {
         path: "edit/:id",
         element: <InternAttendanceTimelogsForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <InternAttendanceTimelogsForm mode="view" />,
+      },
     ],
   },
 
-   {
+  {
     path: "/intern/attendance/records",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -609,15 +726,12 @@ const router = createBrowserRouter([
         index: true,
         element: <InterAttendanceRecordList />,
       },
-    
     ],
   },
 
-
-
   {
     path: "/employee/increment",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -635,11 +749,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <IncrementForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <IncrementForm mode="view" />,
+      },
     ],
   },
   {
     path: "/organization/employee/records",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -657,13 +775,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <EmployeeRecordForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <EmployeeRecordForm mode="view" />,
+      },
     ],
   },
 
-
   {
     path: "/payroll/component-types",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -681,11 +802,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <ComponentTypesForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <ComponentTypesForm mode="view" />,
+      },
     ],
   },
   {
     path: "/payroll/components",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -703,11 +828,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <ComponentForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <ComponentForm mode="view" />,
+      },
     ],
   },
   {
     path: "/payroll/component-slabs",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -728,10 +857,9 @@ const router = createBrowserRouter([
     ],
   },
 
-  
   {
     path: "/payroll/cycles",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -749,12 +877,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <PayrollCycleForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <PayrollCycleForm mode="view" />,
+      },
     ],
   },
 
   {
     path: "/payroll/employee-salary-structure",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -772,12 +904,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <SalaryStructureForm mode="edit" />,
       },
+        {
+        path: "view/:id",
+        element: <SalaryStructureForm mode="view" />,
+      },
     ],
   },
 
   {
     path: "/payroll/salary-structure/components",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -795,12 +931,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <SalaryStructureComponentForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <SalaryStructureComponentForm mode="view" />,
+      },
     ],
   },
-  
+
   {
     path: "/payroll/advance",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -818,11 +958,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <AdvancePayrollForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <AdvancePayrollForm mode="view" />,
+      },
     ],
   },
   {
     path: "/payroll/loan-types",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -840,12 +984,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <PayrollLoanTypesForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <PayrollLoanTypesForm mode="view" />,
+      },
     ],
   },
 
   {
     path: "/payroll/loans",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -863,12 +1011,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <PayrollLoanForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <PayrollLoanForm mode="view" />,
+      },
     ],
   },
-  
+
   {
     path: "/payroll/loan-transactions",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -886,11 +1038,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <PayrollLoanTransactionForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <PayrollLoanTransactionForm mode="view" />,
+      },
     ],
   },
   {
     path: "/payroll/securities",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -908,11 +1064,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <PayrollSecurityForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <PayrollSecurityForm mode="view" />,
+      },
     ],
   },
   {
     path: "/payroll/securities-transactions",
-      element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -920,7 +1080,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <PayrollSecurityTransactionList/>,
+        element: <PayrollSecurityTransactionList />,
       },
       {
         path: "add",
@@ -930,10 +1090,14 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <PayrollSecurityTransactionForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <PayrollSecurityTransactionForm mode="view" />,
+      },
     ],
   },
-  
-    {
+
+  {
     path: "/attendance/employee-record-without-break",
     element: (
       <RouteProtector>
@@ -942,7 +1106,7 @@ const router = createBrowserRouter([
     ),
   },
 
-    {
+  {
     path: "/my-profile",
     element: (
       <RouteProtector>
@@ -950,7 +1114,6 @@ const router = createBrowserRouter([
       </RouteProtector>
     ),
   },
-  
 
   {
     path: "/organization/details",
@@ -972,6 +1135,10 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationAddInForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <OrganizationAddInForm mode="view" />,
+      },
     ],
   },
 
@@ -987,13 +1154,40 @@ const router = createBrowserRouter([
         index: true,
         element: <DynamicFormPage />,
       },
-     
     ],
   },
 
+  {
+    path: "/organization/employee-shift",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <EmployeeTransferForm />,
+      },
+    ],
+  },
 
+  {
+    path: "/organization/settings/new",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <SettingActual />,
+      },
+    ],
+  },
 
-{
+  {
     path: "/organization/work-shift-assignment",
     element: (
       <RouteProtector>
@@ -1013,9 +1207,12 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <WorkshiftAssignmentForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <WorkshiftAssignmentForm mode="view" />,
+      },
     ],
   },
-
 
   {
     path: "/organization/work-shift-rotation-pattern",
@@ -1037,8 +1234,13 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <WorkShiftRotationPatternForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <WorkShiftRotationPatternForm mode="view" />,
+      },
     ],
   },
+
   {
     path: "/organization/work-shift-rotation-days",
     element: (
@@ -1058,6 +1260,10 @@ const router = createBrowserRouter([
       {
         path: "edit/:id",
         element: <WorkShiftRotationDayForm mode="edit" />,
+      },
+      {
+        path: "view/:id",
+        element: <WorkShiftRotationDayForm mode="view" />,
       },
     ],
   },
@@ -1081,9 +1287,12 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <WorkShiftRotationAssignmentForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <WorkShiftRotationAssignmentForm mode="view" />,
+      },
     ],
   },
-
 
   {
     path: "/my-tasks",
@@ -1134,9 +1343,9 @@ const router = createBrowserRouter([
     ),
   },
 
-   {
+  {
     path: "/organization/workshift-break",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1154,14 +1363,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <WorkshiftBreakForm mode="edit" />,
       },
+        {
+        path: "view/:id",
+        element: <WorkshiftBreakForm mode="view" />,
+      },
     ],
   },
 
-
-
-   {
+  {
     path: "/organization/attendance-break",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1179,9 +1390,12 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <AttendanceBreakForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <AttendanceBreakForm mode="view" />,
+      },
     ],
   },
-
 
   {
     path: "/organization/departments",
@@ -1203,10 +1417,43 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationDepartmentForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <OrganizationDepartmentForm mode="view" />,
+      },
     ],
   },
 
-   {
+
+
+  {
+    path: "/organization/learning-provider-type",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <LearningProviderTypeList />,
+      },
+      {
+        path: "add",
+        element: <LearningProviderTypeForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <LearningProviderTypeForm mode="edit" />,
+      },
+       {
+        path: "view/:id",
+        element: <LearningProviderTypeForm mode="view" />,
+      },
+    ],
+  },
+
+  {
     path: "/organization/units",
     element: (
       <RouteProtector>
@@ -1226,10 +1473,119 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationUnitForms mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <OrganizationUnitForms mode="view" />,
+      },
     ],
   },
 
-   {
+  {
+    path: "/organization/learning-provider",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <LearningProviderList />,
+      },
+      {
+        path: "add",
+        element: <LearningProviderForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <LearningProviderForm mode="edit" />,
+      },
+       {
+        path: "view/:id",
+        element: <LearningProviderForm mode="view" />,
+      },
+    ],
+  },
+  {
+    path: "/organization/learning-resources",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <LearningResourcesList />,
+      },
+      {
+        path: "add",
+        element: <LearningResourcesForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <LearningResourcesForm mode="edit" />,
+      },
+       {
+        path: "view/:id",
+        element: <LearningResourcesForm mode="view" />,
+      },
+    ],
+  },
+  {
+    path: "/organization/learning-functional-role",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <LearningFunctionalRoleList />,
+      },
+      {
+        path: "add",
+        element: <LearningFunctionalRoleForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <LearningFunctionalRoleForm mode="edit" />,
+      },
+      {
+        path: "view/:id",
+        element: <LearningFunctionalRoleForm mode="view" />,
+      },
+    ],
+  },
+  {
+    path: "/organization/learning-skill-element",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <ResourceSkillElementList />,
+      },
+      {
+        path: "add",
+        element: <ResourceSkillElementForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <ResourceSkillElementForm mode="edit" />,
+      },
+      {
+        path: "view/:id",
+        element: <ResourceSkillElementForm mode="view" />,
+      },
+    ],
+  },
+
+  {
     path: "/payroll/runs",
     element: (
       <RouteProtector>
@@ -1249,10 +1605,192 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <PayrollRunForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <PayrollRunForm mode="view" />,
+      },
+    ],
+  },
+  {
+    path: "/organization/skill-category",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <SkillCategoryList />,
+      },
+      {
+        path: "add",
+        element: <SkillCategoryForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <SkillCategoryForm mode="edit" />,
+      },
+       {
+        path: "view/:id",
+        element: <SkillCategoryForm mode="view" />,
+      },
+    ],
+  },
+  {
+    path: "/organization/skill-subcategory",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        path: "add",
+        element: <SkillSubCategoryForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <SkillSubCategoryForm mode="edit" />,
+      },
+        {
+        path: "view/:id",
+        element: <SkillSubCategoryForm mode="view" />,
+      },
     ],
   },
 
-   {
+  {
+    path: "/organization/skills",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      
+      {
+        path: "add",
+        element: <SkillForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <SkillForm mode="edit" />,
+      },
+      {
+        path: "view/:id",
+        element: <SkillForm mode="view" />,
+      },
+    ],
+  },
+
+  {
+    path: "/organization/skill-element-group",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <SkillGroupList />,
+      },
+      {
+        path: "add",
+        element: <SkillGroupForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <SkillGroupForm mode="edit" />,
+      },
+        {
+        path: "view/:id",
+        element: <SkillGroupForm mode="view" />,
+      },
+    ],
+  },
+
+  {
+    path: "/organization/skill-element",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      
+      {
+        path: "add",
+        element: <SkillElementForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <SkillElementForm mode="edit" />,
+      },
+       {
+        path: "view/:id",
+        element: <SkillElementForm mode="view" />,
+      },
+    ],
+  },
+
+  {
+    path: "/organization/func-role-skill",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <FunctionalRoleSkillList />,
+      },
+      
+      {
+        path: "add",
+        element: <FunctionalRoleSkillForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <FunctionalRoleSkillForm mode="edit" />,
+      },
+      {
+        path: "view/:id",
+        element: <FunctionalRoleSkillForm mode="view" />,
+      },
+    ],
+  },
+  {
+    path: "/organization/func-role-skill-element",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <RoleSkillElementList />,
+      },
+      
+      {
+        path: "add",
+        element: <RoleSkillElementForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <RoleSkillElementForm mode="edit" />,
+      },
+      {
+        path: "view/:id",
+        element: <RoleSkillElementForm mode="view" />,
+      },
+    ],
+  },
+
+  {
     path: "/payroll/employee-runs",
     element: (
       <RouteProtector>
@@ -1272,9 +1810,13 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <PayrollRunEmployeeForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <PayrollRunEmployeeForm mode="view" />,
+      },
     ],
   },
-   {
+  {
     path: "/payroll/employee-run/components",
     element: (
       <RouteProtector>
@@ -1294,9 +1836,13 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <PayrollRunEmployeeComponentForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <PayrollRunEmployeeComponentForm mode="view" />,
+      },
     ],
   },
-   {
+  {
     path: "/payroll/periods",
     element: (
       <RouteProtector>
@@ -1316,9 +1862,13 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <PayrollPeriodForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <PayrollPeriodForm mode="view" />,
+      },
     ],
   },
-   {
+  {
     path: "/payslips/payments",
     element: (
       <RouteProtector>
@@ -1338,9 +1888,13 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <PayslipPaymentForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <PayslipPaymentForm mode="view" />,
+      },
     ],
   },
-   {
+  {
     path: "/payslips/components",
     element: (
       <RouteProtector>
@@ -1360,9 +1914,13 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <EmployeePayslipComponentForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <EmployeePayslipComponentForm mode="view" />,
+      },
     ],
   },
-   {
+  {
     path: "/payroll/reimbursement-types",
     element: (
       <RouteProtector>
@@ -1384,7 +1942,7 @@ const router = createBrowserRouter([
       },
     ],
   },
-   {
+  {
     path: "/payroll/reimbursements",
     element: (
       <RouteProtector>
@@ -1406,7 +1964,7 @@ const router = createBrowserRouter([
       },
     ],
   },
-   {
+  {
     path: "/payroll/adjustment-types",
     element: (
       <RouteProtector>
@@ -1428,7 +1986,7 @@ const router = createBrowserRouter([
       },
     ],
   },
-   {
+  {
     path: "/payroll/adjustments",
     element: (
       <RouteProtector>
@@ -1450,9 +2008,9 @@ const router = createBrowserRouter([
       },
     ],
   },
-   {
+  {
     path: "/organization/designation",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1470,9 +2028,13 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationDesignationsForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <OrganizationDesignationsForm mode="view" />,
+      },
     ],
   },
-   {
+  {
     path: "/organization/registrations",
     element: (
       <RouteProtector>
@@ -1491,6 +2053,10 @@ const router = createBrowserRouter([
       {
         path: "edit/:id",
         element: <OrganizationRegistrationsForm mode="edit" />,
+      },
+       {
+        path: "view/:id",
+        element: <OrganizationRegistrationsForm mode="view" />,
       },
     ],
   },
@@ -1514,6 +2080,10 @@ const router = createBrowserRouter([
       {
         path: "edit/:id",
         element: <BusinessOwnershipTypeForm mode="edit" />,
+      },
+       {
+        path: "view/:id",
+        element: <BusinessOwnershipTypeForm mode="view" />,
       },
     ],
   },
@@ -1562,7 +2132,7 @@ const router = createBrowserRouter([
     ],
   },
 
-    {
+  {
     path: "/organization-configration/business-registration-type",
     element: (
       <RouteProtector>
@@ -1582,10 +2152,14 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <BusinessRegistrationTypeForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <BusinessRegistrationTypeForm mode="view" />,
+      },
     ],
   },
 
-{
+  {
     path: "/organization-configration/unit-types",
     element: (
       <RouteProtector>
@@ -1605,11 +2179,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <BusinessUnitTypeForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <BusinessUnitTypeForm mode="view" />,
+      },
     ],
   },
-   {
+  {
     path: "/organization-configration/languages",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1617,7 +2195,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <OrganizationLanguageList/>,
+        element: <OrganizationLanguageList />,
       },
       {
         path: "add",
@@ -1627,9 +2205,12 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationLanguageForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <OrganizationLanguageForm mode="view" />,
+      },
     ],
   },
-
 
   {
     path: "/intern/intern-stages",
@@ -1650,6 +2231,10 @@ const router = createBrowserRouter([
       {
         path: "edit/:id",
         element: <InternStagesForm mode="edit" />,
+      },
+        {
+        path: "view/:id",
+        element: <InternStagesForm mode="view" />,
       },
     ],
   },
@@ -1673,12 +2258,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <EmploymentStagesForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <EmploymentStagesForm mode="view" />,
+      },
     ],
   },
 
-   {
-    path: "//organization-configration/residential-ownership-type",
-     element: (
+  {
+    path: "/organization-configration/residential-ownership-type",
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1696,12 +2285,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <ResidentialOwnershipTypeForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <ResidentialOwnershipTypeForm mode="view" />,
+      },
     ],
   },
 
-   {
-    path: "//organization-configration/location-ownership-type",
-     element: (
+  {
+    path: "/organization-configration/location-ownership-type",
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1719,14 +2312,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <LocationOwnershipTypeForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <LocationOwnershipTypeForm mode="view" />,
+      },
     ],
   },
 
-
-
-     {
+  {
     path: "/organization-configration/employee-address-types",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1744,13 +2339,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationEmployeeAddressTypeForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <OrganizationEmployeeAddressTypeForm mode="view" />,
+      },
     ],
   },
 
-  
-     {
+  {
     path: "/organization-configration/employee-status",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1768,13 +2366,13 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationEmployementStatusesForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <OrganizationEmployementStatusesForm mode="view" />,
+      },
     ],
   },
 
-
-
-  
-  
   {
     path: "/employee/document/types",
     element: (
@@ -1795,10 +2393,13 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <DocumentTypesForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <DocumentTypesForm mode="view" />,
+      },
     ],
   },
 
-    
   {
     path: "/employee/document/links",
     element: (
@@ -1819,11 +2420,13 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <DocumentLinkForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <DocumentLinkForm mode="view" />,
+      },
     ],
   },
 
-
-    
   {
     path: "/employee/documents",
     element: (
@@ -1844,9 +2447,12 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <DocumentForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <DocumentForm mode="view" />,
+      },
     ],
   },
-
 
   {
     path: "/organization/employee/employee-details/employee-profile",
@@ -1857,21 +2463,9 @@ const router = createBrowserRouter([
     ),
   },
 
-
-
-
-
-
-
-  
-
-
-
-
-    
-     {
+  {
     path: "/organization-configration/employement-type",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1889,12 +2483,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationEmployementTypesForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <OrganizationEmployementTypesForm mode="view" />,
+      },
     ],
   },
 
- {
+  {
     path: "/organization-configration/employement-exit-reason-type",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1912,12 +2510,43 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationEmployementExitReasonTypeForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <OrganizationEmployementExitReasonTypeForm mode="view" />,
+      },
+    ],
+  },
+
+  {
+    path: "/intern/functional-role",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <InternRoleList />,
+      },
+      {
+        path: "add",
+        element: <InternRoleForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <InternRoleForm mode="edit" />,
+      },
+      {
+        path: "view/:id",
+        element: <InternRoleForm mode="view" />,
+      },
     ],
   },
 
   {
     path: "/organization-configration/employement-exit-reason",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1935,11 +2564,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationEmployementExitReasonsForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <OrganizationEmployementExitReasonsForm mode="view" />,
+      },
     ],
   },
-   {
-    path: "/organization-configration/holiday-types",
-     element: (
+
+  {
+    path: "/organization/entity",
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1947,7 +2581,34 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HolidayTypesList/>,
+        element: <OrganizationEntityList />,
+      },
+      {
+        path: "add",
+        element: <OrganizationEntityForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <OrganizationEntityForm mode="edit" />,
+      },
+      {
+        path: "view/:id",
+        element: <OrganizationEntityForm mode="view" />,
+      },
+    ],
+  },
+
+  {
+    path: "/organization-configration/holiday-types",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <HolidayTypesList />,
       },
       {
         path: "add",
@@ -1957,11 +2618,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <HolidayTypesForm mode="edit" />,
       },
+        {
+        path: "view/:id",
+        element: <HolidayTypesForm mode="view" />,
+      },
     ],
   },
   {
     path: "/organization-configration/leave-category",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -1979,13 +2644,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <LeaveCategoryForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <LeaveCategoryForm mode="view" />,
+      },
     ],
   },
 
-   
-    {
+  {
     path: "/organization-configration/leave-types",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2003,11 +2671,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <LeaveTypeForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <LeaveTypeForm mode="view" />,
+      },
     ],
   },
-   {
+  {
     path: "/organization-configration/leave-reason",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2025,12 +2697,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <LeaveReasonForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <LeaveReasonForm mode="view" />,
+      },
     ],
   },
 
-   {
+  {
     path: "/organization-configration/leave-reason-type",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2048,11 +2724,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <LeaveReasonTypeForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <LeaveReasonTypeForm mode="view" />,
+      },
     ],
   },
-    {
+  {
     path: "/organization-configration/workshift-types",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2060,7 +2740,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <WorkShiftTypeList/>,
+        element: <WorkShiftTypeList />,
       },
       {
         path: "add",
@@ -2070,11 +2750,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <WorkShiftTypeForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <WorkShiftTypeForm mode="view" />,
+      },
     ],
   },
-   {
+  {
     path: "/organization-configration/work-model",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2082,7 +2766,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <WorkModelList/>,
+        element: <WorkModelList />,
       },
       {
         path: "add",
@@ -2092,15 +2776,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <WorkModelForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <WorkModelForm mode="view" />,
+      },
     ],
   },
 
-
-
-
   {
     path: "/application/user-role-permission",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2108,7 +2793,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <RolePermissionList/>,
+        element: <RolePermissionList />,
       },
       {
         path: "add",
@@ -2126,9 +2811,13 @@ const router = createBrowserRouter([
   },
 
 
-  {
-    path: "/application/userrole-assignments",
-     element: (
+
+
+
+
+    {
+    path: "/application/user-permission",
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2136,7 +2825,39 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <RoleAssignmentList/>,
+        element: <UserPermissionList />,
+      },
+      {
+        path: "add",
+        element: <UserPermissionForm mode="add" />,
+      },
+      {
+        path: "view/:id",
+        element: <ViewUserPermissionForm mode="edit" />,
+      },
+      {
+        path: "edit/:id",
+        element: <UserPermissionForm mode="edit" />,
+      },
+    ],
+  },
+
+
+
+
+
+
+  {
+    path: "/application/userrole-assignments",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <RoleAssignmentList />,
       },
       {
         path: "add",
@@ -2146,17 +2867,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <RoleAssignmentForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <RoleAssignmentForm mode="view" />,
+      },
     ],
   },
 
-
-
-
- 
-
-   {
+  {
     path: "/organization-configration/user-types",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2164,7 +2884,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <UserTypeList/>,
+        element: <UserTypeList />,
       },
       {
         path: "add",
@@ -2174,13 +2894,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <UserTypeForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <UserTypeForm mode="view" />,
+      },
     ],
   },
 
-
   {
     path: "/organization/setting-types",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2188,7 +2911,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <SettingTypeList/>,
+        element: <SettingTypeList />,
       },
       {
         path: "add",
@@ -2198,12 +2921,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <SettingTypeForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <SettingTypeForm mode="view" />,
+      },
     ],
   },
 
-   {
+  {
     path: "/organization/settings",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2211,7 +2938,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <SettingList/>,
+        element: <SettingList />,
       },
       {
         path: "add",
@@ -2221,39 +2948,86 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <SettingForm mode="edit" />,
       },
-    ],
-  },
-
-  
-   {
-    path: "/organization/employee/employee-details",
-     element: (
-      <RouteProtector>
-        <CoverLayout />
-      </RouteProtector>
-    ),
-    children: [
-      {
-        index: true,
-        element: <EmployeeList/>,
-      },
-      {
-        path: "add",
-        element: <DynamicFormPage mode="add" />,
-      },
-      {
-        path: "edit/:id",
-        element: <DynamicFormPage mode="edit" />,
+       {
+        path: "view/:id",
+        element: <SettingForm mode="view" />,
       },
     ],
   },
 
+  // {
+  //   path: "/organization/employee/employee-details",
+  //   element: (
+  //     <RouteProtector>
+  //       <CoverLayout />
+  //     </RouteProtector>
+  //   ),
+  //   children: [
+  //     {
+  //       index: true,
+  //       element: <EmployeeList />,
+  //     },
+  //     {
+  //       path: "add",
+  //       element: <DynamicFormPage mode="add" />,
+  //     },
+  //     {
+  //       path: "edit/:id",
+  //       element: <DynamicFormPage mode="edit" />,
+  //     },
+  //     {
+  //       path: "view/:id",
+  //       element: <DynamicFormPage mode="view" />,
+  //     },
+  //   ],
+  // },
 
 
-  
-   {
+     {
+      path: "/organization/employee/employee-details",
+      element: (
+        <RouteProtector>
+          <CoverLayout />
+        </RouteProtector>
+      ),
+      children: [
+        {
+          index: true,
+          element: <EmployeeList />,
+        },
+        {
+          path: "add",
+          element: <DynamicFormPage mode="add" />,
+        },
+        {
+          path: "edit/:id",
+          element: <DynamicFormPage mode="edit" />,
+        },
+        {
+          path: "view/:id",
+          element: <DynamicFormPage mode="view" />,
+        },
+        {
+          path: "personalize-view",
+          element: (
+            <PersonalizeDataGrid
+              tableName="Employees"
+              dataApi={`${MAIN_URL}/api/organizations/${org?.organization_id}/employee?mode=2`}
+              contextId="employees"
+              mode="personalize-view"
+              orgId={org?.organization_id}
+            />
+          ),
+        },
+      ],
+    },
+
+
+
+
+  {
     path: "/organization/intern/intern-details",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2261,7 +3035,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <InternList/>,
+        element: <InternList />,
       },
       {
         path: "add",
@@ -2270,13 +3044,17 @@ const router = createBrowserRouter([
       {
         path: "edit/:id",
         element: <DynamicFormInternPage mode="edit" />,
+      },
+      {
+        path: "view/:id",
+        element: <DynamicFormInternPage mode="view" />,
       },
     ],
   },
 
   {
     path: "/organization/freelancer/freelancer-details",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2284,7 +3062,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <InternList/>,
+        element: <EmployeeList />,
       },
       {
         path: "add",
@@ -2297,10 +3075,9 @@ const router = createBrowserRouter([
     ],
   },
 
-
   {
     path: "/organization/intern/intern-exit",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2308,7 +3085,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <InterExitRecordList/>,
+        element: <InterExitRecordList />,
       },
       {
         path: "add",
@@ -2318,12 +3095,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <InterExitRecordForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <InterExitRecordForm mode="view" />,
+      },
     ],
   },
 
   {
     path: "/organization/intern/intern-leaves",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2331,7 +3112,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <InternLeaveList/>,
+        element: <InternLeaveList />,
       },
       {
         path: "add",
@@ -2341,11 +3122,14 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <InternLeaveForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <InternLeaveForm mode="view" />,
+      },
     ],
   },
 
-
-   {
+  {
     path: "/organization-configration/datagrid-config",
     element: (
       <RouteProtector>
@@ -2354,11 +3138,9 @@ const router = createBrowserRouter([
     ),
   },
 
-
-
   {
     path: "/organization/employee/employee-exits",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2366,7 +3148,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <EmployeeExitList/>,
+        element: <EmployeeExitList />,
       },
       {
         path: "add",
@@ -2376,13 +3158,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <EmployeeExitForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <EmployeeExitForm mode="view" />,
+      },
     ],
   },
-  
-  
-    {
+
+  {
     path: "/leave/holiday-calendar",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2390,7 +3175,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HolidayCalendarList/>,
+        element: <HolidayCalendarList />,
       },
       {
         path: "add",
@@ -2400,12 +3185,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <HolidayCalendarForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <HolidayCalendarForm mode="view" />,
+      },
     ],
   },
 
-   {
+  {
     path: "/leave/employee-entitlements",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2413,7 +3202,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <EmployeeLeaveEntitlementList/>,
+        element: <EmployeeLeaveEntitlementList />,
       },
       {
         path: "add",
@@ -2423,10 +3212,14 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <EmployeeLeaveEntitlmentForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <EmployeeLeaveEntitlmentForm mode="view" />,
+      },
     ],
   },
 
-    {
+  {
     path: "/attendance/employee-record",
     element: (
       <RouteProtector>
@@ -2446,12 +3239,14 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <AttendanceRecordForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <AttendanceRecordForm mode="view" />,
+      },
     ],
   },
 
-
-
- {
+  {
     path: "/attendance/time-logs",
     element: (
       <RouteProtector>
@@ -2471,12 +3266,14 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <AttendanceTimelogsForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <AttendanceTimelogsForm mode="view" />,
+      },
     ],
   },
 
-
-
-{
+  {
     path: "/attendance/deviation-records",
     element: (
       <RouteProtector>
@@ -2496,13 +3293,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <AttendanceDeviationRecordForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <AttendanceDeviationRecordForm mode="view" />,
+      },
     ],
   },
 
-
- {
+  {
     path: "/attendance/status-type",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2520,13 +3320,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <AttendenceStatusTypeForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <AttendenceStatusTypeForm mode="view" />,
+      },
     ],
-
   },
 
-      {
+  {
     path: "employee-leave-balance-report",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2534,16 +3337,14 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <LevaeBalanceReportList/>,
+        element: <LevaeBalanceReportList />,
       },
     ],
   },
 
-
-
- {
+  {
     path: "/employee-leave-summary",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2551,17 +3352,14 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <LeaveSummaryMonthlyReport/>,
+        element: <LeaveSummaryMonthlyReport />,
       },
     ],
   },
-
-
-
 
   {
     path: "/attendance/source",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2579,12 +3377,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <AttendenceSourceForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <AttendenceSourceForm mode="view" />,
+      },
     ],
   },
 
-      {
+  {
     path: "/attendance/deviation-reason",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2602,11 +3404,41 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <AttendanceDeviationReasonForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <AttendanceDeviationReasonForm mode="view" />,
+      },
     ],
   },
 
+  {
+    path: "/organization-configration/employement-category",
+    element: (
+      <RouteProtector>
+        <CoverLayout />
+      </RouteProtector>
+    ),
+    children: [
+      {
+        index: true,
+        element: <EmploymentCategoryList />,
+      },
+      {
+        path: "add",
+        element: <EmploymentCategoryForm mode="add" />,
+      },
+      {
+        path: "edit/:id",
+        element: <EmploymentCategoryForm mode="edit" />,
+      },
+       {
+        path: "view/:id",
+        element: <EmploymentCategoryForm mode="view" />,
+      },
+    ],
+  },
 
-{
+  {
     path: "/attendance/break-type",
     element: (
       <RouteProtector>
@@ -2626,12 +3458,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <AttendenceBreakTypesForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <AttendenceBreakTypesForm mode="view" />,
+      },
     ],
   },
 
-     {
+  {
     path: "/leave/employee-leaves",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2639,7 +3475,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <EmployeeLeaveList/>,
+        element: <EmployeeLeaveList />,
       },
       {
         path: "add",
@@ -2649,12 +3485,14 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <EmployeeLeaveForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <EmployeeLeaveForm mode="view" />,
+      },
     ],
   },
 
-
-
- {
+  {
     path: "/organization/work-shift",
     element: (
       <RouteProtector>
@@ -2674,15 +3512,14 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <WorkShiftForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <WorkShiftForm mode="view" />,
+      },
     ],
   },
 
-
-
-
-
-
- {
+  {
     path: "/organization/location",
     element: (
       <RouteProtector>
@@ -2702,9 +3539,13 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationLocationForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <OrganizationLocationForm mode="view" />,
+      },
     ],
   },
- {
+  {
     path: "/business/division",
     element: (
       <RouteProtector>
@@ -2723,6 +3564,10 @@ const router = createBrowserRouter([
       {
         path: "edit/:id",
         element: <BusinessDivisionForm mode="edit" />,
+      },
+       {
+        path: "view/:id",
+        element: <BusinessDivisionForm mode="view" />,
       },
     ],
   },
@@ -2747,14 +3592,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <BusinessUnitForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <BusinessUnitForm mode="view" />,
+      },
     ],
   },
 
-  
- 
   {
     path: "/departments/locations",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2772,11 +3619,15 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationDepartmentLocationsForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <OrganizationDepartmentLocationsForm mode="view" />,
+      },
     ],
   },
   {
     path: "/employement/status",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2794,16 +3645,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <OrganizationEmployementStatusesForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <OrganizationEmployementStatusesForm mode="view" />,
+      },
     ],
   },
 
-
-
-  
-   
-   {
+  {
     path: "/holiday/holiday",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2811,7 +3662,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HolidayList/>,
+        element: <HolidayList />,
       },
       {
         path: "add",
@@ -2821,14 +3672,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <HolidayForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <HolidayForm mode="view" />,
+      },
     ],
   },
-   
 
-  
-    {
+  {
     path: "/employee/employee-contacts",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2836,7 +3689,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <EmployeeContactList/>,
+        element: <EmployeeContactList />,
       },
       {
         path: "add",
@@ -2846,13 +3699,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <EmployeeContactForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <EmployeeContactForm mode="view" />,
+      },
     ],
   },
 
-
-       {
+  {
     path: "/organization/system-modules",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2860,7 +3716,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <SystemModulesList/>,
+        element: <SystemModulesList />,
       },
       {
         path: "add",
@@ -2870,12 +3726,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <SystemModulesForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <SystemModulesForm mode="view" />,
+      },
     ],
   },
 
-     {
+  {
     path: "/organization/module-action",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2883,7 +3743,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <ModuleActionList/>,
+        element: <ModuleActionList />,
       },
       {
         path: "add",
@@ -2893,14 +3753,17 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <ModuleActionForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <ModuleActionForm mode="view" />,
+      },
     ],
   },
 
-
   // Application Managment Routes
-     {
+  {
     path: "/application/user-roles",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2908,7 +3771,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <UserRoleList/>,
+        element: <UserRoleList />,
       },
       {
         path: "add",
@@ -2918,12 +3781,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <UserRoleForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <UserRoleForm mode="view" />,
+      },
     ],
   },
 
-     {
+  {
     path: "/application/user-modules",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2931,7 +3798,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <UserModuleList/>,
+        element: <UserModuleList />,
       },
       {
         path: "add",
@@ -2941,13 +3808,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <UserModuleForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <UserModuleForm mode="view" />,
+      },
     ],
   },
 
-
-    {
+  {
     path: "/application/user",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2955,7 +3825,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <UserList/>,
+        element: <UserList />,
       },
       {
         path: "add",
@@ -2965,12 +3835,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <UserForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <UserForm mode="view" />,
+      },
     ],
   },
 
-   {
+  {
     path: "/application/user-errorlogs",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -2978,7 +3852,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <ApplicationErrorLogList/>,
+        element: <ApplicationErrorLogList />,
       },
       {
         path: "add",
@@ -2991,9 +3865,9 @@ const router = createBrowserRouter([
     ],
   },
 
-   {
+  {
     path: "/organization/leave-policy",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -3001,7 +3875,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <LeavePolicyList/>,
+        element: <LeavePolicyList />,
       },
       {
         path: "add",
@@ -3011,12 +3885,16 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <LeavePolicyForm mode="edit" />,
       },
+      {
+        path: "view/:id",
+        element: <LeavePolicyForm mode="view" />,
+      },
     ],
   },
 
   {
     path: "/application/user-role-assignment",
-     element: (
+    element: (
       <RouteProtector>
         <CoverLayout />
       </RouteProtector>
@@ -3024,7 +3902,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <RoleAssignmentList/>,
+        element: <RoleAssignmentList />,
       },
       {
         path: "add",
@@ -3034,12 +3912,12 @@ const router = createBrowserRouter([
         path: "edit/:id",
         element: <RoleAssignmentForm mode="edit" />,
       },
+       {
+        path: "view/:id",
+        element: <RoleAssignmentForm mode="view" />,
+      },
     ],
   },
-
-
-
-
 
   {
     path: "/attendance",
@@ -3049,51 +3927,55 @@ const router = createBrowserRouter([
       </RouteProtector>
     ),
   },
-  
+
   {
     path: "/login",
-    element: <Login title={"Login"}/>,
+    element: <Login title={"Login"} />,
   },
   {
     path: "/forgot-password",
-    element: <ForgotPassword title={"Forgot Password"}/>,
+    element: <ForgotPassword title={"Forgot Password"} />,
   },
   {
     path: "/reset-password",
-    element: <ResetPassword title={"Reset Password"}/>,
+    element: <ResetPassword title={"Reset Password"} />,
   },
-  // footer 
+  // footer
   {
     path: "/features",
-    element: <Features/>,
+    element: <Features />,
   },
   {
     path: "/pricing",
-    element: <Pricing/>,
+    element: <Pricing />,
   },
   {
     path: "/faq",
-    element: <Faq/>,
+    element: <Faq />,
   },
   {
     path: "/terms",
-    element: <Terms/>,
+    element: <Terms />,
   },
   {
     path: "/privacy",
-    element: <Privacy/>,
+    element: <Privacy />,
   },
   {
     path: "/cookies",
-    element: <Cookies/>,
+    element: <Cookies />,
   },
   {
     path: "/support",
-    element: <Support/>,
+    element: <Support />,
   },
   {
     path: "/system-status",
-    element: <SystemStatus/>,
+    element: <SystemStatus />,
+  },
+  {
+    path: "/not-authorised",
+    element: <NotAuthorized />,
   },
   {
     path: "*",
@@ -3101,4 +3983,15 @@ const router = createBrowserRouter([
   },
 ]);
 
-export default router;
+
+
+
+
+
+  export default function AppRouter() {
+  const { userData } = useAuthStore();
+  const org = userData?.organization;
+  return <RouterProvider router={router(org)} />;
+  
+
+}

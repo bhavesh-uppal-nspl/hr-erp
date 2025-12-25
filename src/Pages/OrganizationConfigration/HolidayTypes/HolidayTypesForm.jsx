@@ -44,7 +44,7 @@ function HolidayTypesForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit"|| mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -140,6 +140,7 @@ function HolidayTypesForm({ mode }) {
                   name="holiday_type_name"
                   value={formData.holiday_type_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.holiday_type_name}
                   helperText={formErrors.holiday_type_name}
                   inputProps={{ maxLength: 50 }}
@@ -152,6 +153,7 @@ function HolidayTypesForm({ mode }) {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
                   inputProps={{ maxLength: 255 }}
@@ -165,7 +167,7 @@ function HolidayTypesForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

@@ -111,75 +111,18 @@ function EmployementExperienceForm({ mode, employeeId }) {
   const handleChange = (e, idx) => {
     const { name, value } = e.target;
     setExperienceData(name, value, idx);
-     if (name === "compensation_status" && value === "Unpaid") {
-    ["compensation_payout_model", "currency_code", "compensation_amount"].forEach(
-      (field) =>
-        setExperienceData(field, "", idx)
-    );
-  }
+    if (name === "compensation_status" && value === "Unpaid") {
+      [
+        "compensation_payout_model",
+        "currency_code",
+        "compensation_amount",
+      ].forEach((field) => setExperienceData(field, "", idx));
+    }
   };
   const handleCheckboxChange = (e, idx) => {
     const { name, checked } = e.target;
     setExperienceData(name, checked, idx);
-   
   };
-
-  // const handleSubmit = async () => {
-  //   if (!validateForm()) return;
-  //   setbtnLoading(true);
-
-  //    let b={
-  //           ...section?.mainData?, currency_code:section?.mainData?.currency_code.toString()
-
-  //         }
-
-  //          console.log("datas is ", b)
-
-  //   try {
-
-  //     if (mode === "edit") {
-  //       await axios.put(
-  //         `${MAIN_URL}/api/organizations/${org.organization_id}/employee-work-experience/${id}`,b,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //           },
-  //         }
-  //       );
-  //     } else {
-  //       await axios.post(
-  //         `${MAIN_URL}/api/organizations/${org.organization_id}/employee-work-experience`,
-  //         section?.mainData?,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //           },
-  //         }
-  //       );
-  //     }
-
-  //     toast.success(
-  //       mode === "edit"
-  //         ? "Employee Experience  Updated!"
-  //         : "Employee Experience  Created!"
-  //     );
-  //     setExperienceErrors({});
-  //   } catch (err) {
-  //     console.error(err);
-  //     if (err.response?.status === 422) {
-  //       const validationErrors = err.response.data.errors || {};
-  //       setExperienceErrors(validationErrors);
-  //       const errorMessages = Object.values(validationErrors)
-  //         .map((arr) => arr[0])
-  //         .join(" ");
-  //       toast.error(errorMessages || "Validation failed.");
-  //     } else {
-  //       toast.error("Something went wrong.");
-  //     }
-  //   } finally {
-  //     setbtnLoading(false);
-  //   }
-  // };
 
   const handleSubmit = async (e) => {
     // setExperienceData(section?.mainData?);
@@ -187,60 +130,68 @@ function EmployementExperienceForm({ mode, employeeId }) {
 
   return (
     <Box px={4}>
-  
-        <Box>
-          {Experience?.map((item, id) => ({
-            name: `Experience ${id + 1}`,
-            mainData: item,
-          }))?.map((section, idx) => (
-            <Accordion
-              sx={{ mb: 2 }}
-              key={section.name}
-              expanded={expanded === section.name}
-              onChange={handleChangeAccoridan(section.name)}
-            >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    width: "100%",
-                  }}
+      <Box>
+        {Experience?.map((item, id) => ({
+          name: `Experience ${id + 1}`,
+          mainData: item,
+        }))?.map((section, idx) => (
+          <Accordion
+            sx={{ mb: 2 }}
+            key={section.name}
+            expanded={expanded === section.name}
+            onChange={handleChangeAccoridan(section.name)}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ fontSize: "15px", fontWeight: "bold" }}
                 >
-                  <Typography
-                    variant="h6"
-                    sx={{ fontSize: "15px", fontWeight: "bold" }}
-                  >
-                    {section.name}
-                  </Typography>
-                  {idx != 0 && (
-                    <DeleteOutlineIcon
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeExperience(idx);
-                      }}
-                      sx={{ color: "error.main", ml: 2 }}
-                    />
-                  )}
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails>
-                {expanded === section.name && (
-                  <Grid item xs={12} md={8}>
-                    <Paper elevation={4} sx={{ p: 3 }}>
-                      <Grid container spacing={2}>
+                  {section.name}
+                </Typography>
+                {idx != 0 && (
+                  <DeleteOutlineIcon
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeExperience(idx);
+                    }}
+                    sx={{ color: "error.main", ml: 2 }}
+                  />
+                )}
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              {expanded === section.name && (
+                <Grid item xs={12} md={8}>
+                  <Paper elevation={4} sx={{ p: 3 }}>
+                    <Grid container spacing={2}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // centers the row
+                          gap: 2, // space between fields
+                          width: "100%", // ensures proper centering
+                        }}
+                      >
                         <FormControl
                           fullWidth
                           required
                           error={!!ExperienceErrors?.[idx]?.experience_type}
-                          sx={{ marginTop: 2 }}
+                          // sx={{ marginTop: 2 }}
                         >
                           <InputLabel id="experience_type-label">
                             Experience Type
                           </InputLabel>
 
                           <Select
+                            disabled={mode === "view"}
                             labelId="experience_type-label"
                             id="experience_type"
                             name="experience_type"
@@ -271,8 +222,10 @@ function EmployementExperienceForm({ mode, employeeId }) {
                         </FormControl>
 
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Company Name"
+                          // sx={{mb:4}}
                           name="organization_name"
                           value={section?.mainData?.organization_name}
                           onChange={(e) => handleChange(e, idx)}
@@ -283,15 +236,25 @@ function EmployementExperienceForm({ mode, employeeId }) {
                           }
                           inputProps={{ maxLength: 100 }}
                         />
+                      </Box>
 
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // centers the row
+                          gap: 2, // space between fields
+                          width: "100%", // ensures proper centering
+                        }}
+                      >
                         <FormControl
                           fullWidth
                           required
-                          margin="normal"
+                          // margin="normal"
                           error={!!ExperienceErrors?.[idx]?.general_industry_id}
                         >
                           <InputLabel id="industry-label">Industry</InputLabel>
                           <Select
+                            disabled={mode === "view"}
                             labelId="industry-label"
                             id="general_industry_id"
                             name="general_industry_id"
@@ -299,7 +262,6 @@ function EmployementExperienceForm({ mode, employeeId }) {
                             onChange={(e) => handleChange(e, idx)}
                             label="Industry"
                           >
-                         
                             {(Industry || []).map((option) => (
                               <MenuItem
                                 key={option.general_industry_id}
@@ -317,6 +279,7 @@ function EmployementExperienceForm({ mode, employeeId }) {
                         </FormControl>
 
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           required
                           label="Location"
@@ -327,8 +290,18 @@ function EmployementExperienceForm({ mode, employeeId }) {
                           helperText={ExperienceErrors?.[idx]?.location}
                           inputProps={{ maxLength: 50 }}
                         />
+                      </Box>
 
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // centers the row
+                          gap: 2, // space between fields
+                          width: "100%", // ensures proper centering
+                        }}
+                      >
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           required
                           label="Work Title"
@@ -340,49 +313,12 @@ function EmployementExperienceForm({ mode, employeeId }) {
                           inputProps={{ maxLength: 60 }}
                         />
 
-                        {/*                         
                         <FormControl
-                          fullWidth
-                          required
-                          error={!!ExperienceErrors?.[idx]?.experience_type}
-                          sx={{ marginTop: 2 }}
-                        >
-                          <InputLabel id="experience-type-label">
-                            Experience Type
-                          </InputLabel>
-
-                          <Select
-                            labelId="experience-type-label"
-                            id="experience_type"
-                            name="experience_type"
-                            value={section?.mainData?.experience_type || ""}
-                            label="Employment Type"
-                            onChange={(e) => handleChange(e, idx)}
-                          >
-                            <MenuItem value="">
-                              <em>None</em>
-                            </MenuItem>
-                            {["Full-Time", "Part-Time", "Contract"].map(
-                              (type) => (
-                                <MenuItem key={type} value={type}>
-                                  {type}
-                                </MenuItem>
-                              )
-                            )}
-                          </Select>
-
-                          {ExperienceErrors?.[idx]?.experience_type && (
-                            <FormHelperText>
-                              {ExperienceErrors?.[idx]?.experience_type}
-                            </FormHelperText>
-                          )}
-                        </FormControl> */}
-
-                        <FormControl
+                          disabled={mode === "view"}
                           fullWidth
                           required
                           error={!!ExperienceErrors?.[idx]?.work_mode}
-                          sx={{ marginTop: 2 }}
+                          // sx={{ marginTop: 2 }}
                         >
                           <InputLabel id="work_mode-label">
                             Work Mode
@@ -396,7 +332,6 @@ function EmployementExperienceForm({ mode, employeeId }) {
                             label="Work Mode"
                             onChange={(e) => handleChange(e, idx)}
                           >
-                          
                             {[
                               "Full-Time",
                               "Part-Time",
@@ -417,17 +352,26 @@ function EmployementExperienceForm({ mode, employeeId }) {
                             </FormHelperText>
                           )}
                         </FormControl>
+                      </Box>
 
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // centers the row
+                          gap: 2, // space between fields
+                          width: "100%", // ensures proper centering
+                        }}
+                      >
                         <FormControl
                           fullWidth
                           error={!!ExperienceErrors?.[idx]?.compensation_status}
-                          sx={{ marginTop: 2 }}
                         >
                           <InputLabel id="compensation_status-label">
                             Compensation Status
                           </InputLabel>
 
                           <Select
+                            disabled={mode === "view"}
                             labelId="compensation_status-label"
                             id="compensation_status"
                             name="compensation_status"
@@ -435,7 +379,6 @@ function EmployementExperienceForm({ mode, employeeId }) {
                             label="Compensation Status"
                             onChange={(e) => handleChange(e, idx)}
                           >
-                          
                             {["Paid", "Unpaid"].map((option) => (
                               <MenuItem key={option} value={option}>
                                 {option}
@@ -451,12 +394,11 @@ function EmployementExperienceForm({ mode, employeeId }) {
                         </FormControl>
 
                         <FormControl
+                          disabled={mode === "view"}
                           fullWidth
-                          
                           error={
                             !!ExperienceErrors?.[idx]?.compensation_payout_model
                           }
-                          sx={{ marginTop: 2 }}
                         >
                           <InputLabel id="compensation_payout_model-label">
                             Compensation Payout Model
@@ -466,7 +408,10 @@ function EmployementExperienceForm({ mode, employeeId }) {
                             labelId="compensation_payout_model-label"
                             id="compensation_payout_model"
                             name="compensation_payout_model"
-                              disabled={section?.mainData?.compensation_status !== "Paid"}
+                            disabled={
+                              section?.mainData?.compensation_status !==
+                                "Paid" || mode === "view"
+                            }
                             value={
                               section?.mainData?.compensation_payout_model || ""
                             }
@@ -495,59 +440,70 @@ function EmployementExperienceForm({ mode, employeeId }) {
                               }
                             </FormHelperText>
                           )}
-                          
                         </FormControl>
+                      </Box>
 
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            width: "100%",
-                            gap: "20px",
-                          }}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%",
+                          gap: "20px",
+                        }}
+                      >
+                        <TextField
+                          select
+                          fullWidth
+                          label="Currency Code"
+                          name="currency_code"
+                          value={section?.mainData?.currency_code}
+                          onChange={(e) => handleChange(e, idx)}
+                          disabled={
+                            section?.mainData?.compensation_status !== "Paid" ||
+                            mode === "view"
+                          }
+                          error={!!ExperienceErrors?.[idx]?.currency_code}
+                          helperText={ExperienceErrors?.[idx]?.currency_code}
                         >
-                          <TextField
-                            select
-                            fullWidth
-                            label="Currency Code"
-                            name="currency_code"
-                            value={section?.mainData?.currency_code}
-                            onChange={(e) => handleChange(e, idx)}
-                            disabled={section?.mainData?.compensation_status !== "Paid"}
-                            error={!!ExperienceErrors?.[idx]?.currency_code}
-                            helperText={ExperienceErrors?.[idx]?.currency_code}
-                            
-                          >
-                        
-                            {(countrycode || [])?.map((option) => (
-                              <MenuItem
-                                key={option.currency_code}
-                                value={option?.currency_code}
-                              >
-                                {option.currency_code}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-
-                          <TextField
-                            fullWidth
-                            label="Compensation Amount"
-                            name="compensation_amount"
-                            type="number"
-                            value={section?.mainData?.compensation_amount}
-                            onChange={(e) => handleChange(e, idx)}
-                            disabled={section?.mainData?.compensation_status !== "Paid"}
-                            error={
-                              !!ExperienceErrors?.[idx]?.compensation_amount
-                            }
-                            helperText={
-                              ExperienceErrors?.[idx]?.compensation_amount
-                            }
-                            inputProps={{ min: 0 }}
-                          />
-                        </div>
+                          {(countrycode || [])?.map((option) => (
+                            <MenuItem
+                              key={option.currency_code}
+                              value={option?.currency_code}
+                            >
+                              {option.currency_code}
+                            </MenuItem>
+                          ))}
+                        </TextField>
 
                         <TextField
+                          fullWidth
+                          label="Compensation Amount"
+                          name="compensation_amount"
+                          type="number"
+                          value={section?.mainData?.compensation_amount}
+                          onChange={(e) => handleChange(e, idx)}
+                          disabled={
+                            section?.mainData?.compensation_status !== "Paid" ||
+                            mode === "view"
+                          }
+                          error={!!ExperienceErrors?.[idx]?.compensation_amount}
+                          helperText={
+                            ExperienceErrors?.[idx]?.compensation_amount
+                          }
+                          inputProps={{ min: 0 }}
+                        />
+                      </div>
+
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // centers the row
+                          gap: 2, // space between fields
+                          width: "100%", // ensures proper centering
+                        }}
+                      >
+                        <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           required
                           label="Start Date"
@@ -561,6 +517,7 @@ function EmployementExperienceForm({ mode, employeeId }) {
                         />
 
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           required
                           label="End Date"
@@ -572,8 +529,18 @@ function EmployementExperienceForm({ mode, employeeId }) {
                           helperText={ExperienceErrors?.[idx]?.end_date}
                           InputLabelProps={{ shrink: true }}
                         />
+                      </Box>
 
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // centers the row
+                          gap: 2, // space between fields
+                          width: "100%", // ensures proper centering
+                        }}
+                      >
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Reporting Manager Name"
                           name="reporting_manager_name"
@@ -589,13 +556,12 @@ function EmployementExperienceForm({ mode, employeeId }) {
                         />
 
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Reporting Manager No."
                           name="reporting_manager_contact"
                           type="text"
-                          value={
-                            section?.mainData?.reporting_manager_contact
-                          }
+                          value={section?.mainData?.reporting_manager_contact}
                           onChange={(e) => {
                             const input = e.target.value;
                             // ✔ Allow only digits, up to 15 characters
@@ -604,23 +570,20 @@ function EmployementExperienceForm({ mode, employeeId }) {
                             }
                           }}
                           error={
-                            !!ExperienceErrors?.[idx]
-                              ?.reporting_manager_contact
+                            !!ExperienceErrors?.[idx]?.reporting_manager_contact
                           }
                           helperText={
-                            ExperienceErrors?.[idx]
-                              ?.reporting_manager_contact
+                            ExperienceErrors?.[idx]?.reporting_manager_contact
                           }
                           inputProps={{
                             maxLength: 20,
-                            inputMode: "numeric", 
-                            pattern: "[0-9]*", 
+                            inputMode: "numeric",
+                            pattern: "[0-9]*",
                           }}
                         />
+                      </Box>
 
-                   
-
-                        <FormControl
+                      <FormControl
                         component="fieldset"
                         error={!!ExperienceErrors?.[idx]?.is_verified}
                         sx={{ mt: 2 }}
@@ -628,6 +591,7 @@ function EmployementExperienceForm({ mode, employeeId }) {
                         <FormControlLabel
                           control={
                             <Checkbox
+                              disabled={mode === "view"}
                               checked={section?.mainData?.is_verified || false}
                               // onChange={(e) => handleCheckboxChange(e, idx)}
                               onChange={(e) => {
@@ -666,6 +630,18 @@ function EmployementExperienceForm({ mode, employeeId }) {
                         )}
                       </FormControl>
 
+
+
+               <Box
+  sx={{
+    display: "flex",
+    justifyContent: "center",  // centers the row
+    gap: 2,                    // space between fields
+    width: "100%",             // ensures proper centering
+  }}
+>
+
+
                       <TextField
                         fullWidth
                         label="Verified By(Person Name)"
@@ -677,6 +653,22 @@ function EmployementExperienceForm({ mode, employeeId }) {
                         inputProps={{ maxLength: 100 }}
                         disabled={!section?.mainData?.is_verified}
                       />
+
+                      <TextField
+                        fullWidth
+                        label="Verfication Date"
+                        type="date"
+                        name="verification_date"
+                        value={section?.mainData?.verification_date}
+                        onChange={(e) => handleChange(e, idx)}
+                        error={!!ExperienceErrors?.[idx]?.verification_date}
+                        helperText={ExperienceErrors?.[idx]?.verification_date}
+                        InputLabelProps={{ shrink: true }}
+                        disabled={!section?.mainData?.is_verified}
+                      />
+
+
+  </Box>       
 
                       <TextField
                         fullWidth
@@ -694,48 +686,36 @@ function EmployementExperienceForm({ mode, employeeId }) {
 
                       <TextField
                         fullWidth
-                        label="Verfication Date"
-                        type="date"
-                        name="verification_date"
-                        value={section?.mainData?.verification_date}
+                        label="Description"
+                        name="description"
+                        value={section?.mainData?.description}
                         onChange={(e) => handleChange(e, idx)}
-                        error={!!ExperienceErrors?.[idx]?.verification_date}
-                        helperText={ExperienceErrors?.[idx]?.verification_date}
-                        InputLabelProps={{ shrink: true }}
+                        error={!!ExperienceErrors?.[idx]?.description}
+                        helperText={ExperienceErrors?.[idx]?.description}
+                        multiline
+                        rows={4}
+                        inputProps={{ maxLength: 100 }}
                         disabled={!section?.mainData?.is_verified}
                       />
-
-                     
-
-                        <TextField
-                          fullWidth
-                          label="Description"
-                          name="description"
-                          value={section?.mainData?.description}
-                          onChange={(e) => handleChange(e, idx)}
-                          error={!!ExperienceErrors?.[idx]?.description}
-                          helperText={ExperienceErrors?.[idx]?.description}
-                          inputProps={{ maxLength: 100 }}
-                        />
-                      </Grid>
-                    </Paper>
-                  </Grid>
-                )}
-              </AccordionDetails>
-            </Accordion>
-          ))}
-          <Button
-            variant="contained"
-            style={{ marginTop: 9 }}
-            onClick={() => {
-              setExpanded(`Experience ${Experience?.length + 1}`);
-              addExperience();
-            }}
-          >
-            Add More
-          </Button>
-        </Box>
-  
+                    </Grid>
+                  </Paper>
+                </Grid>
+              )}
+            </AccordionDetails>
+          </Accordion>
+        ))}
+        <Button
+          disabled={mode === "view"}
+          variant="contained"
+          style={{ marginTop: 9 }}
+          onClick={() => {
+            setExpanded(`Experience ${Experience?.length + 1}`);
+            addExperience();
+          }}
+        >
+          Add More
+        </Button>
+      </Box>
     </Box>
   );
 }

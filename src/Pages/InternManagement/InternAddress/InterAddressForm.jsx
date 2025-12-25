@@ -30,7 +30,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import useAuthStore from "../../../Zustand/Store/useAuthStore";
 import useInternDataStore from "../../../Zustand/Store/useInternDataStore";
 
-function InterAddressForm({ }) {
+function InterAddressForm({mode }) {
   const { userData } = useAuthStore();
   const org = userData?.organization;
   const { id } = useParams();
@@ -142,113 +142,24 @@ function InterAddressForm({ }) {
                   <Grid item xs={12} md={8}>
                     <Paper elevation={4} sx={{ p: 3 }}>
                       <Grid container spacing={2}>
-                        {/* <FormControl
-                          fullWidth
-                          error={
-                            !!AddressErrors?.[idx]?.organization_employee_address_type_id
-                          }
-                          sx={{ marginTop: 2 }}
-                        >
-                          <InputLabel id="employee-address-type-label">
-                            Employee Address Type
-                          </InputLabel>
-
-                          <Select
-                            labelId="employee-address-type-label"
-                            id="organization_employee_address_type_id"
-                            name="organization_employee_address_type_id"
-                            value={
-                              section?.mainData
-                                ?.organization_employee_address_type_id || ""
-                            }
-                            label="Employee Address Type"
-                            onChange={(e) => handleChange(e, idx)}
-                             required
-                            >
-                            {employeeAddressType?.map((option) => (
-                              <MenuItem
-                              key={
-                                option?.organization_employee_address_type_id
-                              }
-                              value={
-                                option?.organization_employee_address_type_id
-                              }
-                              >
-                                {option?.employee_address_type_name}
-                              </MenuItem>
-                            ))}
-                            
-                          </Select>
-
-                          {AddressErrors?.[idx]?.organization_employee_address_type_id && (
-                            <FormHelperText>
-                              {
-                                AddressErrors?.[idx]?.organization_employee_address_type_id
-                              }
-                            </FormHelperText>
-                          )}
-                          
-                          
-                        </FormControl> */}
-
-                        {/* <FormControl
-                          fullWidth
-                          required
-                          error={
-                            !!AddressErrors?.[idx]?.organization_residential_ownership_type_id
-                          }
-                          sx={{ marginTop: 2 }}
-                          >
-                          <InputLabel id="employee-ownership-type-label">
-                            {" "}
-                            Residential Ownership Type
-                          </InputLabel>
-
-                          <Select
-                            labelId="employee-ownership-type-label"
-                            id="organization_residential_ownership_type_id"
-                            name="organization_residential_ownership_type_id"
-                            value={
-                              section?.mainData
-                              ?.organization_residential_ownership_type_id ||
-                              ""
-                            }
-                            label="Employee Ownership Type"
-                            onChange={(e) => handleChange(e, idx)}
-                            
-                          >
-                            {residentailtype?.map((option) => (
-                              <MenuItem
-                                key={
-                                  option?.organization_residential_ownership_type_id
-                                }
-                                value={
-                                  option?.organization_residential_ownership_type_id
-                                }
-                              >
-                                {option?.residential_ownership_type_name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                          
-
-                          {AddressErrors?.[idx]?.organization_residential_ownership_type_id && (
-                            <FormHelperText>
-                              {
-                                AddressErrors?.[idx]?.organization_residential_ownership_type_id
-                              }
-                            </FormHelperText>
-                          )}
-                          
-                        </FormControl> */}
+                        
 
                        
                        
                        
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
 
-                        <TextField
+                     <TextField
                           fullWidth
                           label="Address Line 1"
+                          disabled={mode === "view"}
                           name="address_line1"
                           value={section?.mainData?.address_line1}
                           onChange={(e) => handleChange(e, idx)}
@@ -262,6 +173,7 @@ function InterAddressForm({ }) {
                           fullWidth
                           label="Address Line 2"
                           name="address_line2"
+                          disabled={mode ==="view"}
                           value={section?.mainData?.address_line2}
                           onChange={(e) => handleChange(e, idx)}
                           error={!!AddressErrors?.[idx]?.address_line2}
@@ -273,6 +185,7 @@ function InterAddressForm({ }) {
                           fullWidth
                           label="Address Line 3"
                           name="address_line3"
+                            disabled={mode ==="view"}
                           value={section?.mainData?.address_line3}
                           onChange={(e) => handleChange(e, idx)}
                           error={!!AddressErrors?.[idx]?.address_line3}
@@ -280,10 +193,23 @@ function InterAddressForm({ }) {
                            inputProps={{ maxLength: 100 }}
                         />
 
-                        
-                        <TextField
+
+
+                </Box>
+                       
+
+                       <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+ <TextField
                           fullWidth
                           label="Postal code"
+                            disabled={mode ==="view"}
                           name="postal_code"
                           value={section?.mainData?.postal_code}
                           onChange={(e) => handleChange(e, idx)}
@@ -295,6 +221,7 @@ function InterAddressForm({ }) {
 
                         <Autocomplete
                           options={cityOptions}
+                            disabled={mode ==="view"}
                           getOptionLabel={(option) =>
                             typeof option === "string"
                               ? option
@@ -326,6 +253,15 @@ function InterAddressForm({ }) {
                             />
                           )}
                         />
+
+                </Box>
+                       
+
+                     
+                        
+                       
+
+
                       </Grid>
                     </Paper>
                   </Grid>
@@ -334,7 +270,11 @@ function InterAddressForm({ }) {
             </Accordion>
           ))}
 
-          <Button style={{marginTop:9}} variant="contained" onClick={() =>{ setExpanded(`Address ${Address?.length+1}`); addAddress()}}>
+          <Button 
+
+            disabled={mode ==="view"}
+          
+          style={{marginTop:9}} variant="contained" onClick={() =>{ setExpanded(`Address ${Address?.length+1}`); addAddress()}}>
             Add More
           </Button>
         </Box>

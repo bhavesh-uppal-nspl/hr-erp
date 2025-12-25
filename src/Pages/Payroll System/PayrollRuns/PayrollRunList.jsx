@@ -93,6 +93,7 @@ function PayrollRunList() {
         loading={loading}
         heading={"Payroll Runs"}
         btnName={"Add Payroll Runs"}
+        add_action={"PAYROLL_RUN_ADD"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
@@ -131,6 +132,7 @@ function PayrollRunList() {
         sortname={"payroll_cycle_name"}
         showActions={true}
         Route="/payroll/runs"
+        edit_delete_action={["PAYROLL_RUN_DELETE", "PAYROLL_RUN_EDIT"]}
         DeleteFunc={deleteBreak}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}

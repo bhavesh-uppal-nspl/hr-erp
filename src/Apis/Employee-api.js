@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 
 export async function fetchOrganizationEmployee(orgId) {
   try {
-    const response = await axios.get(`${MAIN_URL}/api/organizations/${orgId}/employee?mode=1`, {
+    const response = await axios.get(`${MAIN_URL}/api/organizations/${orgId}/employee?per_page=all`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
@@ -31,8 +31,35 @@ export async function fetchOrganizationEmployee(orgId) {
     }
   }
 }
+export async function fetchOrganizationEmployeessFilter(orgId) {
+  try {
+    const response = await axios.get(`${MAIN_URL}/api/organizations/${orgId}/employee/filter`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+   console.log("employee",response.data);
+    return response.data;
 
+  } catch (error) {
 
+      if (error.response && error.response.status === 401) {
+        toast.error("Session Expired!");
+        window.location.href = "/login";
+      }
+
+    if (error.response) {
+      console.error('API Response Error:', error.response.data);
+      throw new Error(error.response.data.error || 'Failed to fetch profile');
+    } else if (error.request) {
+      console.error('No Response Received:', error.request);
+      throw new Error('No response from server.');
+    } else {
+      console.error('Error:', error.message);
+      throw new Error('An unexpected error occurred.');
+    }
+  }
+}
 
 export async function fetchOrganizationEmployeess(orgId) {
   try {
@@ -115,7 +142,6 @@ export async function fetchEmployeeExit(orgId) {
     }
   }
 }
-
 
 
 export async function fetchEmployeeLeaves(orgId) {

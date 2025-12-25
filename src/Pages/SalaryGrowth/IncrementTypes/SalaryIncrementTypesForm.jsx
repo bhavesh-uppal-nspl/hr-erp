@@ -47,7 +47,7 @@ function SalaryIncrementTypesForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -151,6 +151,7 @@ function SalaryIncrementTypesForm({ mode }) {
                   name="employee_increment_type_name"
                   value={formData?.employee_increment_type_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.employee_increment_type_name}
                   helperText={formErrors.employee_increment_type_name}
                   inputProps={{ maxLength: 100 }}
@@ -166,6 +167,7 @@ function SalaryIncrementTypesForm({ mode }) {
                   error={!!formErrors.description}
                   helperText={formErrors.description}
                   inputProps={{ maxLength: 256 }}
+                  disabled={mode === "view"}
                   multiline
                   minRows={3}
                   maxRows={5}
@@ -178,7 +180,7 @@ function SalaryIncrementTypesForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

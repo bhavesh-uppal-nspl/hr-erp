@@ -40,7 +40,7 @@ function OrganizationEmployementExitReasonTypeForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -145,6 +145,7 @@ function OrganizationEmployementExitReasonTypeForm({ mode }) {
                   name="employment_exit_reason_type_name"
                   value={formData.employment_exit_reason_type_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.employment_exit_reason_type_name}
                   helperText={formErrors.employment_exit_reason_type_name}
                   required
@@ -157,6 +158,7 @@ function OrganizationEmployementExitReasonTypeForm({ mode }) {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
                   inputProps={{ maxLength: 100 }}
@@ -170,7 +172,7 @@ function OrganizationEmployementExitReasonTypeForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

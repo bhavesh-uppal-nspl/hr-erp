@@ -59,6 +59,21 @@ function HolidayTypesList() {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Holiday Type";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
+
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -84,15 +99,25 @@ function HolidayTypesList() {
   );
 
 
+                     const handleShow = useCallback(
+      (item) => {
+        navigate(`/organization-configration/holiday-types/view/${item.id}`)
+      },
+      [navigate],
+    )
+
+
+
 
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Holiday Types"}
+        add_action={"HOLIDAY_TYPE_ADD"}
         btnName={"Add Holiday Type"}
         Data={holidaytypes}
-        delete_action={"ORG_CONFIG_DELETE"}
+        delete_action={"HOLIDAY_TYPE_DELETE"}
         tableHeaders={[
           {
             name: "Holiday Types",
@@ -130,6 +155,8 @@ function HolidayTypesList() {
           DeleteFunc={deleteCalendar}
           EditFunc={handleEdit}
           token={localStorage.getItem("token")}
+          handleShow={handleShow}
+          edit_delete_action={["HOLIDAY_TYPE_DELETE", "HOLIDAY_TYPE_EDIT"]}
 
                organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}

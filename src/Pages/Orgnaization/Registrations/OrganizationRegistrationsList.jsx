@@ -162,6 +162,19 @@ function OrganizationRegistrationsList() {
           },
         }
       );
+       if (response.status === 200) {
+        toast.success(response.data.message);
+    
+      } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Registration";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -189,7 +202,8 @@ function OrganizationRegistrationsList() {
         heading={"Registrations"}
         btnName={"Add Registrations"}
         Data={registration}
-        delete_action={"ORG_STRUCTURE_DELETE"}
+        add_action={"REGISTRATION_ADD"}
+        delete_action={"REGISTRATION_DELETE"}
         Icons={[
           <BusinessIcon sx={{ fontSize: 60, color: "grey.500", mb: 2 }} />,
           <NumbersIcon color="primary" />,
@@ -227,6 +241,7 @@ function OrganizationRegistrationsList() {
         Route="/organization/registrations"
         DeleteFunc={deleteregistration}
         EditFunc={handleEdit}
+        edit_delete_action={["REGISTRATION_DELETE", "REGISTRATION_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

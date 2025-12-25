@@ -29,6 +29,8 @@ import {
   Avatar,
   Popover,
   useMediaQuery,
+  CircularProgress,
+  Paper,
 } from "@mui/material";
 
 import {
@@ -60,15 +62,17 @@ import { routes } from "../../Configurations/PermissionConfigrations";
 import NotAllowed from "../../Exceptions/NotAllowed";
 import usePermissionDataStore from "../../Zustand/Store/usePermissionDataStore";
 import useInternDataStore from "../../Zustand/Store/useInternDataStore";
+import SideBar from "../../Assets/Static/SideBar";
 
 export default function RouteProtector({ children }) {
   const [darkMode, setDarkMode] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [drawerWidth, setDrawerWidth] = useState(290);
+  const [drawerWidth, setDrawerWidth] = useState(310);
   const [isResizing, setIsResizing] = useState(false);
   const { resetData } = useEmployeeDataStore();
-  const {resetData:clearData } =useInternDataStore();
-  const { Permission, setPermission } = usePermissionDataStore();
+  const { resetData: clearData } = useInternDataStore();
+  const { Permission, isPermissionLoaded, setPermission } =
+    usePermissionDataStore();
 
   const isMobile = useMediaQuery("(max-width:768px)");
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -108,7 +112,7 @@ export default function RouteProtector({ children }) {
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (isResizing && !isMobile) {
-        const newWidth = Math.min(Math.max(e.clientX, 75), 400);
+        const newWidth = Math.min(Math.max(e.clientX, 100), 500);
         setDrawerWidth(newWidth);
       }
     };
@@ -128,7 +132,7 @@ export default function RouteProtector({ children }) {
 
   const { logout, userData, setAccess, login } = useAuthStore();
   const access = userData?.role || "Admin";
-
+  const [loadPermission, setLoadPermission] = useState(true);
   console.log("permission is ", Permission);
 
   const handleLogout = () => {
@@ -213,7 +217,6 @@ export default function RouteProtector({ children }) {
     }
   }, [location, Permission]);
 
-  const gfbfg = location.pathname;
   useEffect(() => {
     const token = localStorage.getItem("token");
     const lastVisitedRoute = localStorage.getItem("lastVisitedRoute");
@@ -261,9 +264,7 @@ export default function RouteProtector({ children }) {
     }
   }, [location.pathname]);
 
-
-
-    useEffect(() => {
+  useEffect(() => {
     const currentPath = location.pathname;
     if (
       currentPath === "/organization/intern/intern-details/add" ||
@@ -273,26 +274,115 @@ export default function RouteProtector({ children }) {
     }
   }, [location.pathname]);
 
+  // useEffect(() => {
+  //   const checkPermission = async () => {
+  //     setLoadPermission(true);
+
+  //     try {
+  //       const res = await axios.get(
+  //         `${MAIN_URL}/api/user/${userData?.metadata?.[0]?.organization_user_id}/has-access`
+  //       );
+
+  //       const allowed = res?.data?.allowed_actions || [];
+  //       setPermission(allowed);
+
+  //       // Redirect immediately if no permission
+  //       if (allowed.length === 0) {
+  //         return navigate("/not-authorised");
+  //       }
+  //     } catch (error) {
+  //       console.error("Permission check error:", error);
+  //     } finally {
+  //       setLoadPermission(false);
+  //     }
+  //   };
+
+  //   if (userData?.metadata?.[0]?.organization_user_id) {
+  //     checkPermission();
+  //   }
+  // }, [userData?.metadata?.[0]?.organization_user_id]);
 
 
   useEffect(() => {
-    const checkPermission = async () => {
-      try {
-        const res = await axios.get(
-          `${MAIN_URL}/api/user/${userData?.metadata[0]?.organization_user_id}/has-access`
-        );
-        console.log("repon", res);
-        setPermission(res?.data?.allowed_actions);
-      } catch (error) {
-        console.error("Permission check error:", error);
+  const checkPermission = async () => {
+    setLoadPermission(true);
+
+    try {
+      const res = await axios.get(
+        `${MAIN_URL}/api/user/${userData?.metadata?.[0]?.organization_user_id}/check-permission-access`
+      );
+
+      const allowed = res?.data?.allowed_actions || [];
+      setPermission(allowed);
+
+      // Optional: Log for debugging
+      console.log('User Permissions:', allowed);
+      console.log('Organization ID:', res?.data?.organization_id);
+      console.log('Application User ID:', res?.data?.application_user_id);
+
+      // Redirect immediately if no permission
+      if (allowed.length === 0) {
+        return navigate("/not-authorised");
       }
-    };
+    } catch (error) {
+      console.error("Permission check error:", error);
+      
+      // Optional: Handle 404 or other errors
+      if (error.response?.status === 404) {
+        navigate("/not-authorised");
+      }
+    } finally {
+      setLoadPermission(false);
+    }
+  };
+
+  if (userData?.metadata?.[0]?.organization_user_id) {
     checkPermission();
-  }, [userData?.metadata?.[0]?.organization_user_id]);
+  }
+}, [userData?.metadata?.[0]?.organization_user_id]);
+
+  
+
+  // 🚫 Block component rendering until permission check finishes
+  if (loadPermission) {
+    return (
+      <Box
+        sx={{
+          height: "80vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            borderRadius: 3,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            minWidth: 260,
+          }}
+        >
+          <CircularProgress />
+          <Typography variant="h6" sx={{ fontWeight: 500 }}>
+            Checking Permissions…
+          </Typography>
+
+          <Typography variant="body2" sx={{ opacity: 0.7 }}>
+            Please wait while we verify your access.
+          </Typography>
+        </Paper>
+      </Box>
+    );
+  }
 
   // 🔐 Route-based Access Control
+
   const currentPath = location.pathname;
-  console.log("current path is sikjs", currentPath);
+  //console.log("current path is sikjs", currentPath);
 
   // Protect Employees Page from Admins
   if (access === "Admin" && currentPath === "/sidebar-option-page-1") {
@@ -304,758 +394,11 @@ export default function RouteProtector({ children }) {
     return <NotAllowed />;
   }
 
-  const handleNavigation = (route) => {
-    navigate(route);
-    if (isMobile) {
-      setMobileOpen(false);
-    }
-  };
-
-  const sidebarOptions = [
-    { kind: "header", title: "" },
-    {
-      heading: "Dashboard",
-      route: "/",
-      title: "Dashboard",
-      icon: <DashboardIcon />,
-    },
-    // {
-    //   heading: "Users",
-    //   route: "/users",
-    //   title: "Users",
-    //   icon: <PeopleAltOutlined />,
-    // },
-    { kind: "divider" },
-
-    {
-      heading: "Employee Management",
-      title: "Employee Management",
-      icon: <SettingsIcon />,
-      children: [
-        {
-          route: "/organization/employee/employee-details",
-          title: "Employees",
-          icon: <LockIcon />,
-        },
-
-        {
-          route: "/organization/employee/employee-exits",
-          title: "Employee Exits",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/organization/employee/records",
-          title: "Employment Records",
-          icon: <LockIcon />,
-        },
-         {
-          route: "/organization/employee/functional-role",
-          title: "Employee Functional Roles",
-          icon: <PeopleAltOutlined />,
-        },
-         {
-          route: "/employment/employee-stages",
-          title: "Employment Stages",
-          icon: <PeopleAltOutlined />,
-        },
-       
-      ],
-    },
-
-    {
-      heading: "Payroll Management",
-      title: "Payroll Management",
-      icon: <SettingsIcon />,
-      children: [
-        {
-          route: "/payroll/cycles",
-          title: "Payroll Cycles",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/component-types",
-          title: "Payroll Component Types",
-          icon: <LockIcon />,
-        },
-
-        {
-          route: "/payroll/components",
-          title: "Payroll Components",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/component-slabs",
-          title: "Payroll Component Slabs",
-          icon: <LockIcon />,
-        },
-
-        {
-          route: "/payroll/employee-salary-structure",
-          title: "Payroll Salary Structures",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/salary-structure/components",
-          title: "Payroll Salary Structure Components",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/advance",
-          title: "Payroll Advances",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/loan-types",
-          title: "Payroll Loan Types",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/loans",
-          title: "Payroll Loans",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/loan-transactions",
-          title: "Payroll Loan Transactions",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/securities",
-          title: "Payroll Securities",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/securities-transactions",
-          title: "Payroll Securities Transactions",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/periods",
-          title: "Payroll Periods",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/runs",
-          title: "Payroll Runs",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/employee-runs",
-          title: "Payroll Employee Runs",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/employee-run/components",
-          title: "Payroll Employee Run Components",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/reimbursements",
-          title: "Payroll Reimbursements",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/reimbursement-types",
-          title: "Payroll Reimbursement Types",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/adjustment-types",
-          title: "Payroll Adjustment Types",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/adjustments",
-          title: "Payroll Adjustments",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/journal-entries",
-          title: "Payroll Journal Entries",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payroll/account-mapping",
-          title: "Payroll Account Mappings",
-          icon: <LockIcon />,
-        },
-
-        {
-          route: "/payroll/payslips",
-          title: "Payslips",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payslips/payments",
-          title: "Payslip Payments",
-          icon: <LockIcon />,
-        },
-        {
-          route: "/payslips/components",
-          title: "Payslip Components",
-          icon: <LockIcon />,
-        },
-      ],
-    },
-
-    {
-      heading: "Document Records",
-      title: "Document Records",
-      icon: <SettingsIcon />,
-      children: [
-        {
-          route: "/employee/document/types",
-          title: "Document Types",
-          icon: <EditIcon />,
-        },
-           {
-          route: "/employee/documents",
-          title: "Documents",
-          icon: <EditIcon />,
-        },
-        // {
-        //   route: "/employee/document/links",
-        //   title: "Links",
-        //   icon: <EditIcon />,
-        // },
-     
-      ],
-    },
-
-    {
-      heading: "Time & Attendance",
-      title: "Time & Attendance",
-      icon: <SettingsIcon />,
-      children: [
-        {
-          route: "/organization/work-shift",
-          title: "WorkShifts",
-          icon: <CalendarMonthIcon />,
-        },
-
-        {
-          route: "/organization/work-shift-assignment",
-          title: "Employee Shift Assignments",
-          icon: <CalendarMonthIcon />,
-        },
-
-        {
-          route: "/organization/work-shift-rotation-pattern",
-          title: "Employee Shift Rotation Patterns",
-          icon: <CalendarMonthIcon />,
-        },
-        {
-          route: "/organization/work-shift-rotation-days",
-          title: "Employee Shift Rotation Days",
-          icon: <CalendarMonthIcon />,
-        },
-        {
-          route: "/organization/work-shift-rotation-assignment",
-          title: "Employee Shift Rotation Assignments",
-          icon: <CalendarMonthIcon />,
-        },
-
-        // {
-        //   route: "/organization/attendance-kiosk",
-        //   title: "Attendance Kiosk",
-        //   icon: <CalendarMonthIcon />,
-        // },
-
-        {
-          route: "/attendance/time-logs",
-          title: "Attendance Time Logs",
-          icon: <EditIcon />,
-        },
-
-        {
-          route: "/attendance/employee-record",
-          title: "Attendance Records",
-          icon: <EditIcon />,
-        },
-
-        {
-          route: "/attendance/employee-record-without-break",
-          title: "Attendance Report Daily",
-          icon: <EditIcon />,
-        },
-      ],
-    },
-
-    // {
-    //   heading: "Attendance Records",
-    //   title: "Attendance Records",
-    //   icon: <SettingsIcon />,
-    //   children: [
-
-    //     // {
-    //     //   route: "/attendance/deviation-reason-type",
-    //     //   title: "Deviation Reason Types",
-    //     //   icon: <EditIcon />,
-    //     // },
-
-    //     //   {
-    //     //   route: "/attendance/deviation-records",
-    //     //   title: "Attendance Deviation Records",
-    //     //   icon: <EditIcon />,
-    //     // },
-    //   ],
-    // },
-
-    {
-      heading: "Leave Management",
-      title: "Leave Management",
-      icon: <SettingsIcon />,
-      children: [
-        {
-          route: "/leave/holiday-calendar",
-          title: "Holiday Calendar",
-          icon: <CalendarMonthIcon />,
-        },
-        {
-          route: "/leave/employee-leaves",
-          title: "Employee Leaves",
-          icon: <EditIcon />,
-        },
-        {
-          route: "/leave/employee-entitlements",
-          title: "Employee Entitlements",
-          icon: <EditIcon />,
-        },
-
-        {
-          route: "/employee-leave-summary",
-          title: "Leave Summaries",
-          icon: <EditIcon />,
-        },
-
-        {
-          route: "/employee-leave-balance-report",
-          title: "Leave Balance Report",
-          icon: <EditIcon />,
-        },
-      ],
-    },
-    {
-      heading: "Salary Updates",
-      title: "Salary Updates",
-      icon: <BusinessIcon />,
-      children: [
-        {
-          heading: "Increment Types",
-          route: "/employee/increment-types",
-          title: "Increment Types",
-          icon: <PeopleAltOutlined />,
-        },
-        {
-          route: "/employee/increment",
-          title: "Increments",
-          icon: <ApartmentIcon />,
-        },
-      ],
-    },
-
-    {
-      heading: "Organization SetUp",
-      title: "Organization SetUp",
-      icon: <CorporateFareIcon />,
-      children: [
-        // {
-        //   route: "/organization/data",
-        //   title: "Organization",
-        //   icon: <CorporateFareIcon />,
-        // },
-        {
-          route: "/organization/details",
-          title: "Organizations",
-          icon: <CorporateFareIcon />,
-        },
-        {
-          route: "/organization/profile",
-          title: "Organization Profile",
-          icon: <AccountCircleOutlined />,
-        },
-        {
-          route: "/organization/departments",
-          title: "Departments",
-          icon: <StoreIcon />,
-        },
-        {
-          route: "/organization/location",
-          title: "Locations",
-          icon: <AddLocationAltIcon />,
-        },
-
-        {
-          route: "/organization/units",
-          title: "Organization Units",
-          icon: <AddLocationAltIcon />,
-        },
-        {
-          route: "/organization/designation",
-          title: "Designations",
-          icon: <LocalPoliceIcon />,
-        },
-        {
-          route: "/organization/registrations",
-          title: "Registration",
-          icon: <AppRegistrationIcon />,
-        },
-        {
-          route: "/attendance/status-type",
-          title: "Attendance Status Types",
-          icon: <EditIcon />,
-        },
-        {
-          route: "/attendance/deviation-reason",
-          title: "Attendance Deviation Reasons",
-          icon: <EditIcon />,
-        },
-        {
-          route: "/attendance/break-type",
-          title: "Attendance Break Types",
-          icon: <EditIcon />,
-        },
-        {
-          route: "/attendance/source",
-          title: "Attendance Sources",
-          icon: <EditIcon />,
-        },
-
-        {
-          route: "/organization/attendance-break",
-          title: "Attendance Breaks",
-          icon: <AppRegistrationIcon />,
-        },
-        {
-          route: "/organization/workshift-break",
-          title: "Workshift Breaks",
-          icon: <AppRegistrationIcon />,
-        },
-        {
-          route: "/organization/leave-policy",
-          title: "Leave Policies",
-          icon: <AppRegistrationIcon />,
-        },
-        {
-          route: "/organization/functional-roles",
-          title: "Organization Functional Roles",
-          icon: <PeopleAltOutlined />,
-        },
-        {
-          route: "/organization/functional-role-specialization",
-          title: "Functional Role Specializations",
-          icon: <PeopleAltOutlined />,
-        },
-      ],
-    },
-  
-    {
-      heading: "Organization Configuration",
-      title: "Organization Configuration",
-      icon: <BusinessIcon />,
-      children: [
-        {
-          route: "/organization-configration/business-ownership-type",
-          title: "Business Ownership Types",
-          icon: <SegmentIcon />,
-        },
-        {
-          route: "/organization-configration/business-registration-type",
-          title: "Business Registration Types",
-          icon: <ApartmentIcon />,
-        },
-        {
-          route: "/organization-configration/unit-types",
-          title: "Business Unit Types",
-          icon: <SegmentIcon />,
-        },
-        {
-          route: "/organization-configration/residential-ownership-type",
-          title: "Residential Ownership Types",
-          icon: <SegmentIcon />,
-        },
-        {
-          route: "/organization-configration/location-ownership-type",
-          title: "Location Ownership Types",
-          icon: <SegmentIcon />,
-        },
-        {
-          route: "/organization-configration/employee-address-types",
-          title: "Address Types",
-          icon: <SegmentIcon />,
-        },
-        {
-          route: "/organization-configration/employee-status",
-          title: "Employment Statuses",
-          icon: <SegmentIcon />,
-        },
-        {
-          route: "/organization-configration/employement-type",
-          title: "Employment Types",
-          icon: <SegmentIcon />,
-        },
-        {
-          route: "/organization-configration/employement-exit-reason-type",
-          title: "Exit Reason Types",
-          icon: <SegmentIcon />,
-        },
-
-        {
-          route: "/organization-configration/employement-exit-reason",
-          title: "Exit Reason",
-          icon: <SegmentIcon />,
-        },
-        {
-          route: "/organization-configration/holiday-types",
-          title: "Holiday Types",
-          icon: <SegmentIcon />,
-        },
-        {
-          route: "/organization-configration/leave-category",
-          title: "Leave Categories",
-          icon: <CategoryIcon />,
-        },
-
-        {
-          route: "/organization-configration/leave-types",
-          title: "Leave Types",
-          icon: <FormatAlignLeftIcon />,
-        },
-        {
-          route: "/organization-configration/leave-reason-type",
-          title: "Leave Reason Types",
-          icon: <AddIcon />,
-        },
-        {
-          route: "/organization-configration/leave-reason",
-          title: "Leave Reasons",
-          icon: <AddIcon />,
-        },
-        {
-          route: "/organization-configration/workshift-types",
-          title: "WorkShift Types",
-          icon: <SettingsSuggestIcon />,
-        },
-        {
-          route: "/organization-configration/work-model",
-          title: "Work Models",
-          icon: <SettingsSuggestIcon />,
-        },
-        {
-          route: "/organization-configration/user-types",
-          title: "User Types",
-          icon: <SettingsSuggestIcon />,
-        },
-        {
-          route: "/organization-configration/languages",
-          title: "Languages",
-          icon: <SettingsSuggestIcon />,
-        },
-        {
-          route: "/organization-configration/datagrid-config",
-          title: "Data Grid Configuration",
-          icon: <SettingsSuggestIcon />,
-        },
-      ],
-    },
-
-     {
-      heading: "Intern Management",
-      title: "Intern Management",
-      icon: <BusinessIcon />,
-      children: [
-        {
-          route: "/intern/internship/types",
-          title: "Internship Types",
-          icon: <SegmentIcon />,
-        },
-
-         {
-          route: "/intern/internship/status",
-          title: "Internship Statuses",
-          icon: <SegmentIcon />,
-        },
-         {
-          route: "/organization/intern/intern-details",
-          title: "Interns",
-          icon: <SegmentIcon />,
-        },
-        {
-          route: "/organization/intern/intern-exit",
-          title: "Intern Exits",
-          icon: <SegmentIcon />,
-        },
-         {
-          route: "/organization/intern/intern-leaves",
-          title: "Intern Leaves",
-          icon: <SegmentIcon />,
-        },
-         {
-          route: "/intern/document/types",
-          title: "Document Types",
-          icon: <SegmentIcon />,
-        },
-         {
-          route: "/organization/intern/intern-stipend",
-          title: "Intern Stipend",
-          icon: <SegmentIcon />,
-        },
-       
-         {
-          route: "/intern/attendance/time-logs",
-          title: "Intern Time logs",
-          icon: <SegmentIcon />,
-        },
-         {
-          route: "/intern/attendance/records",
-          title: "Intern Attendance Records",
-          icon: <SegmentIcon />,
-        },
-         {
-          route: "/intern/certificates",
-          title: "Intern Certificates",
-          icon: <SegmentIcon />,
-        },
-         {
-          route: "/intern/intern-stages",
-          title: "Internship Stages",
-          icon: <SegmentIcon />,
-        },
-      ],
-    },
-
-    {
-      heading: "User management",
-      title: "User management",
-      icon: <BusinessIcon />,
-      children: [
-        {
-          heading: "Users",
-          route: "/users",
-          title: "Users",
-          icon: <PeopleAltOutlined />,
-        },
-        {
-          route: "/application/user-roles",
-          title: "User Roles",
-          icon: <ApartmentIcon />,
-        },
-
-        {
-          route: "/application/user-role-permission",
-          title: "User Role Permissions",
-          icon: <ApartmentIcon />,
-        },
-      ],
-    },
-    // {
-    //   heading: "Functional Roles",
-    //   title: "Functional Roles",
-    //   icon: <BusinessIcon />,
-    //   children: [
-        
-       
-        
-
-       
-    //   ],
-    // },
-
-    {
-      heading: "Settings",
-      title: "Settings",
-      icon: <BusinessIcon />,
-      children: [
-        {
-          heading: "Settings",
-          route: "/organization/settings",
-          title: "Settings",
-          icon: <PeopleAltOutlined />,
-        },
-      ],
-    },
-  ];
 
   console.log("axcess", access);
   console.log("userdata", userData);
 
-  const renderSidebarContent = () => (
-    <Box sx={{ pt: 2 }}>
-      <List>
-        {sidebarOptions?.map((item, index) => {
-          if (item.kind === "divider")
-            return <Divider key={index} sx={{ my: 1 }} />;
-          if (item.kind === "header")
-            return (
-              <Typography
-                key={index}
-                variant="subtitle2"
-                sx={{
-                  pl: 2,
-                  pt: 1.5,
-                  pb: 0.5,
-                  color: "text.secondary",
-                }}
-              >
-                {item.title}
-              </Typography>
-            );
-          if (item.children) {
-            return (
-              <ExpandedSideOption
-                collapsed={collapsed}
-                item={item}
-                key={index}
-                onNavigate={handleNavigation}
-              />
-            );
-          }
-          return (
-            <ListItem
-              button
-              key={item.heading}
-              onClick={() =>
-                item.title === "Logout"
-                  ? handleLogout()
-                  : handleNavigation(item.route)
-              }
-              sx={{
-                py: 1,
-                minWidth: "40px",
-                cursor: "pointer",
-                "&:hover": {
-                  backgroundColor:
-                    theme.palette.mode === "dark"
-                      ? "rgba(255, 255, 255, 0.08)"
-                      : "rgba(0, 0, 0, 0.04)",
-                },
-                ...(location.pathname === item.route && {
-                  backgroundColor:
-                    theme.palette.mode === "dark"
-                      ? "rgba(144, 202, 249, 0.16)"
-                      : "rgba(25, 118, 210, 0.12)",
-                  "& .MuiListItemIcon-root": {
-                    color: theme.palette.primary.main,
-                  },
-                  "& .MuiListItemText-primary": {
-                    color: theme.palette.primary.main,
-                    fontWeight: 600,
-                  },
-                }),
-              }}
-            >
-              {item.icon && (
-                <ListItemIcon sx={{ minWidth: "35px", cursor: "pointer" }}>
-                  {item.icon}
-                </ListItemIcon>
-              )}
-              <ListItemText primary={item.title} sx={{ cursor: "pointer" }} />
-            </ListItem>
-          );
-        })}
-      </List>
-    </Box>
-  );
+  const renderSidebarContent = () => <SideBar Permission={Permission} />;
 
   return (
     <ThemeProvider theme={theme}>
@@ -1063,7 +406,7 @@ export default function RouteProtector({ children }) {
         <CssBaseline />
         <AppBar
           position="static"
-          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          sx={{ zIndex: (theme) => theme.zIndex.drawer + 4 }}
         >
           <Toolbar
             sx={{
@@ -1088,7 +431,9 @@ export default function RouteProtector({ children }) {
                 sx={{
                   fontSize: { xs: "1rem", sm: "1.25rem" },
                   fontWeight: 600,
+                  cursor: "pointer",
                 }}
+                onClick={() => navigate("/")}
               >
                 HR ERP
               </Typography>
@@ -1103,20 +448,19 @@ export default function RouteProtector({ children }) {
                 minWidth: 0,
               }}
             >
-            <Typography
-              variant="h6"
-              sx={{
-                textTransform: "capitalize",
-                fontSize: { lg: "1.1rem" },
-                cursor: "pointer",
-                "&:hover": { textDecoration: "underline" },
-              }}
-              noWrap
-              onClick={() => navigate("/organization/details")}
-            >
-              {userData?.organization?.organization_name}
-            </Typography>
-
+              <Typography
+                variant="h6"
+                sx={{
+                  textTransform: "capitalize",
+                  fontSize: { lg: "1.1rem" },
+                  cursor: "pointer",
+                  // "&:hover": { textDecoration: "underline" },
+                }}
+                noWrap
+                onClick={() => navigate("/organization/details")}
+              >
+                {userData?.organization?.organization_name}
+              </Typography>
             </Box>
 
             <Box
@@ -1166,7 +510,7 @@ export default function RouteProtector({ children }) {
                 onClose={handleCloseUserMenu}
                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                 transformOrigin={{ vertical: "top", horizontal: "right" }}
-                PaperProps={{ sx: { mt: 1, p: 1, width: 290 } }}
+                PaperProps={{ sx: { mt: 1, p: 1, width: 310 } }}
               >
                 <List disablePadding>
                   {access.system_role_name === "Admin" && (
@@ -1174,11 +518,16 @@ export default function RouteProtector({ children }) {
                       Profile
                     </MenuItem>
                   )}
-                  <MenuItem
-                    onClick={() => navigate("/settings/change-password")}
-                  >
-                    Change Password
-                  </MenuItem>
+
+                  <>
+                  {Permission && Permission.includes("USER_RESET_PASSWORD") && (
+                    <MenuItem
+                      onClick={() => navigate("/settings/change-password")}
+                    >
+                      Change Password
+                    </MenuItem>
+                  )}
+                  </>
                   <MenuItem onClick={handleLogout}>Logout</MenuItem>
                 </List>
               </Popover>

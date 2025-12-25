@@ -61,6 +61,20 @@ function BusinessOwnershipTypeList() {
           },
         }
       );
+
+      if (response.status === 200) {
+        toast.success(response.data.message);
+      } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Business Ownership Type";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
+
       console.log("ownership type->", response.data.message);
     } catch (error) {
       if (error.response && error.response.status === 401) {
@@ -88,14 +102,25 @@ function BusinessOwnershipTypeList() {
   );
 
 
+
+                 const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization-configration/business-ownership-type/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
+
   return (
     <>
       <Layout4
         loading={loading}
+        add_action={"BUSINESS_OWNERSHIP_TYPE_ADD"}
         heading={"Business Ownership Type"}
         btnName={"Add Business Ownership Type"}
         Data={ownershipTypes}
-        delete_action={"ORG_CONFIG_DELETE"}
+        delete_action={"BUSINESS_OWNERSHIP_TYPE_DELETE"}
         tableHeaders={[
           {
             name: "Business Ownership Type Name",
@@ -140,6 +165,8 @@ function BusinessOwnershipTypeList() {
         token={localStorage.getItem("token")}
          organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}
+        handleShow={handleShow}
+        edit_delete_action={["BUSINESS_OWNERSHIP_TYPE_DELETE", "BUSINESS_OWNERSHIP_TYPE_EDIT"]}
         // Optional: Explicitly define visible columns
         config={{
           defaultVisibleColumns: defaultVisibleColumns,

@@ -54,6 +54,21 @@ function WorkModelList() {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },}
         );
+
+         if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Work Model";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
+
+
       } catch (error) { if (error.response && error.response.status === 401) {
   toast.error("Session Expired!");
   window.location.href = "/login";
@@ -81,6 +96,15 @@ function WorkModelList() {
   );
 
 
+
+                        const handleShow = useCallback(
+      (item) => {
+        navigate(`/organization-configration/work-model/view/${item.id}`)
+      },
+      [navigate],
+    )
+
+
   return (
 
     <>
@@ -88,8 +112,9 @@ function WorkModelList() {
       loading={loading}
       heading={"Work Model"}
       btnName={"Add Work Model"}
+      add_action={"WORK_MODEL_ADD"}
       Data={workmodel}
-       delete_action={"ORG_CONFIG_DELETE"}
+       delete_action={"WORK_MODEL_DELETE"}
       Icons={[
         <AutorenewIcon sx={{ fontSize: 60, color: "grey.500", mb: 2 }} />,
         <NextWeekIcon color="primary" />,
@@ -113,7 +138,7 @@ function WorkModelList() {
 
     
         <TableDataGeneric
-          tableName="Employees"
+          tableName="Work Models"
           primaryKey="organization_work_model_id"
           heading="Work Models"
           data={workmodel}
@@ -123,7 +148,9 @@ function WorkModelList() {
           Route="/organization-configration/work-model"
           DeleteFunc={deleteWorkModel}
             EditFunc={handleEdit}
+            handleShow={handleShow}
           token={localStorage.getItem("token")}
+          edit_delete_action={["WORK_MODEL_DELETE", "WORK_MODEL_EDIT"]}
                       organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}
         config={{

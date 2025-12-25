@@ -177,14 +177,25 @@ function WorkshiftBreakList() {
   );
 
 
+
+           const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/workshift-break/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
+
   return (
     <>
     <Layout4
       loading={loading}
       heading={"Workshift Break"}
       btnName={"Add Break"}
+      add_action={"WORKSHIFT_BREAK_ADD"}
       Data={Break}
-      delete_action={"ORG_STRUCTURE_DELETE"}
+      delete_action={"WORKSHIFT_BREAK_DELETE"}
       tableHeaders={[
        
         {
@@ -227,6 +238,8 @@ function WorkshiftBreakList() {
           Route="/organization/workshift-break"
           DeleteFunc={deleteBreak}
           EditFunc={handleEdit}
+          handleShow={handleShow}
+          edit_delete_action={["WORKSHIFT_BREAK_DELETE", "WORKSHIFT_BREAK_EDIT"]}
           token={localStorage.getItem("token")}
           configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

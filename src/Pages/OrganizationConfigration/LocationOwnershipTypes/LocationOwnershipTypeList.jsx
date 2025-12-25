@@ -55,6 +55,21 @@ const { userData } = useAuthStore();
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },}
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Location Ownership Type";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
+
+
     } catch (error) { if (error.response && error.response.status === 401) {
   toast.error("Session Expired!");
   window.location.href = "/login";
@@ -91,8 +106,9 @@ const handleEdit = useCallback(
       loading={loading}
       heading={" Location Ownership Types"}
       btnName={"Add Location Ownership Type"}
+      add_action={"LOCATION_OWNERSHIP_TYPE_ADD"}
       Data={locationType}
-       delete_action={"ORG_CONFIG_DELETE"}
+       delete_action={"LOCATION_OWNERSHIP_TYPE_DELETE"}
         tableHeaders={[
         {name : "Location Ownership Types" , value_key : "location_ownership_type_name" ,textStyle: "capitalize",},
           {name : "Description" , value_key : "description" },
@@ -128,6 +144,7 @@ const handleEdit = useCallback(
         DeleteFunc={deletelocationtype}
          EditFunc={handleEdit}
         token={localStorage.getItem("token")}
+        edit_delete_action={["LOCATION_OWNERSHIP_TYPE_DELETE", "LOCATION_OWNERSHIP_TYPE_EDIT"]}
         organizationUserId={userData?.organization_user_id} // Pass user ID
           showLayoutButtons={true}
            config={{

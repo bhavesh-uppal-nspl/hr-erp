@@ -131,6 +131,7 @@ function EmployeePayslipComponentList() {
         sortname={"component_name"}
         showActions={true}
         Route="/payslips/components"
+        edit_delete_action={["EMPLOYEE_PAYS_COMPONENT_DELETE", "EMPLOYEE_PAYS_COMPONENT_EDIT"]}
         DeleteFunc={deleteBreak}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}

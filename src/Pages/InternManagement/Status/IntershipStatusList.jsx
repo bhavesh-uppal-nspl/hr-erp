@@ -127,15 +127,34 @@ function IntershipStatusList() {
         }
       );
     } catch (error) {
-      if (error.response && error.response.status === 401) {
+
+      console.log("error is ", error)
+    // 🔹 Handle different error responses from backend
+    if (error.response) {
+      const status = error.response.status;
+
+      console.log("stataus ", status)
+      const backendMessage = error.response.data?.message || error.response.data?.error;
+
+      console.log("backend message ", backendMessage)
+
+      if (status === 400 && backendMessage?.includes("already assigned")) {
+        // Custom message from Laravel when type is assigned
+        toast.error("This Status is already assigned and cannot be deleted.");
+      } else if (status === 401) {
         toast.error("Session Expired!");
         window.location.href = "/login";
+      } else {
+        toast.error(backendMessage || "Failed to delete Intership Status");
       }
-      console.error("Delete failed:", error);
-      toast.error(
-        error.response?.data?.error || "Failed to delete Attendance Status Type"
-      );
+
+      console.error("Delete failed:", error.response);
+    } else {
+      // Network or other unexpected errors
+      console.error("Unexpected error:", error);
+      toast.error("An unexpected error occurred while deleting.");
     }
+  }
   };
 
   const handleEdit = useCallback(
@@ -145,13 +164,21 @@ function IntershipStatusList() {
     [navigate]
   );
 
+
+             const handleShow = useCallback(
+    (item) => {
+      navigate(`/intern/internship/status/view/${item.id}`)
+    },
+    [navigate],
+  )
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Internship Status"}
-        btnName={"Add Status"}
-        delete_action={""}
+        btnName={null}
+        delete_action={"INTERNSHIP_STATUS_DELETE"}
         Data={types}
         tableHeaders={[
           {
@@ -197,6 +224,7 @@ function IntershipStatusList() {
         // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-status-type`}
         Route="/intern/internship/status"
         DeleteFunc={deleteStatus}
+        handleShow={handleShow}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
         configss={configColumns}

@@ -7,6 +7,7 @@ import {
   MenuItem,
   TextField,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -75,7 +76,7 @@ function LeavePolicyForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit"  || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -223,28 +224,59 @@ function LeavePolicyForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Leave Entitlement"
-                  name="organization_leave_entitlement_id"
-                  value={formData.organization_leave_entitlement_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_leave_entitlement_id}
-                  helperText={formErrors.organization_leave_entitlement_id}
-                  required
+            
+
+
+             
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {leaveEntitle?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_leave_entitlement_id}
-                        value={option.organization_leave_entitlement_id}
-                      >
-                        {option?.leavetype?.leave_type_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+                  
+                  <Autocomplete
+                fullWidth
+                  options={leaveEntitle || []}
+                  getOptionLabel={(option) =>
+                    option.leavetype?.leave_type_name || ""
+                  }
+                  value={
+                    leaveEntitle?.find(
+                      (option) =>
+                        option.organization_leave_entitlement_id ===
+                        formData.organization_leave_entitlement_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_leave_entitlement_id",
+                        value:
+                          newValue?.organization_leave_entitlement_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || leaveEntitle?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Leave Entitlement"
+                      error={
+                        !!formErrors.organization_leave_entitlement_id
+                      }
+                      helperText={
+                        formErrors.organization_leave_entitlement_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
 
                 <TextField
                   fullWidth
@@ -252,31 +284,35 @@ function LeavePolicyForm({ mode }) {
                   name="policy_name"
                   value={formData?.policy_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.policy_name}
                   helperText={formErrors.policy_name}
                   inputProps={{ maxLength: 100 }}
                   required
                 />
+                </Box>
 
-                <TextField
-                  fullWidth
-                  label="Policy Description"
-                  name="policy_description"
-                  value={formData.policy_description}
-                  onChange={handleChange}
-                  error={!!formErrors.policy_description}
-                  helperText={formErrors.policy_description}
-                  inputProps={{ maxLength: 100 }}
-                  multiline
-                  minRows={3}
-                  maxRows={5}
-                />
 
+
+                
+
+                 
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                  
                 <TextField
                   select
                   fullWidth
                   label="Usage Period"
                   name="usage_period"
+                  disabled={mode === "view"}
                   value={formData.usage_period}
                   onChange={handleChange}
                   error={!!formErrors.usage_period}
@@ -293,6 +329,7 @@ function LeavePolicyForm({ mode }) {
                 <TextField
                   fullWidth
                   type="number"
+                 
                   label="Max Leave Per Period"
                   name="max_leaves_per_period"
                   value={formData.max_leaves_per_period}
@@ -305,7 +342,7 @@ function LeavePolicyForm({ mode }) {
                       : "")
                   }
                   required={formData.usage_period !== "custom"}
-                  disabled={formData.usage_period === "custom"}
+                  disabled={formData.usage_period === "custom" || mode === "view"}
                   InputLabelProps={{ shrink: true }}
                   inputProps={{
                     step: "1",
@@ -323,7 +360,7 @@ function LeavePolicyForm({ mode }) {
                   onChange={handleChange}
                   error={!!formErrors.custom_period_days}
                   helperText={formErrors.custom_period_days}
-                  disabled={formData.usage_period !== "custom"}
+                  disabled={formData.usage_period !== "custom"  || mode === "view"}
                   InputLabelProps={{ shrink: true }}
                   inputProps={{
                     step: "1",
@@ -331,6 +368,27 @@ function LeavePolicyForm({ mode }) {
                     max: "366",
                   }}
                 />
+
+
+                  
+                </Box>
+
+                <TextField
+                  fullWidth
+                  label="Policy Description"
+                  name="policy_description"
+                  value={formData.policy_description}
+                  onChange={handleChange}
+                  disabled={mode === "view"}
+                  error={!!formErrors.policy_description}
+                  helperText={formErrors.policy_description}
+                  inputProps={{ maxLength: 100 }}
+                  multiline
+                  minRows={3}
+                  maxRows={5}
+                />
+
+
 
               
               </Grid>
@@ -343,7 +401,7 @@ function LeavePolicyForm({ mode }) {
                                 color="primary"
                                 size="medium"
                                 onClick={handleSubmit}
-                                disabled={loading || btnLoading}
+                                disabled={loading || btnLoading || mode === "view"}
                                 sx={{
                                   borderRadius: 2,
                                   minWidth: 120,

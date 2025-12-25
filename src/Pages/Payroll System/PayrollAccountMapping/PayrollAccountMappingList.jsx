@@ -134,6 +134,7 @@ function PayrollAccountMappingList() {
         showActions={true}
         Route="/payroll/account-mapping"
         DeleteFunc={deleteBreak}
+        edit_delete_action={["PAYROLL_ACCOUNT_MAPPING_DELETE", "PAYROLL_ACCOUNT_MAPPING_EDIT"]}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
       />

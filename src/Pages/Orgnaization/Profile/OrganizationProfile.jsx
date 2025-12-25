@@ -13,6 +13,7 @@ import {
   CircularProgress,
   useMediaQuery,
   useTheme,
+  Autocomplete,
 } from "@mui/material";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import useAuthStore from "../../../Zustand/Store/useAuthStore";
@@ -258,7 +259,7 @@ if (profile.website.trim()) {
             }}
           />
 
-          <TextField
+          {/* <TextField
             select
             fullWidth
             label="Business Ownership Type"
@@ -277,7 +278,48 @@ if (profile.website.trim()) {
                 {option.organization_business_ownership_type_name}
               </MenuItem>
             ))}
-          </TextField>
+          </TextField> */}
+
+
+<Autocomplete
+  fullWidth
+  options={BusinessOwnershipType || []}
+  getOptionLabel={(option) => option?.organization_business_ownership_type_name || ""}
+  value={
+    BusinessOwnershipType?.find(
+      (option) =>
+        option.organization_business_ownership_type_id ===
+        profile.organization_business_ownership_type_id
+    ) || null
+  }
+  onChange={(event, newValue) => {
+    handleProfileChange({
+      target: {
+        name: "organization_business_ownership_type_id",
+        value: newValue?.organization_business_ownership_type_id || "",
+      },
+    });
+  }}
+  disabled={BusinessOwnershipType?.length === 0}
+  isOptionEqualToValue={(option, value) =>
+    option.organization_business_ownership_type_id === value.organization_business_ownership_type_id
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Business Ownership Type"
+      name="organization_business_ownership_type_id"
+      error={!!formErrors.organization_business_ownership_type_id}
+      helperText={formErrors?.organization_business_ownership_type_id}
+      margin="normal"
+      fullWidth
+    />
+  )}
+/>
+
+
+
+
 
           <TextField
             fullWidth

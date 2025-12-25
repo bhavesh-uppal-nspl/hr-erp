@@ -40,7 +40,7 @@ function UserRoleForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -134,6 +134,7 @@ function UserRoleForm({ mode }) {
                                     name="user_role_name"
                                     value={formData.user_role_name }
                                     onChange={handleChange}
+                                    disabled={mode === "view"}
                                     error={!!formErrors.user_role_name }
                                     helperText={formErrors.user_role_name }
                                     required
@@ -145,6 +146,7 @@ function UserRoleForm({ mode }) {
                                     label="Description"
                                     name="description"
                                     value={formData.description}
+                                    disabled={mode === "view"}
                                     onChange={handleChange}
                                     error={!!formErrors.description}
                                     helperText={formErrors.description}
@@ -162,7 +164,7 @@ function UserRoleForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

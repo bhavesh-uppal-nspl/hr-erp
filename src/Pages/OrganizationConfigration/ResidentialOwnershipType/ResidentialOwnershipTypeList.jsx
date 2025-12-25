@@ -54,6 +54,19 @@ const { userData } = useAuthStore();
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },}
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Residentail Ownership Type";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) { if (error.response && error.response.status === 401) {
   toast.error("Session Expired!");
   window.location.href = "/login";
@@ -90,8 +103,9 @@ const { userData } = useAuthStore();
       loading={loading}
       heading={"Residential Ownership Types"}
       btnName={"Add  Residential Ownership Type"}
+      add_action={"RESIDENTIAL_OWNERSHIP_TYPE_ADD"}
       Data={residentialType}
-       delete_action={"ORG_CONFIG_DELETE"}
+       delete_action={"RESIDENTIAL_OWNERSHIP_TYPE_DELETE"}
           tableHeaders={[
         {name : "Residential Ownership Types" , value_key : "residential_ownership_type_name" ,textStyle: "capitalize",},
           {name : "Description" , value_key : "description" },
@@ -131,6 +145,7 @@ const { userData } = useAuthStore();
         token={localStorage.getItem("token")}
         organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}
+        edit_delete_action={["RESIDENTIAL_OWNERSHIP_TYPE_DELETE", "RESIDENTIAL_OWNERSHIP_TYPE_EDIT"]}
         // Optional: Explicitly define visible columns    
         config={{
           defaultVisibleColumns: ["residential_ownership_type_name","description"],

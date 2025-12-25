@@ -12,6 +12,7 @@ import {
   FormControlLabel,
   Switch,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -59,7 +60,14 @@ function WorkShiftRotationAssignmentForm({ mode }) {
 
   useEffect(() => {
     fetchOrganizationEmployee(org?.organization_id)
-      .then((data) => setEmployee(data?.employees))
+      .then((data) =>{
+
+        const filteredEmployees = data?.filter(
+          (item) => item.employment_status !== "Exited"
+        );
+        setEmployee(filteredEmployees);
+
+      })
       .catch((err) => setFormErrors(err.message));
   }, []);
 
@@ -104,7 +112,7 @@ function WorkShiftRotationAssignmentForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if (( mode === "edit"  || mode === "view" ) && id) {
       setLoading(true);
       getdataById();
     }
@@ -185,57 +193,103 @@ function WorkShiftRotationAssignmentForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Employee Name/ID"
-                  name="employee_id"
-                  value={formData?.employee_id}
-                  onChange={handleChange}
-                  error={!!formErrors.employee_id}
-                  helperText={formErrors.employee_id}
-                  required
-                >
-                  {employee?.map((option) => {
-                    const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.employee_code || ""}`.trim();
-                    return (
-                      <MenuItem
-                        key={option?.employee_id}
-                        value={option?.employee_id}
-                      >
-                        {fullName ? fullName : option?.employee_id}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+               
 
-                <TextField
-                  select
+
+
+
+                <Autocomplete
                   fullWidth
-                  label="Workshift Pattern"
-                  name="organization_work_shift_rotation_pattern_id"
-                  value={formData?.organization_work_shift_rotation_pattern_id}
-                  onChange={handleChange}
-                  error={
-                    !!formErrors.organization_work_shift_rotation_pattern_id
+                  options={employee || []}
+                  getOptionLabel={(option) =>
+                    `${option?.name || ""} ( ${option?.employee_code || ""})`.trim()
                   }
-                  helperText={
-                    formErrors.organization_work_shift_rotation_pattern_id
+                  value={
+                    employee?.find(
+                      (emp) => emp.employee_id === formData?.employee_id
+                    ) || null
                   }
-                  required
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "employee_id",
+                        value: newValue?.employee_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || employee?.length === 0  || mode === "view"}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Employee Name/ID"
+                      name="employee_id"
+                      error={!!formErrors.employee_id}
+                      helperText={formErrors.employee_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+
+
+
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {Pattern?.map((option) => (
-                    <MenuItem
-                      key={option.organization_work_shift_rotation_pattern_id}
-                      value={
-                        option?.organization_work_shift_rotation_pattern_id
+
+                  
+                 <Autocomplete
+                fullWidth
+               
+                  options={Pattern || []}
+                  getOptionLabel={(option) =>
+                    option.pattern_name || ""
+                  }
+                  value={
+                    Pattern?.find(
+                      (option) =>
+                        option.organization_work_shift_rotation_pattern_id ===
+                        formData.organization_work_shift_rotation_pattern_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_work_shift_rotation_pattern_id",
+                        value:
+                          newValue?.organization_work_shift_rotation_pattern_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || Pattern?.length === 0  || mode === "view"}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Workshift Pattern"
+                      error={
+                        !!formErrors.organization_work_shift_rotation_pattern_id
                       }
-                    >
-                      {option?.pattern_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                      helperText={
+                        formErrors.organization_work_shift_rotation_pattern_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+
+
 
 
                 <TextField
@@ -243,6 +297,7 @@ function WorkShiftRotationAssignmentForm({ mode }) {
                   label="Effective Start Date"
                   name="effective_start_date"
                   type="date"
+                  disabled= {mode === "view"}
                   value={formData?.effective_start_date}
                   onChange={handleChange}
                   error={!!formErrors.effective_start_date}
@@ -251,11 +306,26 @@ function WorkShiftRotationAssignmentForm({ mode }) {
                   required
                 />
 
+
+                </Box>
+
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                  
                 <TextField
                   fullWidth
                   label="Effective End Date"
                   name="effective_end_date"
                   type="date"
+                  disabled= {mode === "view"}
                   value={formData?.effective_end_date}
                   onChange={handleChange}
                   error={!!formErrors.effective_end_date}
@@ -267,6 +337,7 @@ function WorkShiftRotationAssignmentForm({ mode }) {
                 <TextField
                   fullWidth
                   type="number"
+                  disabled= {mode === "view"}
                   label="Anchor day No."
                   name="anchor_day_number"
                   value={formData?.anchor_day_number}
@@ -282,6 +353,13 @@ function WorkShiftRotationAssignmentForm({ mode }) {
                   InputLabelProps={{ shrink: true }}
                   inputProps={{ min: "1", max: "366" }}
                 />
+
+
+                </Box>
+
+
+
+
 
                 <TextField
                   fullWidth
@@ -308,7 +386,7 @@ function WorkShiftRotationAssignmentForm({ mode }) {
                                  color="primary"
                                  size="medium"
                                  onClick={handleSubmit}
-                                 disabled={loading || btnLoading}
+                                 disabled={loading || btnLoading || mode === "view"}
                                  sx={{
                                    borderRadius: 2,
                                    minWidth: 120,

@@ -93,6 +93,7 @@ function PayslipPaymentList() {
         loading={loading}
         heading={"Payroll Payments"}
         btnName={"Add Payments"}
+        add_action={"PAYS_PAYMENT_ADD"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
@@ -125,7 +126,8 @@ function PayslipPaymentList() {
 
       <TableDataGeneric
         tableName="Payslips Payments"
-        primaryKey="employee_payslip_payment_id "
+        primaryKey="employee_payslip_payment_id"
+        edit_delete_action={["PAYS_PAYMENT_DELETE", "PAYS_PAYMENT_EDIT"]}
         heading="Payslip Payments"
         data={Break}
         sortname={"payment_mode"}

@@ -171,7 +171,8 @@ function OrganizationUnitList() {
         heading={"Organization Units"}
         btnName={"Add Organization Units"}
         Data={units}
-        delete_action={"ORG_STRUCTURE_DELETE"}
+        add_action={"UNITS_ADD"}
+        delete_action={"UNITS_DELETE"}
         tableHeaders={[
           {
             name: "Unit Name",
@@ -216,6 +217,7 @@ function OrganizationUnitList() {
         Route="/organization/units"
         DeleteFunc={deleteunits}
         EditFunc={handleEdit}
+        edit_delete_action={["UNITS_DELETE", "UNITS_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

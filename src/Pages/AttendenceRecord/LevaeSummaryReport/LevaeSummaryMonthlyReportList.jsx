@@ -22,7 +22,7 @@ function LeaveSummaryMonthlyReport() {
       setLoading(true);
       fetchEmployeeLeaveMonthlySummaryReport(org?.organization_id)
         .then((data) => {
-          let a = data?.summary || [];
+          let a = data?.summary|| [];
           console.log("a gbsg", a)
           let b = a.map((item) => {
             return {
@@ -75,7 +75,7 @@ function LeaveSummaryMonthlyReport() {
     <Layout1
       loading={loading}
       heading={"Employee Leave Monthly Summary Report"}
-      btnName={" Report"}
+      btnName={"Report"}
       Data={leaves}
       tableHeaders={[
         {

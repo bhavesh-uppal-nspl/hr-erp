@@ -194,54 +194,40 @@ function InternAttendanceTimelogsList() {
     setLoading(false);
   };
 
-  let deleteemployeeleave = async (id) => {
-    try {
-      const org_id = org.organization_id;
-      const response = await axios.delete(
-        `${MAIN_URL}/api/organizations/${org_id}/intern-time-logs/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      loadAttendanceLogs();
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        toast.error("Session Expired!");
-        window.location.href = "/login";
+const handleDelete = async (id) => {
+  try {
+    const response = await fetch(
+      `${MAIN_URL}/api/organizations/${org?.organization_id}/intern-time-logs/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
       }
-      console.error("Delete failed:", error);
-      toast.error(
-        error.response?.data?.error || "Failed to delete Attendance Time Log"
-      );
-    }
-  };
+    );
 
-  const handleDelete = async (id) => {
-    try {
-      const response = await fetch(
-        `${MAIN_URL}/api/organizations/${org?.organization_id}/intern-time-logs/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+    const data = await response.json(); // ✅ Parse JSON manually
+
+    if (response.ok) {
+      toast.success(data.message || "Attendance log deleted successfully");
+    
       setLeaves((prev) => prev.filter((item) => item.id !== id));
-      toast.success("Attendance log deleted successfully");
-      console.log("Successfully deleted units-types with id:", id);
-      return Promise.resolve();
-    } catch (error) {
-      console.error("Delete failed:", error);
-      return Promise.reject(error);
+
+       window.location.reload();
+      console.log("Successfully deleted time log with id:", id);
+      return;
     }
-  };
+
+    // ❌ If not ok, throw to go into catch()
+    throw new Error(data.error || data.message || "Failed to delete record");
+
+  } catch (error) {
+    console.error("Delete failed:", error);
+    toast.error(error.message || "An unexpected error occurred while deleting.");
+  }
+};
+
 
   const handleEdit = useCallback(
     (item) => {
@@ -251,6 +237,15 @@ function InternAttendanceTimelogsList() {
     [navigate]
   );
 
+
+               const handleShow = useCallback(
+    (item) => {
+      navigate(`/intern/attendance/time-logs/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   return (
     <>
       <Layout4
@@ -258,7 +253,7 @@ function InternAttendanceTimelogsList() {
         heading={"Intern Attendance Time Logs"}
         btnName={"Add Time Log"}
         Data={leaves}
-        delete_action={"LEAVE_DELETE"}
+        delete_action={"INTERN_TIME_LOG_DELETE"}
         tableHeaders={[
           { name: "Employee Code", value_key: "employee_code" },
           { name: "Employee Name", value_key: "name", textStyle: "capitalize" },
@@ -285,7 +280,7 @@ function InternAttendanceTimelogsList() {
         ]}
         Route={"/intern/attendance/time-logs"}
         setData={setLeaves}
-        DeleteFunc={deleteemployeeleave}
+        DeleteFunc={handleDelete}
       />
 
       <TableDataGeneric
@@ -298,6 +293,7 @@ function InternAttendanceTimelogsList() {
      
         Route="/intern/attendance/time-logs"
         DeleteFunc={handleDelete}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
 configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

@@ -45,7 +45,7 @@ function UserTypeForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -60,8 +60,8 @@ function UserTypeForm({ mode }) {
   const validateForm = () => {
     const errors = {};
 
-    if (!formData.work_shift_type_name)
-      errors.work_shift_type_name = "User Type Name is required.";
+    if (!formData.user_type_name)
+      errors.user_type_name = "User Type Name is required.";
 
     setFormErrors(errors);
     return Object.keys(errors)?.length === 0;
@@ -122,7 +122,7 @@ function UserTypeForm({ mode }) {
         updateMessage={"User Type"}
         addMessage={"User Type"}
         homeLink={"/organization-configration/user-types"}
-        homeText={"WorkShift Type"}
+        homeText={"User Type"}
       />
       {loading ? (
         <Grid container spacing={2}>
@@ -141,6 +141,7 @@ function UserTypeForm({ mode }) {
                   name="user_type_name"
                   value={formData.user_type_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.user_type_name}
                   helperText={formErrors.user_type_name}
                   inputProps={{ maxLength: 50 }}
@@ -149,10 +150,11 @@ function UserTypeForm({ mode }) {
 
                 <TextField
                   fullWidth
-                  label="Type Short Name"
+                  label="User Type Code"
                   name="user_type_code"
                   value={formData.user_type_code}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.user_type_code}
                   helperText={formErrors.user_type_code}
                   inputProps={{ maxLength: 30 }}
@@ -162,6 +164,7 @@ function UserTypeForm({ mode }) {
                   label="Description"
                   name="description"
                   value={formData.description}
+                  disabled={mode === "view"}
                   onChange={handleChange}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
@@ -177,7 +180,7 @@ function UserTypeForm({ mode }) {
                                  color="primary"
                                  size="medium"
                                  onClick={handleSubmit}
-                                 disabled={loading || btnLoading}
+                                 disabled={loading || btnLoading || mode === "view"}
                                  sx={{
                                    borderRadius: 2,
                                    minWidth: 120,

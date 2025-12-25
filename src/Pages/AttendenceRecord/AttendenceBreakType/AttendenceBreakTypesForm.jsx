@@ -49,7 +49,7 @@ function AttendenceBreakTypesForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -151,6 +151,7 @@ function AttendenceBreakTypesForm({ mode }) {
                   name="attendance_break_type_name"
                   value={formData.attendance_break_type_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.attendance_break_type_name}
                   helperText={formErrors.attendance_break_type_name}
                   required
@@ -163,9 +164,10 @@ function AttendenceBreakTypesForm({ mode }) {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
-                  inputProps={{ maxLength: 255 }}
+                  inputProps={{maxLength: 255}}
                   multiline
                   minRows={3}
                   maxRows={5}
@@ -176,7 +178,7 @@ function AttendenceBreakTypesForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

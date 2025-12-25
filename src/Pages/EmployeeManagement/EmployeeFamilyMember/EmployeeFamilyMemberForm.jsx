@@ -49,7 +49,14 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
   const [btnLoading, setbtnLoading] = useState(false);
   const [employee, setEmployee] = useState([]);
 
-  const current_status = ["Studying", "Working", "Unemployed", "Retired","Homemaker","Other"];
+  const current_status = [
+    "Studying",
+    "Working",
+    "Unemployed",
+    "Retired",
+    "Homemaker",
+    "Other",
+  ];
   const marital_status = [
     "Married",
     "Unmarried",
@@ -57,7 +64,6 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
     "Divorced",
     "Other",
   ];
-
 
   const relationship = [
     "Father",
@@ -75,7 +81,7 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
     "Grandfather in law",
     "Grandmother in law",
     "Son",
-    "Daughter"
+    "Daughter",
   ];
 
   const [expanded, setExpanded] = useState("Family 1");
@@ -84,38 +90,6 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
     setExpanded(isExpanded ? panelId : "");
   };
   let navigate = useNavigate();
-
-  // useEffect(() => {
-  //   {
-  //     fetchOrganizationEmployee(org.organization_id)
-  //       .then((data) => {
-  //         setEmployee(data.employees.data);
-  //       })
-  //       .catch((err) => {
-  //         setFamilyErrors(err.message);
-  //       });
-  //   }
-  // }, []);
-  // useEffect(() => {
-  //   let getdataById = async () => {
-  //     const response = await axios.get(
-  //       `${MAIN_URL}/api/organizations/${org.organization_id}/employee-family-details/${id}`,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //         },
-  //       }
-  //     );
-  //     let a = response.data.education;
-  //     setsection?.mainData?(a);
-  //     setLoading(false);
-  //   };
-  //   if (mode === "edit" && id) {
-  //     setLoading(true);
-  //     getdataById();
-  //   }
-  // }, [mode, id]);
-
   const handleChange = (e, idx) => {
     const { name, value } = e.target;
 
@@ -133,68 +107,69 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
 
   return (
     <Box px={4}>
-      {/* <Header mode={mode}
-        updateMessage={"Employement's Type"}
-        addMessage={"Employement's Type"}
-        homeLink={"/employement/types"}
-        homeText={"Employement's Type"}
-      /> */}
-
-        <Box>
-          {Family?.map((item, id) => ({
-            name: `Family ${id + 1}`,
-            mainData: item,
-          }))?.map((section, idx) => (
-            <Accordion
-              sx={{ mb: 2 }}
-              key={section.name}
-              expanded={expanded === section.name}
-              onChange={handleChangeAccoridan(section.name)}
-            >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    width: "100%",
-                  }}
+      <Box>
+        {Family?.map((item, id) => ({
+          name: `Family ${id + 1}`,
+          mainData: item,
+        }))?.map((section, idx) => (
+          <Accordion
+            sx={{ mb: 2 }}
+            key={section.name}
+            expanded={expanded === section.name}
+            onChange={handleChangeAccoridan(section.name)}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ fontSize: "15px", fontWeight: "bold" }}
                 >
-                  <Typography
-                    variant="h6"
-                    sx={{ fontSize: "15px", fontWeight: "bold" }}
-                  >
-                    {section.name}
-                  </Typography>
-                  {idx != 0 && (
-                    <DeleteOutlineIcon
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFamily(idx);
-                      }}
-                      sx={{ color: "error.main", ml: 2 }}
-                    />
-                  )}
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails>
-                {expanded === section.name && (
-                  <Grid item xs={12} md={8}>
-                    <Paper elevation={4} sx={{ p: 3 }}>
-                      <Grid container spacing={2}>
-
-
-
-                           <FormControl
+                  {section.name}
+                </Typography>
+                {idx != 0 && (
+                  <DeleteOutlineIcon
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFamily(idx);
+                    }}
+                    sx={{ color: "error.main", ml: 2 }}
+                  />
+                )}
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              {expanded === section.name && (
+                // <Grid item xs={12} md={8}>
+                  <Paper elevation={4} sx={{ p: 3 }}>
+                    <Grid container spacing={2}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          gap: 2, 
+                          width: "100%", 
+                        }}
+                      >
+                        
+                        <FormControl
+                          disabled={mode === "view"}
                           fullWidth
                           required
                           error={!!FamilyErrors?.[idx]?.relationship}
-                          margin="normal"
+                          // margin="normal"
                         >
                           <InputLabel id="relationship-label">
                             Relationship
                           </InputLabel>
                           <Select
+                            disabled={mode === "view"}
                             labelId="relationship-label"
                             id="relationship"
                             name="relationship"
@@ -218,6 +193,7 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
 
 
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Family Member Name"
                           name="name"
@@ -229,18 +205,18 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
                           required
                         />
 
-                     
 
                         <FormControl
                           fullWidth
                           required
                           error={!!FamilyErrors?.[idx]?.marital_status}
-                          margin="normal"
+                          // margin="normal"
                         >
                           <InputLabel id="marital_status-label">
                             Marital Status
                           </InputLabel>
                           <Select
+                            disabled={mode === "view"}
                             labelId="marital_status-label"
                             id="marital_status"
                             name="marital_status"
@@ -260,17 +236,30 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
                             </FormHelperText>
                           )}
                         </FormControl>
+                      </Box>
 
+
+
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          gap: 2, 
+                          width: "100%",
+                        }}
+                      >
                         <FormControl
+                          disabled={mode === "view"}
                           fullWidth
                           required
                           error={!!FamilyErrors?.[idx]?.current_status}
-                          margin="normal"
+                          // margin="normal"
                         >
                           <InputLabel id="current_status-label">
                             Current Status
                           </InputLabel>
                           <Select
+                            disabled={mode === "view"}
                             labelId="current_status-label"
                             id="current_status"
                             name="current_status"
@@ -292,6 +281,7 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
                         </FormControl>
 
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Education Details"
                           name="education_details"
@@ -300,10 +290,10 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
                           error={!!FamilyErrors?.[idx]?.education_details}
                           helperText={FamilyErrors?.[idx]?.education_details}
                           inputProps={{ maxLength: 100 }}
-                          
                         />
 
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Occupation Details"
                           name="occupation_details"
@@ -312,26 +302,19 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
                           error={!!FamilyErrors?.[idx]?.occupation_details}
                           helperText={FamilyErrors?.[idx]?.occupation_details}
                           inputProps={{ maxLength: 100 }}
-                          
                         />
+                      </Box>
 
-                     
-
-                      
-
-                        {/* <TextField
-                          fullWidth
-                          label="Relationship"
-                          name="relationship"
-                          value={section?.mainData?.relationship}
-                          onChange={(e) => handleChange(e, idx)}
-                          error={!!FamilyErrors?.[idx]?.relationship}
-                          helperText={FamilyErrors?.[idx]?.relationship}
-                          inputProps={{ maxLength: 100 }}
-                          required
-                        /> */}
-
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // centers the row
+                          gap: 2, // space between fields
+                          width: "100%", // ensures proper centering
+                        }}
+                      >
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Birth Date"
                           type="date"
@@ -344,6 +327,7 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
                         />
 
                         <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Contact No."
                           name="phone"
@@ -357,7 +341,6 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
                           }}
                           error={!!FamilyErrors?.[idx]?.phone}
                           helperText={FamilyErrors?.[idx]?.phone}
-                          
                           inputProps={{
                             minLength: 12,
                             maxLength: 20,
@@ -366,7 +349,8 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
                           }}
                         />
 
-                           <TextField
+                        <TextField
+                          disabled={mode === "view"}
                           fullWidth
                           label="Email"
                           type="email"
@@ -376,65 +360,72 @@ function EmployeeFamilyMemberForm({ mode, employeeId }) {
                           error={!!FamilyErrors?.[idx]?.email}
                           helperText={FamilyErrors?.[idx]?.email}
                           inputProps={{ maxLength: 100 }}
-                          
+                        />
+                      </Box>
+
+                      <FormControl
+                        disabled={mode === "view"}
+                        component="fieldset"
+                        sx={{
+                          marginTop: 2,
+                          "& .Mui-disabled": {
+                            WebkitTextFillColor: "rgba(0,0,0,0.7)",
+                            color: "rgba(0,0,0,0.7)",
+                          },
+                        }}
+                        error={!!FamilyErrors?.is_dependent}
+                      >
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={section?.mainData?.is_dependent || false}
+                              onChange={(e) => handleCheckboxChange(e, idx)}
+                              name="is_dependent"
+                            />
+                          }
+                          label="Is Dependent"
                         />
 
-                          <TextField
-                          fullWidth
-                          label="Description"
-                          name="description"
-                          value={section?.mainData?.description}
-                          onChange={(e) => handleChange(e, idx)}
-                          error={!!FamilyErrors?.[idx]?.description}
-                          helperText={FamilyErrors?.[idx]?.description}
-                          inputProps={{ maxLength: 255 }}
-                          
-                        />
+                        {FamilyErrors?.is_dependent && (
+                          <FormHelperText>
+                            {FamilyErrors?.[idx]?.is_dependent}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
 
-                        <FormControl
-                          component="fieldset"
-                          sx={{ marginTop: 2 }}
-                          error={!!FamilyErrors?.is_dependent}
-                        >
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={
-                                  section?.mainData?.is_dependent || false
-                                }
-                                onChange={(e) => handleCheckboxChange(e, idx)}
-                                name="is_dependent"
-                              />
-                            }
-                            label="Is Dependent"
-                          />
+                      <TextField
+                        disabled={mode === "view"}
+                        fullWidth
+                          multiline
+                        rows={4}
+                        label="Description"
+                        name="description"
+                        value={section?.mainData?.description}
+                        onChange={(e) => handleChange(e, idx)}
+                        error={!!FamilyErrors?.[idx]?.description}
+                        helperText={FamilyErrors?.[idx]?.description}
+                        inputProps={{ maxLength: 255 }}
+                      />
+                    </Grid>
+                  </Paper>
+                // </Grid>
+              )}
+            </AccordionDetails>
+          </Accordion>
+        ))}
 
-                          {FamilyErrors?.is_dependent && (
-                            <FormHelperText>
-                              {FamilyErrors?.[idx]?.is_dependent}
-                            </FormHelperText>
-                          )}
-                        </FormControl>
-                      </Grid>
-                    </Paper>
-                  </Grid>
-                )}
-              </AccordionDetails>
-            </Accordion>
-          ))}
-
-          <Button
-            variant="contained"
-            style={{ marginTop: 9 }}
-            onClick={() => {
-              setExpanded(`Family ${Family?.length + 1}`);
-              addFamily();
-            }}
-          >
-            Add More
-          </Button>
-        </Box>
-
+        <Button
+          disabled={mode === "view"}
+          variant="contained"
+          style={{ marginTop: 9 }}
+          onClick={() => {
+            setExpanded(`Family ${Family?.length + 1}`);
+            addFamily();
+          }}
+        >
+          Add More
+        </Button>
+      </Box>
     </Box>
   );
 }

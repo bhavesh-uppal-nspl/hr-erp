@@ -27,7 +27,7 @@ const DEFAULT_COLUMNS = [
   
   {
     field: "function_role",
-    label: "function_role",
+    label: "functional_role",
     visible: true,
     width: 150,
     filterable: true,
@@ -74,7 +74,7 @@ function EmployeeRoleList() {
   return `${day}-${month}-${year}`;
 }
 
-  // Load table configuration from general-datagrids API
+
   useEffect(() => {
     const loadTableConfiguration = async () => {
       if (!org?.organization_id) {
@@ -158,41 +158,51 @@ function EmployeeRoleList() {
   }, [org]);
 
 
-  let deletedesignation = async (id) => {
-    try {
-      const org_id = org.organization_id;
-      const response = await axios.delete(
-        `${MAIN_URL}/api/organizations/${org_id}/emp-func-role/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          validateStatus: function (status) {
-            return status >= 200 && status < 500; // handle 4xx errors gracefully
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        toast.success(response.data.message);
-        console.log("Employee Functional Roles deleted:", response.data.message);
-      } else {
-        const errorMessage =
-          response.data.message ||
-          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
-          "Failed to delete Roles";
-
-        toast.error(errorMessage);
-        console.warn("Deletion error:", response.status, response.data);
+let deleteRole = async (id) => {
+  try {
+    const org_id = org.organization_id;
+    const response = await axios.delete(
+      `${MAIN_URL}/api/organizations/${org_id}/emp-func-role/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        validateStatus: function (status) {
+          return status >= 200 && status < 500; // allow 4xx
+        },
       }
-    } catch (error) { if (error.response && error.response.status === 401) {
-  toast.error("Session Expired!");
-  window.location.href = "/login";
-}
-      console.error("Delete failed:", error);
-      toast.error("Something went wrong. Please try again later.");
+    );
+
+    // SUCCESS
+    if (response.status === 200) {
+      toast.success(response.data.message);
+      console.log("Employee Functional Roles deleted:", response.data.message);
+      return;
     }
-  };
+
+    // ALL OTHER CASES (400, 404, 409…)
+    const errorMessage =
+      response.data?.message ||
+      response.data?.error ||
+      response.data?.errors?.[Object.keys(response.data.errors || {})[0]]?.[0] ||
+      "Failed to delete Roles";
+
+    toast.error(errorMessage);
+    console.warn("Deletion error:", response.status, response.data);
+
+  } catch (error) {
+    // SESSION EXPIRED
+    if (error.response?.status === 401) {
+      toast.error("Session Expired!");
+      window.location.href = "/login";
+      return;
+    }
+
+    // UNEXPECTED ERRORS
+    console.error("Delete failed:", error);
+    toast.error("Something went wrong. Please try again later.");
+  }
+};
 
 
   const handleEdit = useCallback(
@@ -208,11 +218,21 @@ function EmployeeRoleList() {
   );
 
 
+   const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/employee/functional-role/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   return (
     <>
       <Layout4
         loading={loading}
+        delete_action={"EMPLOYEE_FUNCTIONAL_ROLE_DELETE"}
         heading={"Employee Functional Roles"}
+        add_action={"EMPLOYEE_FUNCTIONAL_ROLE_ADD"}
         btnName={"Add Roles"}
         Data={func}
         tableHeaders={[
@@ -260,19 +280,22 @@ function EmployeeRoleList() {
         ]}
         Route={"/organization/employee/functional-role"}
         setData={setFunc}
-        DeleteFunc={deletedesignation}
+        DeleteFunc={deleteRole}
       />
 
       <TableDataGeneric
         tableName="Employee Functional Roles"
         primaryKey="employee_functional_role_id"
+        
         heading="Employee Functional Roles"
         data={func}
         sortname={"intern_name"}
         showActions={true}
         Route="/organization/employee/functional-role"
-        DeleteFunc={deletedesignation}
+        DeleteFunc={deleteRole}
         EditFunc={handleEdit}
+        edit_delete_action={["EMPLOYEE_FUNCTIONAL_ROLE_EDIT", "EMPLOYEE_FUNCTIONAL_ROLE_DELETE"]}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

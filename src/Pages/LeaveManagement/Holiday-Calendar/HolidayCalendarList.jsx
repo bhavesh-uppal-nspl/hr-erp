@@ -152,6 +152,21 @@ function HolidayCalendarList() {
           },
         }
       );
+
+      if (response.status === 200) {
+        toast.success(response.data.message);
+        console.log("Holiday Calendar deleted:", response.data.message);
+      } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Calendar";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -172,12 +187,24 @@ function HolidayCalendarList() {
     [navigate]
   );
 
+
+   
+      const handleShow = useCallback(
+    (item) => {
+      navigate(`/leave/holiday-calendar/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Holiday Calendar"}
+        add_action={"HOLIDAY_CALENDAR_ADD"}
         btnName={"ADD Holiday Calendar"}
+        delete_action={"HOLIDAY_CALENDAR_DELETE"}
         Data={holidaycalendar}
         tableHeaders={[
           {
@@ -220,7 +247,9 @@ function HolidayCalendarList() {
         //  apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/holiday-calendar`}
         Route="/leave/holiday-calendar"
         DeleteFunc={deleteCalendar}
+        edit_delete_action={["HOLIDAY_CALENDAR_DELETE", "HOLIDAY_CALENDAR_EDIT"]}
         EditFunc={handleEdit}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

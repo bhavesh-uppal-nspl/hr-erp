@@ -216,7 +216,7 @@ function LeaveSummaryMonthlyReport() {
       <Layout4
         loading={loading}
         heading={"Employee Leave Monthly Summary Report"}
-        btnName={" Report"}
+        btnName={null}
         Data={leaves}
         tableHeaders={[
           {
@@ -260,7 +260,7 @@ function LeaveSummaryMonthlyReport() {
         heading="Employee Leave Monthly Summary Report"
         data={leaves}
         sortname={"employee_name"}
-        showActions={true}
+        showActions={false}
         //  apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/employee-monthlyleave-summary`}
         Route="/employee-leave-summary"
         DeleteFunc={handleDelete}

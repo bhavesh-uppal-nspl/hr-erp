@@ -21,14 +21,14 @@ const useInternDataStore = create((set, get) => ({
     organization_designation_id: "",
     organization_internship_type_id: "",
     organization_internship_status_id: "",
-    organization_internship_stage_id :"",
+    organization_internship_stage_id: "",
     organization_work_shift_id: "",
     organization_user_id: "",
     internship_start_date: "",
     internship_end_date: "",
     organization_user_id: "",
     mentor_employee_id: "",
-    is_paid:"",
+    is_paid: "",
   },
   InternErrors: {},
   setIntern: (data) => set({ Intern: data }),
@@ -47,7 +47,6 @@ const useInternDataStore = create((set, get) => ({
         InternErrors: updatedErrors,
       };
     }),
-
 
   // education error and data
   Education: [
@@ -583,7 +582,7 @@ const useInternDataStore = create((set, get) => ({
       swift_code: "",
       iban_number: "",
       upi_id: "",
-      is_primary:"",
+      is_primary: "",
       wallet_id: "",
       remarks: "",
       account_holder_name: "",
@@ -633,7 +632,7 @@ const useInternDataStore = create((set, get) => ({
       swift_code: "",
       iban_number: "",
       upi_id: "",
-      is_primary:"",
+      is_primary: "",
       wallet_id: "",
       remarks: "",
       account_holder_name: "",
@@ -733,7 +732,7 @@ const useInternDataStore = create((set, get) => ({
         organization_work_shift_id: "",
         organization_internship_type_id: "",
         organization_internship_status_id: "",
-        organization_internship_stage_id :"",
+        organization_internship_stage_id: "",
         organization_department_id: "",
         organization_designation_id: "",
         organization_user_id: "",
@@ -741,7 +740,7 @@ const useInternDataStore = create((set, get) => ({
         internship_end_date: "",
         organization_user_id: "",
         mentor_employee_id: "",
-        is_paid:"",
+        is_paid: "",
       },
       InternErrors: {},
       Education: [
@@ -874,7 +873,7 @@ const useInternDataStore = create((set, get) => ({
           swift_code: "",
           iban_number: "",
           upi_id: "",
-          is_primary:"",
+          is_primary: "",
           wallet_id: "",
           remarks: "",
           account_holder_name: "",
@@ -984,10 +983,16 @@ const useInternDataStore = create((set, get) => ({
         },
       })
       .then((response) => {
-        DropDownData.Employees = response?.data?.employees;
+        const employees = response?.data ?? [];
+        const filteredEmployees = employees.filter(
+          (emp) => emp?.employment_status !== "Exited"
+        );
+        DropDownData.Employees = filteredEmployees;
+      })
+      .catch((error) => {
+        console.error(error);
       });
-
-
+      
     axios
       .get(`${MAIN_URL}/api/organizations/${orgId}/internship-stages`, {
         headers: {

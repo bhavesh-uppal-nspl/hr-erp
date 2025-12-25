@@ -46,7 +46,7 @@ function HolidayCalendarForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view")&& id) {
       setLoading(true);
       getdataById();
     }
@@ -170,6 +170,7 @@ function HolidayCalendarForm({ mode }) {
                   name="holiday_calendar_name"
                   value={formData.holiday_calendar_name}
                   onChange={handleChange}
+                  disabled= {mode ==="view"}
                   error={!!formErrors.holiday_calendar_name}
                   helperText={formErrors.holiday_calendar_name}
                   required
@@ -181,6 +182,7 @@ function HolidayCalendarForm({ mode }) {
                   label="Holiday Start Date"
                   name="holiday_calendar_year_start_date"
                   type="date"
+                   disabled= {mode ==="view"}
                   value={formData.holiday_calendar_year_start_date}
                   onChange={handleChange}
                   error={!!formErrors.holiday_calendar_year_start_date}
@@ -196,6 +198,7 @@ function HolidayCalendarForm({ mode }) {
                   label="Holiday End Date"
                   name="holiday_calendar_year_end_date"
                   type="date"
+                   disabled= {mode ==="view"}
                   value={formData.holiday_calendar_year_end_date}
                   onChange={handleChange}
                   error={!!formErrors.holiday_calendar_year_end_date}
@@ -213,7 +216,7 @@ function HolidayCalendarForm({ mode }) {
                       color="primary"
                       size="medium"
                       onClick={handleSubmit}
-                      disabled={loading || btnLoading}
+                      disabled={loading || btnLoading || mode === "view"}
                       sx={{
                         borderRadius: 2,
                         minWidth: 120,

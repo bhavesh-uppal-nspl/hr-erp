@@ -70,7 +70,7 @@ function WorkShiftRotationPatternForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit"  || mode ==="view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -155,6 +155,7 @@ function WorkShiftRotationPatternForm({ mode }) {
                   fullWidth
                   label="Pattern Name"
                   name="pattern_name"
+                  disabled={mode === "view"}
                   value={formData.pattern_name}
                   onChange={handleChange}
                   error={!!formErrors.pattern_name}
@@ -166,6 +167,7 @@ function WorkShiftRotationPatternForm({ mode }) {
                 <TextField
                   fullWidth
                   type="number"
+                  disabled= {mode === "view"}
                   label="pattern Days"
                   name="cycle_days"
                   value={formData?.cycle_days}
@@ -186,6 +188,7 @@ function WorkShiftRotationPatternForm({ mode }) {
                   fullWidth
                   label="Description"
                   name="description"
+                  disabled={mode === "view"}
                   value={formData.description}
                   onChange={handleChange}
                   error={!!formErrors.description}
@@ -208,7 +211,7 @@ function WorkShiftRotationPatternForm({ mode }) {
                               color="primary"
                               size="medium"
                               onClick={handleSubmit}
-                              disabled={loading || btnLoading}
+                              disabled={loading || btnLoading || mode === "view"}
                               sx={{
                                 borderRadius: 2,
                                 minWidth: 120,

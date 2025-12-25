@@ -123,6 +123,7 @@ function ComponentTypesList() {
           showActions={true}
           Route="/payroll/component-types"
           DeleteFunc={deleteCalendar}
+          edit_delete_action={["PAYROLL_COMPONENT_TYPE_DELETE", "PAYROLL_COMPONENT_TYPE_EDIT"]}
           EditFunc={handleEdit}
           token={localStorage.getItem("token")}
         />

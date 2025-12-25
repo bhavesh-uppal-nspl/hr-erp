@@ -13,6 +13,7 @@ import {
   Alert,
   MenuItem,
   capitalize,
+  Autocomplete,
 } from "@mui/material";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +26,7 @@ import { fetchUserTypes } from "../../Apis/UserTypes";
 import SelectWithImage from "../../Components/Inputs/SelectWithImage";
 import { fetchGeneralCountriesall } from "../../Apis/OrganizationLocation";
 import { fetchOrganizationEmployee } from "../../Apis/Employee-api";
+import { fetchInterns } from "../../Apis/InternManagement";
 
 const steps = ["Enter Email", "Verify OTP", "Complete Details"];
 
@@ -44,6 +46,8 @@ function UsersAdd() {
   const [countries, setCountries] = useState([]);
   const [btnLoading, setBtnLoading] = useState(false);
   const [Employees, setEmployees] = useState([]);
+
+  const [Interns , setInterns]= useState([])
 
   const [debugOtp, setDebugOtp] = useState("");
 
@@ -89,13 +93,41 @@ function UsersAdd() {
   useEffect(() => {
     fetchOrganizationEmployee(org?.organization_id)
       .then((data) => {
-        setEmployees(data?.employees);
+        const filteredEmployees = data?.filter(
+          (item) => item.employment_status !== "Exited"
+        );
+
+        setEmployees(filteredEmployees);
       })
       .catch((err) => {
         setFormErrors(err.message);
       });
   }, []);
-  console.log("employees sus ", Employees)
+  console.log("employees sus ", Employees);
+
+
+
+  // fetch interns 
+  useEffect(() => {
+    if (!org?.organization_id) return;
+
+    fetchInterns(org.organization_id)
+      .then((data) => {
+        const interns = data?.intership?.data || [];
+        const filteredInterns = interns.filter(
+          (intern) =>
+            intern?.status?.internship_status_name !== "Exited"
+        );
+        setInterns(filteredInterns);
+      })
+      .catch((err) => {
+        setFormErrors({ general: err.message });
+      });
+  }, [org?.organization_id]);
+
+
+
+
 
   useEffect(() => {
     fetchUserTypes(org?.organization_id)
@@ -132,64 +164,8 @@ function UsersAdd() {
   const isEmployeeUser =
     selectedUserType?.user_type_name?.toLowerCase() === "employee";
 
-  // const handleSendOtp = async () => {
-  //   setBtnLoading(true);
-  //   try {
-  //     const response = await axios.post(`${MAIN_URL}/api/auth/create-user`, {
-  //       email,
-  //     });
 
-  //     console.log("otp is ", response);
-  //     setDebugOtp(response?.data?.otp);
-
-  //     setOtpSent(true);
-  //     setActiveStep(1);
-  //     toast.success("OTP sent to email successfully");
-  //     setBtnLoading(false);
-  //     console.log("Response:", response.data);
-  //   } catch (err) {
-  //     setBtnLoading(false);
-  //     if (err.response && err.response.status === 422) {
-  //       // Validation errors
-  //       console.error("Validation Error:", err.response.data.errors);
-  //       toast.error(
-  //         "Validation error: " + JSON.stringify(err.response.data.errors)
-  //       );
-  //     } else {
-  //       console.error("Error sending OTP:", err);
-  //       toast.error("Something went wrong while sending OTP.");
-  //     }
-  //   }
-  // };
-
-  // const handleVerifyOtp = async () => {
-  //   setError("");
-  //   setBtnLoading(true);
-  //   try {
-  //     const response = await axios.post(`${MAIN_URL}/api/auth/verified-otp`, {
-  //       email,
-  //       otp: +otp,
-  //     });
-
-  //     toast.success("OTP verified!");
-  //     setOtpVerified(true);
-  //     setActiveStep(2);
-  //   } catch (err) {
-  //     if (err.response && err.response.status === 422) {
-  //       // Laravel validation error
-  //       setError(
-  //         "Validation failed: " + JSON.stringify(err.response.data.errors)
-  //       );
-  //     } else if (err.response && err.response.data?.message) {
-  //       setError(err.response.data.message);
-  //     } else {
-  //       setError("Something went wrong while verifying OTP.");
-  //     }
-  //     toast.error("OTP verification failed.");
-  //   } finally {
-  //     setBtnLoading(false);
-  //   }
-  // };
+    const isInternUser = selectedUserType?.user_type_name?.toLowerCase() === "intern";
 
   const handleDetailChange = (e) => {
     const { name, value } = e.target;
@@ -204,13 +180,30 @@ function UsersAdd() {
         setUserDetails((prev) => ({
           ...prev,
           employee_id: value,
-          user_name: `${selectedEmp?.first_name}
-${selectedEmp?.middle_name || ""} ${selectedEmp?.last_name || ""}`.trim(),
+          user_name: `${selectedEmp?.name|| ""}`.trim(),
           phone: selectedEmp?.contact?.personal_phone_number || "",
           email: selectedEmp?.contact?.personal_email || "",
         }));
       }
-    } else if (name === "organization_user_type_id") {
+    } 
+
+    else if (name === "intern_id") {
+    const selectedIntern = Interns.find(
+      (i) => i.intern_id === parseInt(value)
+    );
+
+    if (selectedIntern) {
+      setUserDetails((prev) => ({
+        ...prev,
+        intern_id: value,
+        user_name: `${selectedIntern?.first_name} ${selectedIntern?.middle_name || ""} ${selectedIntern?.last_name || ""}`.trim(),
+        phone: selectedIntern?.contact?.personal_phone_number || "",
+        email: selectedIntern?.contact?.personal_email || "",
+      }));
+    }
+  }
+
+    else if (name === "organization_user_type_id") {
       const selectedType = userTypes.find(
         (type) => type.organization_user_type_id === parseInt(value)
       );
@@ -315,13 +308,6 @@ ${selectedEmp?.middle_name || ""} ${selectedEmp?.last_name || ""}`.trim(),
         homeLink={"/users"}
         homeText={"Users"}
       />
-      {/* <Stepper activeStep={activeStep} sx={{ mb: 2, width: "50%" }}>
-        {steps.map((label) => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper> */}
 
       <Paper elevation={3} sx={{ p: 3 }}>
         <Grid container spacing={2}>
@@ -334,8 +320,9 @@ ${selectedEmp?.middle_name || ""} ${selectedEmp?.last_name || ""}`.trim(),
             onChange={handleDetailChange}
             error={!!formErrors.organization_user_type_id}
             helperText={formErrors.organization_user_type_id}
+            disabled={userTypes?.length === 0}
             required
-            sx={{textTransform:"capitalize"}}
+            sx={{ textTransform: "capitalize" }}
           >
             {userTypes?.map((option) => (
               <MenuItem
@@ -348,7 +335,7 @@ ${selectedEmp?.middle_name || ""} ${selectedEmp?.last_name || ""}`.trim(),
             ))}
           </TextField>
 
-          {isEmployeeUser && (
+          {/* {isEmployeeUser && (
             <TextField
               select
               fullWidth
@@ -367,7 +354,83 @@ ${option?.last_name || ""} - ID: ${option?.employee_code}`}
                 </MenuItem>
               ))}
             </TextField>
+          )} */}
+
+          {isEmployeeUser && (
+            <Autocomplete
+              fullWidth
+              options={Employees || []}
+              getOptionLabel={(option) =>
+                `${option?.name || ""} - ID: ${option?.employee_code || ""}`.trim()
+              }
+              value={
+                Employees?.find(
+                  (emp) => emp?.employee_id === userDetails?.employee_id
+                ) || null
+              }
+              onChange={(event, newValue) => {
+                handleDetailChange({
+                  target: {
+                    name: "employee_id",
+                    value: newValue?.employee_id || "",
+                  },
+                });
+              }}
+              isOptionEqualToValue={(option, value) =>
+                option?.employee_id === value?.employee_id
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Select Employee"
+                  name="employee_id"
+                  required
+                  error={!!formErrors?.employee_id}
+                  helperText={formErrors?.employee_id}
+                  fullWidth
+                />
+              )}
+            />
           )}
+
+
+          {isInternUser && (
+  <Autocomplete
+    fullWidth
+    options={Interns || []}
+    getOptionLabel={(option) =>
+      `${option?.first_name || ""}  ${option?.middle_name || ""} ${option?.last_name || ""}( ${option?.intern_code || ""})`.trim()
+    }
+    value={
+      Interns?.find(
+        (i) => i?.intern_id === userDetails?.intern_id
+      ) || null
+    }
+    onChange={(event, newValue) => {
+      handleDetailChange({
+        target: {
+          name: "intern_id",
+          value: newValue?.intern_id || "",
+        },
+      });
+    }}
+    isOptionEqualToValue={(option, value) =>
+      option?.intern_id === value?.intern_id
+    }
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Select Intern"
+        name="intern_id"
+        required
+        error={!!formErrors?.intern_id}
+        helperText={formErrors?.intern_id}
+        fullWidth
+      />
+    )}
+  />
+)}
+
 
           <TextField
             select

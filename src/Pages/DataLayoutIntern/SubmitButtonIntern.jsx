@@ -117,7 +117,7 @@ const SubmitButtonIntern = ({ mode }) => {
 
     if (!Intern.organization_internship_stage_id )
       errors.organization_internship_stage_id  =
-        "Internship Satge is required.";
+        "Internship Stage is required.";
 
     if (!Intern.internship_start_date)
       errors.internship_start_date = "Start Date is required.";
@@ -536,16 +536,13 @@ const SubmitButtonIntern = ({ mode }) => {
       } else if (item.account_number?.length > 18) {
         errors.account_number = "A/C No. must not exceed 18 digits.";
       }
-
-      if (item.upi_id && !uriPattern.test(item.upi_id)) {
+      if (item.upi_id) {
         errors.upi_id = "Enter a valid payment UPI ID (UPI, PayPal, etc.)";
       }
-
       if (!item.ifsc_code) {
         errors.ifsc_code = "IFSC Code is required";
-      }
-    
-
+      } 
+      
       if (Object.keys(errors)?.length > 0) {
         allErrors[idx] = errors;
         if (!firstError) firstError = errors[Object.keys(errors)[0]];
@@ -659,18 +656,43 @@ const SubmitButtonIntern = ({ mode }) => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
-    const date = new Date(dateStr);
+    // Extract the YYYY-MM-DD portion from ISO string
+    return dateStr.split("T")[0];
+  };
 
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // months are 0-based
-    const year = date.getFullYear();
+  // Helper function to merge person data from org_persons.person into intern object
+  const mergePersonDataIntoIntern = (internData) => {
+    if (!internData?.org_persons) {
+      return internData;
+    }
 
-    return `${year}-${month}-${day}`; 
+    const orgPersons = internData.org_persons;
+    const person = orgPersons.person;
+    
+    // Merge person data into intern, prioritizing person data if intern fields are null/empty
+    // Note: date_of_birth and internship_start_date will be formatted after merging
+    return {
+      ...internData,
+      // Intern code from org_persons.person_code
+      intern_code: internData.intern_code || orgPersons.person_code || "",
+      // Person fields from org_persons.person
+      first_name: internData.first_name || person?.first_name || "",
+      middle_name: internData.middle_name !== null && internData.middle_name !== undefined 
+        ? internData.middle_name 
+        : (person?.middle_name || ""),
+      last_name: internData.last_name || person?.last_name || "",
+      date_of_birth: internData.date_of_birth || person?.date_of_birth || "",
+      gender: internData.gender || person?.gender || "",
+      marital_status: internData.marital_status || person?.marital_status || "",
+      profile_image_url: internData.profile_image_url || person?.profile_image_url || "",
+      // Internship start date from org_persons.organization_join_date
+      internship_start_date: internData.internship_start_date || orgPersons.organization_join_date || "",
+    };
   };
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
-      if (mode === "edit") {
+      if (mode === "edit"  || mode === "view") {
         try {
           const response = await axios.get(
             `${MAIN_URL}/api/organizations/${org?.organization_id}/intern-store/update/${id}`,
@@ -681,15 +703,24 @@ const SubmitButtonIntern = ({ mode }) => {
             }
           );
           console.log("Employee fetched:", response?.data);
-          response.data.intern.internship_start_date = formatDate(
-            response.data.intern.internship_start_date
+          
+          // Merge person data from org_persons.person into intern BEFORE formatting dates
+          const mergedInternData = mergePersonDataIntoIntern(response.data.intern);
+          
+          // Format dates after merging
+          mergedInternData.internship_start_date = formatDate(
+            mergedInternData.internship_start_date
           );
-          response.data.intern.internship_end_date = formatDate(
-            response.data.intern.internship_end_date
+          mergedInternData.internship_end_date = formatDate(
+            mergedInternData.internship_end_date
           );
-          response.data.intern.organization_department_id =
-            response?.data?.intern?.department_location[0]?.organization_department_id;
-          setIntern(response?.data?.intern);
+          mergedInternData.date_of_birth = formatDate(
+            mergedInternData.date_of_birth
+          );
+          mergedInternData.organization_department_id =
+            mergedInternData?.department_location?.[0]?.organization_department_id;
+
+          setIntern(mergedInternData);
 
           // setIntern(response.data.intern);
           // response?.data?.education?.organization_education_degree_id = response?.data?.education?.degree?.[0]?.organization_education_degree_id
@@ -1004,6 +1035,7 @@ const SubmitButtonIntern = ({ mode }) => {
           item.medical_notes != "" ||
           item.organization_id != ""
       );
+console.log("PaymentMethod",PaymentMethod);
 
       let FiiledPaymentMethod = PaymentMethod?.filter(
         (item) =>
@@ -1018,8 +1050,7 @@ const SubmitButtonIntern = ({ mode }) => {
           item.account_number != "" ||
           item.is_primary != "" ||
           item.wallet_id != "" ||
-          item.upi_id != "" ||
-          item.remarks != "" 
+          item.upi_id != "" ,
       );
 
       let FiiledDocument = Document?.filter(
@@ -1086,7 +1117,25 @@ const SubmitButtonIntern = ({ mode }) => {
         }
       );
 
-      setIntern(response.data.employee);
+      // Merge person data from org_persons.person into intern BEFORE formatting dates
+      const mergedInternData = mergePersonDataIntoIntern(response.data.intern);
+      
+      // Format dates after merging
+      mergedInternData.internship_start_date = formatDate(
+        mergedInternData.internship_start_date
+      );
+      mergedInternData.internship_end_date = formatDate(
+        mergedInternData.internship_end_date
+      );
+      mergedInternData.date_of_birth = formatDate(
+        mergedInternData.date_of_birth
+      );
+      mergedInternData.organization_department_id =
+        mergedInternData?.department_location?.[0]?.organization_department_id;
+
+      setIntern(mergedInternData);
+
+      console.log("data ishn", response.data)
 
       if (response.data.education?.length > 0) {
         setEducation(response.data.education);
@@ -1120,6 +1169,7 @@ const SubmitButtonIntern = ({ mode }) => {
         let inter_id = response?.data?.intern?.intern_id;
 
       console.log("FiiledEducation is:", FiiledEducation);
+      console.log("FiiledPaymentMethod is:", FiiledPaymentMethod);
 
 
       let sectionData = {}; // This will hold all sections
@@ -1215,6 +1265,8 @@ const SubmitButtonIntern = ({ mode }) => {
           (doc) => doc.document_url instanceof File
         );
 
+
+        console.log("section data is ", sectionData)
         if (hasFile) {
           finalData = new FormData();
 
@@ -1248,15 +1300,19 @@ const SubmitButtonIntern = ({ mode }) => {
           headers["Content-Type"] = "application/json";
         }
 
-        try {
-          console.log("----- FormData Contents -----");
-          for (let pair of finalData.entries()) {
-            console.log("helloe ", pair[0], ":", pair[1]);
-          }
-          console.log("-----------------------------");
-        } catch (error) {
-          console.log("erropr is ", error);
-        }
+        // try {
+        //   console.log("----- FormData Contents -----");
+        //   for (let pair of finalData.entries()) {
+        //     console.log("helloe ", pair[0], ":", pair[1]);
+        //   }
+        //   console.log("-----------------------------");
+        // } catch (error) {
+        //   console.log("erropr is ", error);
+        // }
+
+console.log("final data entruy is ", finalData)
+
+
         const response2 = await axios.post(
           `${MAIN_URL}/api/organizations/${org?.organization_id}/intern-store/store2`,
           finalData,
@@ -1407,6 +1463,7 @@ const SubmitButtonIntern = ({ mode }) => {
       <Grid item>
         <Button
           variant="contained"
+       
           color="primary"
           size="medium"
           sx={{
@@ -1416,7 +1473,7 @@ const SubmitButtonIntern = ({ mode }) => {
             fontWeight: 500,
           }}
           onClick={handleSubmitClick}
-          disabled={loading} // disable while loading
+          disabled={loading  || mode === "view"} // disable while loading
         >
           {loading ? <CircularProgress size={22} color="inherit" /> : "Submit"}
         </Button>

@@ -233,9 +233,37 @@ export async function fetchApplicationPermission() {
 }
 
 
-export async function fetchApplicationRolePermission() {
+export const fetchApplicationRolePermission = async (organizationId) => {
   try {
-    const response = await axios.get(`${MAIN_URL}/api/application/role-permissions`
+    const response = await axios.get(
+      `${MAIN_URL}/api/application/role-permissions`,
+      {
+        params: {
+          organization_id: organizationId,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching role permissions:", error);
+    throw error;
+  }
+};
+
+
+
+
+
+
+
+export async function fetchApplicationUserPermission(Org_id) {
+  try {
+    const response = await axios.get(`${MAIN_URL}/api/application/user-permissions`,
+      {
+    params: {
+      organization_id: Org_id,
+    },
+  }
     );
 
     console.log(response.data)
@@ -259,5 +287,4 @@ export async function fetchApplicationRolePermission() {
     }
   }
 }
-
 

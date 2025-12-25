@@ -57,7 +57,20 @@ console.log("reguistyer type ", registrationtype)
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },}
         );
-        console.log("registration type->", response.data.message);
+
+        if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Business Registration";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
+        
       } catch (error) { if (error.response && error.response.status === 401) {
   toast.error("Session Expired!");
   window.location.href = "/login";
@@ -83,16 +96,26 @@ const handleEdit = useCallback(
 
   );
 
+
+
+                   const handleShow = useCallback(
+      (item) => {
+        navigate(`/organization-configration/business-registration-type/view/${item.id}`)
+      },
+      [navigate],
+    )
+
   
 
   return (
     <>
     <Layout4
       loading={loading}
+      add_action={"BUSINESS_REGISTRATION_TYPE_ADD"}
       heading={"Business Registration Type"}
       btnName={"Add Business Registration Type"}
       Data={registrationtype}
-        delete_action={"ORG_CONFIG_DELETE"}
+        delete_action={"BUSINESS_REGISTRATION_TYPE_DELETE"}
         tableHeaders={[
         {name : "Business Registration Type Name" , value_key : "business_registration_type_name" ,textStyle: "capitalize",},
            {name : "Business Registration Type Code" , value_key : "business_registration_type_code" ,textStyle: "capitalize",},
@@ -113,11 +136,6 @@ const handleEdit = useCallback(
       DeleteFunc={deleteregistrationtype}
    
     />
-
-    
-    
-
-
       <TableDataGeneric
         tableName="Business registration Types"
         primaryKey="organization_business_registration_type_id"
@@ -129,9 +147,11 @@ const handleEdit = useCallback(
         Route="/organization-configration/business-registration-type"
         DeleteFunc={deleteregistrationtype}
         EditFunc={handleEdit}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}
+        edit_delete_action={["BUSINESS_REGISTRATION_TYPE_DELETE", "BUSINESS_REGISTRATION_TYPE_EDIT"]}
         // Optional: Explicitly define visible columns
         config={{
           defaultVisibleColumns: ["business_registration_type_name","business_registration_type_code","description"],

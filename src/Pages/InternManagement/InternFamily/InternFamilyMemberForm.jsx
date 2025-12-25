@@ -104,11 +104,23 @@ function InternFamilyMemberForm({ mode }) {
                 <Grid item xs={12} md={8}>
                   <Paper elevation={4} sx={{ p: 3 }}>
                     <Grid container spacing={2}>
-                      <FormControl
+
+
+
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+  <FormControl
                         fullWidth
                         required
                         error={!!FamilyErrors?.[idx]?.relationship_type}
-                        margin="normal"
+                     
                       >
                         <InputLabel id="relationship_type-label">
                           Relationship
@@ -117,6 +129,7 @@ function InternFamilyMemberForm({ mode }) {
                           labelId="relationship_type-label"
                           id="relationship_type"
                           name="relationship_type"
+                          disabled={mode === "view"}
                           value={section?.mainData?.relationship_type || ""}
                           onChange={(e) => handleChange(e, idx)}
                           label="relationship_type"
@@ -135,11 +148,12 @@ function InternFamilyMemberForm({ mode }) {
                       </FormControl>
 
 
+
                        <FormControl
                         fullWidth
                         required
                         error={!!FamilyErrors?.[idx]?.gender}
-                        margin="normal"
+                      
                       >
                         <InputLabel id="gender-label">
                           Gender
@@ -148,6 +162,7 @@ function InternFamilyMemberForm({ mode }) {
                           labelId="gender-label"
                           id="gender"
                           name="gender"
+                          disabled={mode === "view"}
                           value={section?.mainData?.gender || ""}
                           onChange={(e) => handleChange(e, idx)}
                           label="gender"
@@ -170,6 +185,7 @@ function InternFamilyMemberForm({ mode }) {
                         fullWidth
                         label="Family Member Name"
                         name="full_name"
+                        disabled={mode === "view"}
                         value={section?.mainData?.full_name}
                         onChange={(e) => handleChange(e, idx)}
                         error={!!FamilyErrors?.[idx]?.full_name}
@@ -178,10 +194,25 @@ function InternFamilyMemberForm({ mode }) {
                         required
                       />
 
-                      <TextField
+                </Box>
+
+                    
+
+
+
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+                   <TextField
                         fullWidth
                         label="Birth Date"
                         type="date"
+                        disabled={mode === "view"}
                         name="date_of_birth"
                         value={section?.mainData?.date_of_birth}
                         onChange={(e) => handleChange(e, idx)}
@@ -197,6 +228,7 @@ function InternFamilyMemberForm({ mode }) {
                         label="Phone No."
                         name="phone_number"
                         type="tel"
+                        disabled={mode === "view"}
                         value={section?.mainData?.phone_number}
                         onChange={(e) => {
                           const input = e.target.value;
@@ -214,9 +246,11 @@ function InternFamilyMemberForm({ mode }) {
                         }}
                       />
 
+
                       <TextField
                         fullWidth
                         label="Email"
+                        disabled={mode === "view"}
                         type="email"
                         name="email"
                         value={section?.mainData?.email}
@@ -226,14 +260,20 @@ function InternFamilyMemberForm({ mode }) {
                         inputProps={{ maxLength: 100 }}
                       />
 
+                </Box>
+                     
+
                       <FormControl
                         component="fieldset"
                         sx={{ marginTop: 2 }}
                         error={!!FamilyErrors?.is_dependent}
                       >
+
+
                         <FormControlLabel
                           control={
                             <Checkbox
+                            disabled={mode === "view"}
                               checked={section?.mainData?.is_dependent || false}
                               onChange={(e) => handleCheckboxChange(e, idx)}
                               name="is_dependent"
@@ -257,6 +297,7 @@ function InternFamilyMemberForm({ mode }) {
 
         <Button
           variant="contained"
+          disabled={mode === "view"}
           style={{ marginTop: 9 }}
           onClick={() => {
             setExpanded(`Family ${Family?.length + 1}`);

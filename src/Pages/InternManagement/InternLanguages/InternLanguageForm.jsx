@@ -126,6 +126,7 @@ function InternLanguageForm({ mode, employeeId }) {
                         onChange={(e) => handleChange(e, idx)}
                         error={!!LanguageError?.[idx]?.organization_language_id }
                         helperText={LanguageError?.[idx]?.organization_language_id }
+                          disabled={Languages?.length === 0 || mode === "view"}
                       >
                         {Languages?.map((option) => (
                           <MenuItem
@@ -152,6 +153,7 @@ function InternLanguageForm({ mode, employeeId }) {
                               key={item?.name}
                               control={
                                 <Checkbox
+                                disabled={mode === "view"}
                                   icon={<RadioButtonUncheckedIcon />}
                                   checkedIcon={<CheckCircleOutlineIcon />}
                                   checked={!!section?.mainData?.[item?.name]}
@@ -182,6 +184,7 @@ function InternLanguageForm({ mode, employeeId }) {
                         value={section?.mainData?.description}
                         onChange={(e) => handleChange(e, idx)}
                         error={!!LanguageError?.[idx]?.description}
+                        disabled={mode === "view"}
                         helperText={LanguageError?.[idx]?.description}
                         inputProps={{ maxLength: 255 }}
                       />

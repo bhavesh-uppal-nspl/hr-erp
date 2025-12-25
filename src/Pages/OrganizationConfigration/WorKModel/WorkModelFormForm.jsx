@@ -45,7 +45,7 @@ function WorkModelForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -145,6 +145,7 @@ function WorkModelForm({ mode }) {
                   name="work_model_name"
                   value={formData.work_model_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.work_model_name}
                   helperText={formErrors.work_model_name}
                         inputProps={{ maxLength: 50 }}
@@ -162,7 +163,7 @@ function WorkModelForm({ mode }) {
                                color="primary"
                                size="medium"
                                onClick={handleSubmit}
-                               disabled={loading || btnLoading}
+                               disabled={loading || btnLoading || mode === "view"}
                                sx={{
                                  borderRadius: 2,
                                  minWidth: 120,

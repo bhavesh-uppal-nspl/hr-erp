@@ -7,9 +7,10 @@ import {
   TextField,
   MenuItem,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
-import {fetchOrganizationUnitTypes} from '../../../Apis/OrganizationUnit'
+import { fetchOrganizationUnitTypes } from "../../../Apis/OrganizationUnit";
 import Header from "../../DataLayouts/Header";
 import toast from "react-hot-toast";
 import useAuthStore from "../../../Zustand/Store/useAuthStore";
@@ -17,31 +18,30 @@ import { MAIN_URL } from "../../../Configurations/Urls";
 import axios from "axios";
 
 function OrganizationUnitForms({ mode }) {
-  const { id } = useParams(); 
-   const { userData } = useAuthStore();
-    const org = userData?.organization;
-    const [unitTypes, setUnitTypes]= useState([]);
+  const { id } = useParams();
+  const { userData } = useAuthStore();
+  const org = userData?.organization;
+  const [unitTypes, setUnitTypes] = useState([]);
 
   const [formData, setFormData] = useState({
-    organization_unit_type_id : "",
-    unit_name : "",
-    unit_short_name:""
+    organization_unit_type_id: "",
+    unit_name: "",
+    unit_short_name: "",
   });
 
+  // fetch organization units types
+  useEffect(() => {
+    if (org?.organization_id) {
+      fetchOrganizationUnitTypes(org.organization_id)
+        .then((data) => {
+          setUnitTypes(data.unitTypes.data);
+        })
+        .catch((err) => {
+          setFormErrors(err.message);
+        });
+    }
+  }, [org]);
 
-  // fetch organization units types 
-    useEffect(() => {
-      if (org?.organization_id) {
-        fetchOrganizationUnitTypes(org.organization_id)
-          .then((data) => {
-            setUnitTypes(data.unitTypes.data);
-          })
-          .catch((err) => {
-            setFormErrors(err.message);
-          });
-      }
-    }, [org]);
-  
   const [formErrors, setFormErrors] = useState({});
   const [loading, setLoading] = useState(mode === "edit");
   const [btnLoading, setbtnLoading] = useState(false);
@@ -50,9 +50,13 @@ function OrganizationUnitForms({ mode }) {
 
   useEffect(() => {
     let getdataById = async () => {
-      const response = await axios.get(`${MAIN_URL}/api/organizations/${org.organization_id}/units/${id}`,  { headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },}
+      const response = await axios.get(
+        `${MAIN_URL}/api/organizations/${org.organization_id}/units/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       let a = response.data.units;
@@ -85,9 +89,8 @@ function OrganizationUnitForms({ mode }) {
   };
 
   const handleSubmit = async () => {
-    
     if (!validateForm()) return;
-   
+
     setbtnLoading(true);
     try {
       if (mode === "edit") {
@@ -112,9 +115,7 @@ function OrganizationUnitForms({ mode }) {
           }
         );
       }
-      toast.success(
-        mode === "edit" ? "Unit updated!" : "Unit created!"
-      );
+      toast.success(mode === "edit" ? "Unit updated!" : "Unit created!");
       setFormErrors({});
       navigate(-1);
     } catch (err) {
@@ -133,7 +134,6 @@ function OrganizationUnitForms({ mode }) {
       setbtnLoading(false);
     }
   };
-
 
   return (
     <Box px={4} py={4}>
@@ -155,8 +155,7 @@ function OrganizationUnitForms({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-
-                <TextField
+                {/* <TextField
                   select
                   fullWidth
                   label="Unit Type"
@@ -167,6 +166,7 @@ function OrganizationUnitForms({ mode }) {
                   helperText={
                     formErrors.organization_unit_type_id
                   }
+                   disabled={unitTypes?.length === 0}
                 >
                   {unitTypes.map((type) => (
                     <MenuItem
@@ -176,7 +176,39 @@ function OrganizationUnitForms({ mode }) {
                       {type.unit_type_name}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextField> */}
+
+                <Autocomplete
+                  fullWidth
+                  options={unitTypes || []}
+                  getOptionLabel={(option) => option.unit_type_name || ""}
+                  value={
+                    unitTypes?.find(
+                      (option) =>
+                        option.organization_unit_type_id ===
+                        formData.organization_unit_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_unit_type_id",
+                        value: newValue?.organization_unit_type_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || unitTypes?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Unit Type"
+                      error={!!formErrors.organization_unit_type_id}
+                      helperText={formErrors.organization_unit_type_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
 
                 <TextField
                   fullWidth
@@ -187,7 +219,7 @@ function OrganizationUnitForms({ mode }) {
                   error={!!formErrors.unit_name}
                   helperText={formErrors.unit_name}
                   required
-                    inputProps={{ maxLength: 50 }}
+                  inputProps={{ maxLength: 50 }}
                 />
 
                 <TextField
@@ -198,21 +230,18 @@ function OrganizationUnitForms({ mode }) {
                   onChange={handleChange}
                   error={!!formErrors.unit_short_name}
                   helperText={formErrors.unit_short_name}
-                    inputProps={{ maxLength: 20 }}
-                  
+                  inputProps={{ maxLength: 20 }}
                 />
-
-            
               </Grid>
 
- <Grid container spacing={2} mt={2}>
+              <Grid container spacing={2} mt={2}>
                 <Grid item>
                   <Button
                     variant="contained"
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

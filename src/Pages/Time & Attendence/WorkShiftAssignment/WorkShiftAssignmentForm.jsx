@@ -12,6 +12,7 @@ import {
   FormControlLabel,
   Switch,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -59,7 +60,13 @@ function WorkshiftAssignmentForm({ mode }) {
 
   useEffect(() => {
     fetchOrganizationEmployee(org?.organization_id)
-      .then((data) => setEmployee(data?.employees))
+      .then((data) => {
+        const filteredEmployees = data?.filter(
+          (item) => item.employment_status !== "Exited"
+        );
+        setEmployee(filteredEmployees);
+      })
+
       .catch((err) => setFormErrors(err.message));
   }, []);
 
@@ -93,11 +100,11 @@ function WorkshiftAssignmentForm({ mode }) {
           },
         }
       );
-      let a = response?.data?.Assignmentdata
+      let a = response?.data?.Assignmentdata;
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit"  ||  mode === "view"  ) && id) {
       setLoading(true);
       getdataById();
     }
@@ -178,7 +185,7 @@ function WorkshiftAssignmentForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
+                {/* <TextField
                   select
                   fullWidth
                   label="Employee Name/ID"
@@ -188,10 +195,11 @@ function WorkshiftAssignmentForm({ mode }) {
                   error={!!formErrors.employee_id}
                   helperText={formErrors.employee_id}
                   required
+                    disabled={mode === "view"   ||  employee?.length === 0}
                 >
                   {employee?.map((option) => {
                     const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.employee_code || ""}`.trim();
+                      `${option?.name || ""} -- ${option?.employee_code || ""}`.trim();
                     return (
                       <MenuItem
                         key={option?.employee_id}
@@ -201,8 +209,45 @@ function WorkshiftAssignmentForm({ mode }) {
                       </MenuItem>
                     );
                   })}
-                </TextField>
+                </TextField> */}
 
+
+                <Autocomplete
+                  fullWidth
+                  options={employee || []}
+                  getOptionLabel={(option) =>
+                    `${option?.name || ""} -- ${option?.employee_code || ""}`.trim()
+                  }
+                  value={
+                    employee?.find(
+                      (emp) => emp.employee_id === formData?.employee_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "employee_id",
+                        value: newValue?.employee_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || employee?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Employee Name/ID"
+                      name="employee_id"
+                      error={!!formErrors.employee_id}
+                      helperText={formErrors.employee_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+
+{/* 
                 <TextField
                   select
                   fullWidth
@@ -213,6 +258,7 @@ function WorkshiftAssignmentForm({ mode }) {
                   error={!!formErrors.organization_work_shift_id}
                   helperText={formErrors.organization_work_shift_id}
                   required
+                    disabled={mode === "view"   ||  shift?.length === 0}
                 >
                   {shift?.map((option) => (
                     <MenuItem
@@ -222,11 +268,59 @@ function WorkshiftAssignmentForm({ mode }) {
                       {option?.work_shift_name}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextField> */}
+
+
+
+                 <Autocomplete
+                fullWidth
+                  options={shift || []}
+                  getOptionLabel={(option) =>
+                    option.work_shift_name || ""
+                  }
+                  value={
+                    shift?.find(
+                      (option) =>
+                        option.organization_work_shift_id ===
+                        formData.organization_work_shift_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_work_shift_id",
+                        value:
+                          newValue?.organization_work_shift_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || shift?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Shift"
+                      error={
+                        !!formErrors.organization_work_shift_id
+                      }
+                      helperText={
+                        formErrors.organization_work_shift_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+
+
+
 
                 <FormControlLabel
                   control={
                     <Switch
+                    disabled={mode === "view"}
                       checked={
                         formData.is_override === "1" ||
                         formData.is_override === true
@@ -244,6 +338,7 @@ function WorkshiftAssignmentForm({ mode }) {
                 />
                 <TextField
                   fullWidth
+                  disabled={mode ==="view"}
                   label="Assignment Date"
                   name="assignment_date"
                   type="date"
@@ -268,55 +363,52 @@ function WorkshiftAssignmentForm({ mode }) {
                   minRows={3} // Minimum visible height
                   maxRows={5}
                 />
-
-               
               </Grid>
 
-             
-                           <Grid container spacing={2} mt={2}>
-                             <Grid item>
-                               <Button
-                                 variant="contained"
-                                 color="primary"
-                                 size="medium"
-                                 onClick={handleSubmit}
-                                 disabled={loading || btnLoading}
-                                 sx={{
-                                   borderRadius: 2,
-                                   minWidth: 120,
-                                   textTransform: "capitalize",
-                                   fontWeight: 500,
-                                 }}
-                               >
-                                 {loading || btnLoading ? (
-                                   <CircularProgress size={22} sx={{ color: "#fff" }} />
-                                 ) : (
-                                   "Submit"
-                                 )}
-                               </Button>
-                             </Grid>
-             
-                             {mode === "edit" && (
-                               <Grid item>
-                                 <Button
-                                   variant="contained"
-                                   color="primary"
-                                   size="medium"
-                                   onClick={() => navigate(-1)}
-                                   sx={{
-                                     borderRadius: 2,
-                                     minWidth: 120,
-                                     textTransform: "capitalize",
-                                     fontWeight: 500,
-                                     backgroundColor: "#1976d2",
-                                     "&:hover": { backgroundColor: "#115293" },
-                                   }}
-                                 >
-                                   Cancel
-                                 </Button>
-                               </Grid>
-                             )}
-                           </Grid>
+              <Grid container spacing={2} mt={2}>
+                <Grid item>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="medium"
+                    onClick={handleSubmit}
+                    disabled={loading || btnLoading || mode === "view"}
+                    sx={{
+                      borderRadius: 2,
+                      minWidth: 120,
+                      textTransform: "capitalize",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {loading || btnLoading ? (
+                      <CircularProgress size={22} sx={{ color: "#fff" }} />
+                    ) : (
+                      "Submit"
+                    )}
+                  </Button>
+                </Grid>
+
+                {mode === "edit" && (
+                  <Grid item>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="medium"
+                      onClick={() => navigate(-1)}
+                      sx={{
+                        borderRadius: 2,
+                        minWidth: 120,
+                        textTransform: "capitalize",
+                        fontWeight: 500,
+                        backgroundColor: "#1976d2",
+                        "&:hover": { backgroundColor: "#115293" },
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
+                )}
+              </Grid>
             </Paper>
           </Grid>
         </Grid>

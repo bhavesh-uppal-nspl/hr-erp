@@ -138,6 +138,19 @@ function RotationPatternList() {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+        console.log("Workshift Pattern  Deleted:", response.data.message);
+      } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Workshift Pattern";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -179,11 +192,21 @@ function RotationPatternList() {
     [navigate]
   );
 
+
+        const handleShow = useCallback(
+      (item) => {
+        navigate(`/organization/work-shift-rotation-pattern/view/${item.id}`)
+      },
+      [navigate],
+    )
+  
+
   return (
     <>
       <Layout4
         loading={loading}
-        delete_action={"SHIFT_DELETE"}
+        delete_action={"SHIFT_ROTATION_PATTERN_DELETE"}
+        add_action={"SHIFT_ROTATION_PATTERN_ADD"}
         heading={"WorkShift Rotation Pattern"}
         btnName={"Add Pattern"}
         Data={shifts}
@@ -221,6 +244,8 @@ function RotationPatternList() {
         Route="/work-shift-rotation-pattern"
         DeleteFunc={handleDelete}
         EditFunc={handleEdit}
+        handleShow={handleShow}
+        edit_delete_action={["SHIFT_ROTATION_PATTERN_DELETE", "SHIFT_ROTATION_PATTERN_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

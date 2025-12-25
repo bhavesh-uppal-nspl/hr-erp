@@ -209,6 +209,21 @@ function AttendanceTimelogsList() {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+        window.location.reload();
+        console.log("Employee Attendance Log deleted:", response.data.message);
+      } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Log";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
       loadAttendanceLogs();
     } catch (error) {
       if (error.response && error.response.status === 401) {
@@ -238,6 +253,7 @@ function AttendanceTimelogsList() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       console.log("Successfully deleted units-types with id:", id);
+       window.location.reload();
       return Promise.resolve();
     } catch (error) {
       console.error("Delete failed:", error);
@@ -249,9 +265,21 @@ function AttendanceTimelogsList() {
     (item) => {
       navigate(`/attendance/time-logs/edit/${item.id}`);
     },
-
     [navigate]
   );
+
+
+   
+      const handleShow = useCallback(
+    (item) => {
+      navigate(`/attendance/time-logs/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
+
+
 
   return (
     <>
@@ -259,8 +287,9 @@ function AttendanceTimelogsList() {
         loading={loading}
         heading={"Attendance Time Logs"}
         btnName={"Add Time Log"}
+        add_action={"ATTENDANCE_TIME_LOG_ADD"}
         Data={leaves}
-        delete_action={"LEAVE_DELETE"}
+        delete_action={"ATTENDANCE_TIME_LOG_DELETE"}
         tableHeaders={[
           { name: "Employee Code", value_key: "employee_code" },
           { name: "Employee Name", value_key: "name", textStyle: "capitalize" },
@@ -289,17 +318,17 @@ function AttendanceTimelogsList() {
         setData={setLeaves}
         DeleteFunc={deleteemployeeleave}
       />
-
       <TableDataGeneric
         tableName="Attendance Time Logs"
         primaryKey="employee_attendance_timelog_id"
         heading="Atendance Time Logs"
         data={leaves}
-        sortname={"attendance_log_type"}
+        sortname={"attendance_log_time"}
+        edit_delete_action={["ATTENDANCE_TIME_LOG_EDIT", "ATTENDANCE_TIME_LOG_DELETE"]}
         showActions={true}
-        // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-time-logs`}
         Route="/attendance/time-logs"
         DeleteFunc={handleDelete}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}
@@ -309,3 +338,9 @@ function AttendanceTimelogsList() {
 }
 
 export default AttendanceTimelogsList;
+
+
+
+
+
+

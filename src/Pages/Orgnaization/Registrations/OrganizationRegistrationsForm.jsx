@@ -11,6 +11,7 @@ import {
   Alert,
   IconButton,
   Divider,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -285,7 +286,7 @@ function OrganizationRegistrationsForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
+                {/* <TextField
                   select
                   fullWidth
                   label="Registration Type"
@@ -299,6 +300,7 @@ function OrganizationRegistrationsForm({ mode }) {
                     formErrors.organization_business_registration_type_id
                   }
                   required
+                     disabled={registrationtypes?.length === 0}
                 >
                   {registrationtypes.map((option) => (
                     <MenuItem
@@ -308,7 +310,51 @@ function OrganizationRegistrationsForm({ mode }) {
                       {option.business_registration_type_name}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextField> */}
+
+
+                <Autocomplete
+                fullWidth
+                  options={registrationtypes || []}
+                  getOptionLabel={(option) =>
+                    option.business_registration_type_name || ""
+                  }
+                  value={
+                    registrationtypes?.find(
+                      (option) =>
+                        option.organization_business_registration_type_id ===
+                        formData.organization_business_registration_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_business_registration_type_id",
+                        value:
+                          newValue?.organization_business_registration_type_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || registrationtypes?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Registration Type"
+                      error={
+                        !!formErrors.organization_business_registration_type_id
+                      }
+                      helperText={
+                        formErrors.organization_business_registration_type_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+
 
                 <Box mt={2}>
                   <label>
@@ -462,7 +508,7 @@ function OrganizationRegistrationsForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

@@ -133,6 +133,7 @@ function FunctionRoleSpecializationList() {
               id: item.organization_functional_role_specialization_id,
               functional_role: item?.function_role?.functional_role_name,
               is_active: item?.is_active == 1 ? "✔" : "✖",
+              functional_role_specialization_code:item?.functional_role_specialization_code ? item?.functional_role_specialization_code :""
             };
           });
           setFunc(b);
@@ -159,10 +160,7 @@ function FunctionRoleSpecializationList() {
 
       if (response.status === 200) {
         toast.success(response.data.message);
-        console.log(
-          "Organization Functional Roles deleted:",
-          response.data.message
-        );
+       
       } else {
         const errorMessage =
           response.data.message ||
@@ -190,12 +188,21 @@ function FunctionRoleSpecializationList() {
     [navigate]
   );
 
+
+             const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/functional-role-specialization/view/${item.id}`)
+    },
+    [navigate],
+  )
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Functional Role Specialization"}
         btnName={"Add Roles"}
+        delete_action={"FUNCTIONAL_ROLE_SPECIALIZATION_DELETE"}
         Data={func}
         tableHeaders={[
           { name: "Code", value_key: "employee_code", width: "50px" },
@@ -247,13 +254,15 @@ function FunctionRoleSpecializationList() {
 
       <TableDataGeneric
         tableName="Functional Role Specialization"
-        primaryKey="organization_functional_role_specialization_id "
+        primaryKey="organization_functional_role_specialization_id"
         heading="Functional Role Specialization"
         data={func}
         sortname={"intern_name"}
         showActions={true}
         Route="/organization/functional-role-specialization"
         DeleteFunc={deletedesignation}
+        handleShow={handleShow}
+        edit_delete_action={["FUNCTIONAL_ROLE_SPECIALIZATION_EDIT", "FUNCTIONAL_ROLE_SPECIALIZATION_DELETE"]}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
         configss={configColumns}

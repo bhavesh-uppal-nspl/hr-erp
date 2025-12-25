@@ -7,6 +7,7 @@ import {
   TextField,
   MenuItem,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -29,7 +30,7 @@ function EmployeeRoleForm({ mode }) {
 
   const [Role, setRole] = useState([]);
   const [roleSpec, setRoleSpec] = useState([]);
-  const [employee , setEmployee]=useState([]);
+  const [employee, setEmployee] = useState([]);
 
   const [formData, setFormData] = useState({
     employee_id: "",
@@ -46,19 +47,18 @@ function EmployeeRoleForm({ mode }) {
 
   let navigate = useNavigate();
 
-
-    useEffect(() => {
-      {
-        fetchOrganizationEmployee(org.organization_id)
-          .then((data) => {
-            setEmployee(data?.employees);
-          })
-          .catch((err) => {
-            setFormErrors(err.message);
-          });
-      }
-    }, []);
-
+  useEffect(() => {
+    {
+      fetchOrganizationEmployee(org?.organization_id)
+        .then((data) => {
+          const filteredEmployees = data?.filter((item) => item.employment_status !== "Exited")
+          setEmployee(filteredEmployees);
+        })
+        .catch((err) => {
+          setFormErrors(err.message);
+        });
+    }
+  }, []);
 
   useEffect(() => {
     {
@@ -98,7 +98,7 @@ function EmployeeRoleForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode == "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -110,13 +110,13 @@ function EmployeeRoleForm({ mode }) {
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-    const handleDateTimeChange = (name, newValue) => {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: newValue ? dayjs(newValue).format("YYYY-MM-DD HH:mm:ss") : "",
-      }));
-      setFormErrors((prev) => ({ ...prev, [name]: "" }));
-    };
+  const handleDateTimeChange = (name, newValue) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: newValue ? dayjs(newValue).format("YYYY-MM-DD HH:mm:ss") : "",
+    }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+  };
 
   const validateForm = () => {
     const errors = {};
@@ -124,9 +124,11 @@ function EmployeeRoleForm({ mode }) {
     if (!formData.organization_functional_role_id)
       errors.organization_functional_role_id = "Role is required.";
 
-    if (!formData.organization_functional_role_specialization_id)
-      errors.organization_functional_role_specialization_id =
-        "Specilization is required.";
+
+    if (!formData.employee_id)
+      errors.employee_id = "Employee is required.";
+
+    
 
     setFormErrors(errors);
     return Object.keys(errors)?.length === 0;
@@ -202,7 +204,7 @@ function EmployeeRoleForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
+                {/* <TextField
                   select
                   fullWidth
                   label="Employee Name/ID"
@@ -212,10 +214,12 @@ function EmployeeRoleForm({ mode }) {
                   error={!!formErrors.employee_id}
                   helperText={formErrors.employee_id}
                   required
+                  disabled={mode === "view"   ||  employee?.length === 0}
+                
                 >
                   {employee?.map((option) => {
                     const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.employee_code || ""}`.trim();
+                      `${option?.name || ""} -- ${option?.employee_code || ""}`.trim();
                     return (
                       <MenuItem
                         key={option?.employee_id}
@@ -225,9 +229,44 @@ function EmployeeRoleForm({ mode }) {
                       </MenuItem>
                     );
                   })}
-                </TextField>
+                </TextField> */}
 
-                <TextField
+
+                <Autocomplete
+                  fullWidth
+                  options={employee || []}
+                  getOptionLabel={(option) =>
+                    `${option?.name || ""} -- ${option?.employee_code || ""}`.trim()
+                  }
+                  value={
+                    employee?.find(
+                      (emp) => emp.employee_id === formData?.employee_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "employee_id",
+                        value: newValue?.employee_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || employee?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Employee Name/ID"
+                      name="employee_id"
+                      error={!!formErrors.employee_id}
+                      helperText={formErrors.employee_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+                {/* <TextField
                   select
                   fullWidth
                   label="Functional Role"
@@ -237,6 +276,8 @@ function EmployeeRoleForm({ mode }) {
                   error={!!formErrors.organization_functional_role_id}
                   helperText={formErrors.organization_functional_role_id}
                   required
+                        disabled={mode === "view"   ||  Role?.length === 0}
+                 
                 >
                   {Role?.map((type) => (
                     <MenuItem
@@ -246,9 +287,53 @@ function EmployeeRoleForm({ mode }) {
                       {type?.functional_role_name}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextField> */}
 
-                <TextField
+
+
+
+                 <Autocomplete
+                fullWidth
+                  options={Role || []}
+                  getOptionLabel={(option) =>
+                    option.functional_role_name || ""
+                  }
+                  value={
+                    Role?.find(
+                      (option) =>
+                        option.organization_functional_role_id ===
+                        formData.organization_functional_role_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_functional_role_id",
+                        value:
+                          newValue?.organization_functional_role_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || Role?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Functional Role"
+                      error={
+                        !!formErrors.organization_functional_role_id
+                      }
+                      helperText={
+                        formErrors.organization_functional_role_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+                {/* <TextField
                   select
                   fullWidth
                   label="Role Specialization"
@@ -263,7 +348,9 @@ function EmployeeRoleForm({ mode }) {
                   helperText={
                     formErrors.organization_functional_role_specialization_id
                   }
-                  required
+                  
+                  disabled={mode === "view"   ||  roleSpec?.length === 0}
+                 
                 >
                   {roleSpec?.map((type) => (
                     <MenuItem
@@ -275,18 +362,67 @@ function EmployeeRoleForm({ mode }) {
                       {type?.functional_role_specialization_name}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextField> */}
+
+
+
+                 <Autocomplete
+                fullWidth
+                  options={roleSpec || []}
+                  getOptionLabel={(option) =>
+                    option.functional_role_specialization_name || ""
+                  }
+                  value={
+                    roleSpec?.find(
+                      (option) =>
+                        option.organization_functional_role_specialization_id ===
+                        formData.organization_functional_role_specialization_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_functional_role_specialization_id",
+                        value:
+                          newValue?.organization_functional_role_specialization_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || roleSpec?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Role Specialization"
+                      error={
+                        !!formErrors.organization_functional_role_specialization_id
+                      }
+                      helperText={
+                        formErrors.organization_functional_role_specialization_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+
+
+
 
                 <DateTimePicker
                   label="Assigned On"
                   value={
-                    formData?.assigned_on
-                      ? dayjs(formData.assigned_on)
-                      : null
+                    formData?.assigned_on ? dayjs(formData.assigned_on) : null
                   }
                   onChange={(newValue) =>
                     handleDateTimeChange("assigned_on", newValue)
                   }
+                  disabled={mode === "view"}
+                     
+
+
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -297,7 +433,9 @@ function EmployeeRoleForm({ mode }) {
                     />
                   )}
                 />
-  <DateTimePicker
+
+
+                <DateTimePicker
                   label="Unassigned On"
                   value={
                     formData?.unassigned_on
@@ -307,6 +445,14 @@ function EmployeeRoleForm({ mode }) {
                   onChange={(newValue) =>
                     handleDateTimeChange("unassigned_on", newValue)
                   }
+                  disabled={mode === "view"}
+                      sx={{
+                        "& .Mui-disabled": {
+                          WebkitTextFillColor: "rgba(0,0,0,0.7)",
+                          color: "rgba(0,0,0,0.7)",
+                        },
+                      }}
+
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -317,8 +463,8 @@ function EmployeeRoleForm({ mode }) {
                     />
                   )}
                 />
-
               </Grid>
+
 
               <Grid container spacing={2} mt={2}>
                 <Grid item>
@@ -327,7 +473,7 @@ function EmployeeRoleForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

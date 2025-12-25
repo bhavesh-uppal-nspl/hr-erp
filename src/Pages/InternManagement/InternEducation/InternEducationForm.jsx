@@ -29,7 +29,7 @@ import {
 } from "../../../Apis/EducationApi";
 import useInternDataStore from "../../../Zustand/Store/useInternDataStore";
 
-function InternEducationForm({ }) {
+function InternEducationForm({ mode}) {
   const { id } = useParams();
   const { userData } = useAuthStore();
   const org = userData?.organization;
@@ -147,6 +147,17 @@ function InternEducationForm({ }) {
               {expanded === section.name && (
                 <Grid sx={{ pt: 0 }} item xs={12} md={8}>
                   <Grid container spacing={2}>
+
+
+                    
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
                     <FormControl
                       fullWidth
                       error={
@@ -170,6 +181,7 @@ function InternEducationForm({ }) {
                         required
                         label="Education Level"
                         onChange={(e) => handleChange(e, idx)}
+                          disabled={educationLevel?.length === 0 || mode === "view"}
                       >
                         {educationLevel?.map((option) => (
                           <MenuItem
@@ -208,6 +220,7 @@ function InternEducationForm({ }) {
                         labelId="education-degree-label"
                         id="organization_education_degree_id"
                         name="organization_education_degree_id"
+                        disabled={mode === "view"}
                         value={
                           section?.mainData?.organization_education_degree_id ||
                           ""
@@ -257,6 +270,7 @@ function InternEducationForm({ }) {
                         labelId="education-stream-label"
                         id="organization_education_stream_id"
                         name="organization_education_stream_id"
+                          disabled={mode === "view"}
                         value={
                           section?.mainData?.organization_education_stream_id ||
                           ""
@@ -285,10 +299,25 @@ function InternEducationForm({ }) {
                       )}
                     </FormControl>
 
-                    <TextField
+                </Box>
+
+
+
+
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+  <TextField
                       fullWidth
                       label="Institute Name"
                       name="institute_name"
+                        disabled={mode === "view"}
                       value={section?.mainData?.institute_name}
                       onChange={(e) => handleChange(e, idx)}
                       error={!!EducationErrors?.[idx]?.institute_name}
@@ -303,6 +332,7 @@ function InternEducationForm({ }) {
                       name="board_name"
                       value={section?.mainData?.board_name}
                       onChange={(e) => handleChange(e, idx)}
+                        disabled={mode === "view"}
                       error={!!EducationErrors?.[idx]?.board_name}
                       helperText={EducationErrors?.[idx]?.board_name}
                       inputProps={{ maxLength: 50 }}
@@ -313,6 +343,7 @@ function InternEducationForm({ }) {
                       fullWidth
                       label="Marks (%)"
                       name="marks_percentage"
+                        disabled={mode === "view"}
                       value={section?.mainData?.marks_percentage}
                       onChange={(e) => {
                         const textOnly = e.target.value.replace(/[^0-9.]/g, ""); // Allow letters and spaces
@@ -329,6 +360,13 @@ function InternEducationForm({ }) {
                       error={!!EducationErrors?.[idx]?.marks_percentage}
                       helperText={EducationErrors?.[idx]?.marks_percentage}
                     />
+
+                </Box>
+
+                  
+
+                  
+
                     <FormControl
                       component="fieldset"
                       sx={{ marginTop: 2 }}
@@ -337,6 +375,7 @@ function InternEducationForm({ }) {
                       <FormControlLabel
                         control={
                           <Checkbox
+                            disabled={mode === "view"}
                             checked={section?.mainData?.is_pursuing || false}
                             onChange={(e) => handleCheckboxChange(e, idx)}
                             name="is_pursuing"
@@ -351,8 +390,21 @@ function InternEducationForm({ }) {
                         </FormHelperText>
                       )}
                     </FormControl>
-                    <TextField
+  
+
+  
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "7100%", // ensures proper centering
+                  }}
+                >
+
+                  <TextField
                       fullWidth
+                       
                       label="Year of Passing"
                       name="year_of_passing"
                       value={section?.mainData?.year_of_passing}
@@ -372,7 +424,14 @@ function InternEducationForm({ }) {
                       }}
                       error={!!EducationErrors?.[idx]?.year_of_passing}
                       helperText={EducationErrors?.[idx]?.year_of_passing}
+                     disabled={section?.mainData?.is_pursuing || mode === "view"} 
                     />
+
+                </Box>
+ 
+                    
+
+
                   </Grid>
                 </Grid>
               )}
@@ -380,6 +439,7 @@ function InternEducationForm({ }) {
           </Accordion>
         ))}
         <Button
+        disabled={mode === "view"}
           style={{ marginTop: 9 }}
           variant="contained"
           onClick={() => {

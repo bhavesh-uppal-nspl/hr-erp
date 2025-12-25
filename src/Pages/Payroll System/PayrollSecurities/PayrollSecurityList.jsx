@@ -97,6 +97,7 @@ function PayrollSecurityList() {
         heading={"Payroll Security"}
         btnName={"Add Security"}
         Data={Break}
+        add_action={"PAYROLL_SECURITY_ADD"}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
           {
@@ -135,6 +136,7 @@ function PayrollSecurityList() {
         showActions={true}
         Route="/payroll/securities"
         DeleteFunc={deleteBreak}
+        edit_delete_action={["PAYROLL_SECURITY_DELETE", "PAYROLL_SECURITY_EDIT"]}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
       />

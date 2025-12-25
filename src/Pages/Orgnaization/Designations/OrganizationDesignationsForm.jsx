@@ -9,6 +9,7 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -63,7 +64,7 @@ function OrganizationDesignationsForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" ||  mode === "view"  ) && id) {
       setLoading(true);
       getdataById();
     }
@@ -165,26 +166,48 @@ function OrganizationDesignationsForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Department"
-                  name="organization_department_id"
-                  value={formData.organization_department_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_department_id}
-                  helperText={formErrors.organization_department_id}
-                  required
-                >
-                  {departments?.map((option) => (
-                    <MenuItem
-                      key={option.organization_department_id}
-                      value={option.organization_department_id}
-                    >
-                      {option.department_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+               
+                <Autocomplete
+                fullWidth
+                  options={departments || []}
+                  getOptionLabel={(option) =>
+                    option.department_name || ""
+                  }
+                  value={
+                    departments?.find(
+                      (option) =>
+                        option.organization_department_id ===
+                        formData.organization_department_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_department_id",
+                        value:
+                          newValue?.organization_department_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || departments?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Departments"
+                      error={
+                        !!formErrors.organization_department_id
+                      }
+                      helperText={
+                        formErrors.organization_department_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
 
                 <TextField
                   fullWidth
@@ -192,6 +215,7 @@ function OrganizationDesignationsForm({ mode }) {
                   name="designation_name"
                   value={formData.designation_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.designation_name}
                   helperText={formErrors.designation_name}
                   required
@@ -202,6 +226,7 @@ function OrganizationDesignationsForm({ mode }) {
                   fullWidth
                   label="Designation Short Name"
                   name="designation_short_name"
+                  disabled={mode === "view"}
                   value={formData.designation_short_name}
                   onChange={handleChange}
                   error={!!formErrors.designation_short_name}
@@ -220,7 +245,7 @@ function OrganizationDesignationsForm({ mode }) {
                                  color="primary"
                                  size="medium"
                                  onClick={handleSubmit}
-                                 disabled={loading || btnLoading}
+                                 disabled={loading || btnLoading || mode === "view"}
                                  sx={{
                                    borderRadius: 2,
                                    minWidth: 120,

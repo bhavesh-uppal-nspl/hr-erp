@@ -107,7 +107,7 @@ function WorkShiftRotationDayForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode ==="view")&& id) {
       setLoading(true);
       getdataById();
     }
@@ -189,6 +189,7 @@ function WorkShiftRotationDayForm({ mode }) {
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
                 <TextField
+              
                   select
                   fullWidth
                   label="Rotation pattern"
@@ -202,6 +203,7 @@ function WorkShiftRotationDayForm({ mode }) {
                     formErrors.organization_work_shift_rotation_pattern_id
                   }
                   required
+                     disabled={ Pattern?.length === 0  || mode === "view"}
                 >
                   {Pattern?.map((option) => (
                     <MenuItem
@@ -218,6 +220,7 @@ function WorkShiftRotationDayForm({ mode }) {
                   type="number"
                   label="No. of days"
                   name="day_number"
+                  disabled={mode === "view"}
                   value={formData?.day_number}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -235,6 +238,7 @@ function WorkShiftRotationDayForm({ mode }) {
                  <FormControlLabel
                   control={
                     <Switch
+                    disabled={mode === "view"}
                       checked={
                         formData.is_off_day === "1" ||
                         formData.is_off_day === true
@@ -254,6 +258,7 @@ function WorkShiftRotationDayForm({ mode }) {
                 <TextField
                   select
                   fullWidth
+               
                   label="Shift"
                   name="organization_work_shift_id"
                   value={formData?.organization_work_shift_id}
@@ -261,6 +266,7 @@ function WorkShiftRotationDayForm({ mode }) {
                   error={!!formErrors.organization_work_shift_id}
                   helperText={formErrors.organization_work_shift_id}
                   required
+                     disabled={ shift?.length === 0  || mode === "view"}
                 >
                   {shift?.map((option) => (
                     <MenuItem
@@ -285,7 +291,7 @@ function WorkShiftRotationDayForm({ mode }) {
                                 color="primary"
                                 size="medium"
                                 onClick={handleSubmit}
-                                disabled={loading || btnLoading}
+                                disabled={loading || btnLoading || mode === "view"}
                                 sx={{
                                   borderRadius: 2,
                                   minWidth: 120,

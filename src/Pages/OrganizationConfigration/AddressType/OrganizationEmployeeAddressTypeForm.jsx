@@ -120,8 +120,7 @@ function OrganizationEmployeeAddressTypeForm({ mode }) {
           </Box>
         </Grid>
       ) : (
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
+       
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
                 <TextField
@@ -142,7 +141,7 @@ function OrganizationEmployeeAddressTypeForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,
@@ -183,8 +182,7 @@ function OrganizationEmployeeAddressTypeForm({ mode }) {
                                             </Grid>
                                           )}
             </Paper>
-          </Grid>
-        </Grid>
+         
       )}
     </Box>
   );

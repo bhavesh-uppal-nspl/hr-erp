@@ -196,14 +196,22 @@ function AttendanceBreakList() {
     [navigate]
   );
 
+         const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/attendance-break/view/${item.id}`)
+    },
+    [navigate],
+  )
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Attendance Break"}
         btnName={"Add Break"}
+        add_action={"ATTENDANCE_BREAK_ADD"}
         Data={Break}
-        delete_action={"ORG_STRUCTURE_DELETE"}
+        delete_action={"ATTENDANCE_BREAK_DELETE"}
         tableHeaders={[
           {
             name: "Break Name",
@@ -254,7 +262,9 @@ function AttendanceBreakList() {
         // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-breaks`}
         Route="/organization/attendance-break"
         DeleteFunc={deleteBreak}
+        handleShow={handleShow}
         EditFunc={handleEdit}
+        edit_delete_action={["ATTENDANCE_BREAK_DELETE", "ATTENDANCE_BREAK_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

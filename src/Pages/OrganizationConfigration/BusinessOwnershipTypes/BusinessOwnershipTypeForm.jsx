@@ -7,6 +7,7 @@ import {
   TextField,
   MenuItem,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -61,7 +62,7 @@ function BusinessOwnershipTypeForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -155,37 +156,55 @@ function BusinessOwnershipTypeForm({ mode }) {
           </Box>
         </Grid>
       ) : (
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
+        
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Ownership Type"
-                  name="general_business_ownership_type_category_id"
-                  value={formData.general_business_ownership_type_category_id}
-                  onChange={handleChange}
-                  error={
-                    !!formErrors.general_business_ownership_type_category_id
+               
+                 <Autocomplete
+                fullWidth
+                  options={category || []}
+                  getOptionLabel={(option) =>
+                    option.business_ownership_type_category_name || ""
                   }
-                  helperText={
-                    formErrors.general_business_ownership_type_category_id
+                  value={
+                    category?.find(
+                      (option) =>
+                        option.general_business_ownership_type_category_id ===
+                        formData.general_business_ownership_type_category_id
+                    ) || null
                   }
-                >
-                  {category.map((type) => (
-                    <MenuItem
-                      key={type.general_business_ownership_type_category_id}
-                      value={type.general_business_ownership_type_category_id}
-                    >
-                      {type.business_ownership_type_category_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "general_business_ownership_type_category_id",
+                        value:
+                          newValue?.general_business_ownership_type_category_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || category?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Ownership Type"
+                      error={
+                        !!formErrors.general_business_ownership_type_category_id
+                      }
+                      helperText={
+                        formErrors.general_business_ownership_type_category_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
 
                 <TextField
                   fullWidth
                   label="Business Ownership Type Name"
+                  disabled={mode === "view"}
                   name="organization_business_ownership_type_name"
                   value={formData.organization_business_ownership_type_name}
                   onChange={handleChange}
@@ -205,7 +224,7 @@ function BusinessOwnershipTypeForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,
@@ -243,8 +262,7 @@ function BusinessOwnershipTypeForm({ mode }) {
                 )}
               </Grid>
             </Paper>
-          </Grid>
-        </Grid>
+         
       )}
     </Box>
   );

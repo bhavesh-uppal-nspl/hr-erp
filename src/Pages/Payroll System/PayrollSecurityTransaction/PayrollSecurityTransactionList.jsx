@@ -95,6 +95,7 @@ function PayrollSecurityTransactionList() {
       <Layout4
         loading={loading}
         heading={"Payroll Security Transactions"}
+        add_action={"PAYROLL_SECURITY_TRANSACTION_ADD"}
         btnName={"Add Transaction"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
@@ -136,6 +137,7 @@ function PayrollSecurityTransactionList() {
         Route="/payroll/securities-transactions"
         DeleteFunc={deleteBreak}
         EditFunc={handleEdit}
+        edit_delete_action={["PAYROLL_SECURITY_TRANSACTION_DELETE", "PAYROLL_SECURITY_TRANSACTION_EDIT"]}
         token={localStorage.getItem("token")}
       />
     </>

@@ -5,13 +5,16 @@ import {
 import router from "./Routes/Route";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import AppRoute from "./Routes/Route";
+
+
 
 function App() {
 
   return (
      <LocalizationProvider dateAdapter={AdapterDayjs}>
 
-       <RouterProvider router={router} />
+      <AppRoute/>
      </LocalizationProvider>
 
   );

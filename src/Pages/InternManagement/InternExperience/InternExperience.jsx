@@ -134,11 +134,23 @@ function InternExperience({ mode, employeeId }) {
                 <Grid item xs={12} md={8}>
                   <Paper elevation={4} sx={{ p: 3 }}>
                     <Grid container spacing={2}>
+
+
+                      <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                  
                       <FormControl
                         fullWidth
                         required
                         error={!!ExperienceErrors?.[idx]?.experience_type}
-                        sx={{ marginTop: 2 }}
+                      
                       >
                         <InputLabel id="experience_type-label">
                           Experience Type
@@ -148,6 +160,7 @@ function InternExperience({ mode, employeeId }) {
                           labelId="experience_type-label"
                           id="experience_type"
                           name="experience_type"
+                            disabled={mode ==="view"}
                           value={section?.mainData?.experience_type || ""}
                           label="Experience Type"
                           onChange={(e) => handleChange(e, idx)}
@@ -175,6 +188,7 @@ function InternExperience({ mode, employeeId }) {
                       <TextField
                         fullWidth
                         label="Company Name"
+                          disabled={mode ==="view"}
                         name="organization_name"
                         value={section?.mainData?.organization_name}
                         onChange={(e) => handleChange(e, idx)}
@@ -187,12 +201,13 @@ function InternExperience({ mode, employeeId }) {
                       <FormControl
                         fullWidth
                         required
-                        margin="normal"
+                       
                         error={!!ExperienceErrors?.[idx]?.general_industry_id}
                       >
                         <InputLabel id="industry-label">Industry</InputLabel>
                         <Select
                           labelId="industry-label"
+                            disabled={mode ==="view"}
                           id="general_industry_id"
                           name="general_industry_id"
                           value={section?.mainData?.general_industry_id || ""}
@@ -215,10 +230,23 @@ function InternExperience({ mode, employeeId }) {
                         )}
                       </FormControl>
 
-                      <TextField
+                </Box>
+
+
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+                  <TextField
                         fullWidth
                         required
                         label="Location"
+                          disabled={mode ==="view"}
                         name="location"
                         value={section?.mainData?.location}
                         onChange={(e) => handleChange(e, idx)}
@@ -227,10 +255,12 @@ function InternExperience({ mode, employeeId }) {
                         inputProps={{ maxLength: 50 }}
                       />
 
+
                       <TextField
                         fullWidth
                         required
                         label="Work Title"
+                          disabled={mode ==="view"}
                         name="work_title"
                         value={section?.mainData?.work_title}
                         onChange={(e) => handleChange(e, idx)}
@@ -243,12 +273,15 @@ function InternExperience({ mode, employeeId }) {
                         fullWidth
                         required
                         error={!!ExperienceErrors?.[idx]?.work_mode}
-                        sx={{ marginTop: 2 }}
+                        // sx={{ marginTop: 2 }}
                       >
+
+
                         <InputLabel id="work_mode-label">Work Mode</InputLabel>
 
                         <Select
                           labelId="work_mode-label"
+                            disabled={mode ==="view"}
                           id="work_mode"
                           name="work_mode"
                           value={section?.mainData?.work_mode || ""}
@@ -274,10 +307,25 @@ function InternExperience({ mode, employeeId }) {
                         )}
                       </FormControl>
 
-                      <FormControl
+                  
+                </Box>
+
+
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                    <FormControl
                         fullWidth
+                          disabled={mode ==="view"}
                         error={!!ExperienceErrors?.[idx]?.compensation_status}
-                        sx={{ marginTop: 2 }}
+                        // sx={{ marginTop: 2 }}
                       >
                         <InputLabel id="compensation_status-label">
                           Compensation Status
@@ -305,23 +353,21 @@ function InternExperience({ mode, employeeId }) {
                         )}
                       </FormControl>
 
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          width: "100%",
-                          gap: "20px",
-                        }}
-                      >
-                        <TextField
+
+
+
+
+
+ <TextField
                           select
                           fullWidth
                           label="Currency Code"
+                          
                           name="currency_code"
                           value={section?.mainData?.currency_code}
                           onChange={(e) => handleChange(e, idx)}
                           disabled={
-                            section?.mainData?.compensation_status !== "Paid"
+                            section?.mainData?.compensation_status !== "Paid"  || mode === "view"
                           }
                           error={!!ExperienceErrors?.[idx]?.currency_code}
                           helperText={ExperienceErrors?.[idx]?.currency_code}
@@ -344,7 +390,7 @@ function InternExperience({ mode, employeeId }) {
                           value={section?.mainData?.compensation_amount}
                           onChange={(e) => handleChange(e, idx)}
                           disabled={
-                            section?.mainData?.compensation_status !== "Paid"
+                            section?.mainData?.compensation_status !== "Paid" || mode === "view"
                           }
                           error={!!ExperienceErrors?.[idx]?.compensation_amount}
                           helperText={
@@ -352,12 +398,45 @@ function InternExperience({ mode, employeeId }) {
                           }
                           inputProps={{ min: 0 }}
                         />
-                      </div>
 
-                      <TextField
+                </Box>
+                       
+                       
+                       
+
+
+
+                      
+
+                    
+                      {/* <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%",
+                          gap: "20px",
+                        }}
+                      >
+                       
+                      </div> */}
+
+
+                      <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                    mt:3
+                  }}
+                >
+
+
+                   <TextField
                         fullWidth
                         required
                         label="Start Date"
+                          disabled={mode ==="view"}
                         type="date"
                         name="start_date"
                         value={section?.mainData?.start_date}
@@ -372,6 +451,7 @@ function InternExperience({ mode, employeeId }) {
                         required
                         label="End Date"
                         type="date"
+                          disabled={mode ==="view"}
                         name="end_date"
                         value={section?.mainData?.end_date}
                         onChange={(e) => handleChange(e, idx)}
@@ -380,9 +460,25 @@ function InternExperience({ mode, employeeId }) {
                         InputLabelProps={{ shrink: true }}
                       />
 
-                      <TextField
+
+                </Box>
+                       
+
+
+                       <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                    mt:3
+                  }}
+                >
+
+                    <TextField
                         fullWidth
                         label="Reporting Manager Name"
+                          disabled={mode ==="view"}
                         name="reporting_manager_name"
                         value={section?.mainData?.reporting_manager_name}
                         onChange={(e) => handleChange(e, idx)}
@@ -398,6 +494,7 @@ function InternExperience({ mode, employeeId }) {
                       <TextField
                         fullWidth
                         label="Reporting Manager No."
+                          disabled={mode ==="view"}
                         name="reporting_manager_contact"
                         type="text"
                         value={section?.mainData?.reporting_manager_contact}
@@ -421,10 +518,34 @@ function InternExperience({ mode, employeeId }) {
                         }}
                       />
 
+
+
+
+                </Box>
+                       
+
+
+                       <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+
+                </Box>
+                       
+
+                     
+
+                    
                       <FormControl
+                        disabled={mode ==="view"}
                         component="fieldset"
                         error={!!ExperienceErrors?.[idx]?.is_verified}
-                        sx={{ mt: 2 }}
+                        // sx={{ mt: 2 }}
                       >
                         <FormControlLabel
                           control={
@@ -461,17 +582,46 @@ function InternExperience({ mode, employeeId }) {
                         )}
                       </FormControl>
 
-                      <TextField
+                      <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                   <TextField
                         fullWidth
                         label="Verified By(Person Name)"
+                       
                         name="verified_by"
                         value={section?.mainData?.verified_by}
                         onChange={(e) => handleChange(e, idx)}
                         error={!!ExperienceErrors?.[idx]?.verified_by}
                         helperText={ExperienceErrors?.[idx]?.verified_by}
                         inputProps={{ maxLength: 100 }}
-                        disabled={!section?.mainData?.is_verified}
+                        disabled={!section?.mainData?.is_verified || mode === "view"}
                       />
+                       <TextField
+                        fullWidth
+                        label="Verfication Date"
+                        type="date"
+                        name="verification_date"
+                        value={section?.mainData?.verification_date}
+                        onChange={(e) => handleChange(e, idx)}
+                        error={!!ExperienceErrors?.[idx]?.verification_date}
+                        helperText={ExperienceErrors?.[idx]?.verification_date}
+                        InputLabelProps={{ shrink: true }}
+                        disabled={!section?.mainData?.is_verified || mode === "view"}
+                          
+                      />
+
+                  
+                </Box>
+                       
+
+                     
 
                       <TextField
                         fullWidth
@@ -484,21 +634,10 @@ function InternExperience({ mode, employeeId }) {
                         error={!!ExperienceErrors?.[idx]?.verification_notes}
                         helperText={ExperienceErrors?.[idx]?.verification_notes}
                         inputProps={{ maxLength: 256 }}
-                        disabled={!section?.mainData?.is_verified}
+                        disabled={!section?.mainData?.is_verified || mode === "view"}
                       />
 
-                      <TextField
-                        fullWidth
-                        label="Verfication Date"
-                        type="date"
-                        name="verification_date"
-                        value={section?.mainData?.verification_date}
-                        onChange={(e) => handleChange(e, idx)}
-                        error={!!ExperienceErrors?.[idx]?.verification_date}
-                        helperText={ExperienceErrors?.[idx]?.verification_date}
-                        InputLabelProps={{ shrink: true }}
-                        disabled={!section?.mainData?.is_verified}
-                      />
+                     
                     </Grid>
                   </Paper>
                 </Grid>
@@ -508,6 +647,7 @@ function InternExperience({ mode, employeeId }) {
         ))}
         <Button
           variant="contained"
+            disabled={mode ==="view"}
           style={{ marginTop: 9 }}
           onClick={() => {
             setExpanded(`Experience ${Experience?.length + 1}`);

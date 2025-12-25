@@ -90,6 +90,7 @@ function PayrollReimbursementList() {
     <>
       <Layout4
         loading={loading}
+        add_action={"PAYROLL_REIMBURSEMENT_ADD"}
         heading={"Payroll Reimbursements"}
         btnName={"Add Reimbursements"}
         Data={Break}
@@ -130,6 +131,7 @@ function PayrollReimbursementList() {
         sortname={"payroll_cycle_name"}
         showActions={true}
         Route="/payroll/reimbursements"
+        edit_delete_action={["PAYROLL_REIMBURSEMENT_DELETE", "PAYROLL_REIMBURSEMENT_EDIT"]}
         DeleteFunc={deleteBreak}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}

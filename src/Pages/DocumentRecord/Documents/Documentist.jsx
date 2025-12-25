@@ -149,6 +149,18 @@ export  default function Documentist() {
           },
         }
       );
+      if (response.status === 200) {
+              toast.success(response.data.message);
+              console.log("Employee Document deleted:", response.data.message);
+            } else {
+              const errorMessage =
+                response.data.message ||
+                response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+                "Failed to delete Document";
+      
+              toast.error(errorMessage);
+              console.warn("Deletion error:", response.status, response.data);
+            }
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -192,13 +204,24 @@ export  default function Documentist() {
     [navigate]
   );
 
+
+
+     const handleShow = useCallback(
+      (item) => {
+        navigate(`/employee/documents/view/${item.id}`)
+      },
+      [navigate],
+    )
+  
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Employee Documents"}
         btnName={"Add Document"}
-        delete_action={"ATTENDANCE_DELETE"}
+        add_action={"EMPLOYEE_DOCUMENT_ADD"}
+        delete_action={"EMPLOYEE_DOCUMENT_DELETE"}
         Data={documents}
         tableHeaders={[
           {
@@ -244,7 +267,9 @@ export  default function Documentist() {
         // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-status-type`}
         Route="/employee/documents"
         DeleteFunc={handleDelete}
+        edit_delete_action={["EMPLOYEE_DOCUMENT_DELETE", "EMPLOYEE_DOCUMENT_DELETE"]}
         EditFunc={handleEdit}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

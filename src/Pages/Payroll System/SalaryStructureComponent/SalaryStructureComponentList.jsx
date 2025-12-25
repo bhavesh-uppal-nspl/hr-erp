@@ -95,6 +95,7 @@ function SalaryStructureComponentList() {
         loading={loading}
         heading={"Salary Structure Component"}
         btnName={"Add Structure"}
+        add_action={"SALARY_STRUCTURE_COMPONENT_ADD"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
@@ -131,6 +132,7 @@ function SalaryStructureComponentList() {
         heading="Salary Structure Components"
         data={Break}
         sortname={"calculation_method"}
+        edit_delete_action={["SALARY_STRUCTURE_COMPONENT_DELETE", "SALARY_STRUCTURE_COMPONENT_EDIT"]}
         showActions={true}
         // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/workshift-breaks`}
         Route="/payroll/salary-structure/components"

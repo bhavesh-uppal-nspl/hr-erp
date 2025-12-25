@@ -11,6 +11,7 @@ import {
   Paper,
   MenuItem,
   FormControlLabel,
+  Autocomplete,
   Checkbox,
   TextField,
   FormHelperText,
@@ -54,7 +55,7 @@ function EmployeeExitForm({ mode }) {
 
   useEffect(() => {
     {
-      fetchOrganizationEmploymenentExiReasonTpes(org.organization_id)
+      fetchOrganizationEmploymenentExiReasonTpes(org?.organization_id)
         .then((data) => {
           setExitReasonType(data.exitreason.data);
         })
@@ -64,17 +65,38 @@ function EmployeeExitForm({ mode }) {
     }
   }, []);
 
-  useEffect(() => {
-    {
-      fetchOrganizationEmployee(org.organization_id)
-        .then((data) => {
-          setEmployee(data?.employees);
-        })
-        .catch((err) => {
-          setFormErrors(err.message);
-        });
-    }
-  }, []);
+useEffect(() => {
+  if (!org?.organization_id) return;
+
+  fetchOrganizationEmployee(org?.organization_id)
+    .then((data) => {
+      let filteredEmployees = data?.filter(
+        (item) => item.employment_status !== "Exited"
+      );
+
+      // Include current employee during edit mode even if exited
+      if (( mode === "edit"  || mode === "view")&& formData.employee_id) {
+        const currentEmployee = data?.find(
+          (emp) => emp.employee_id === formData.employee_id
+        );
+
+        if (
+          currentEmployee &&
+          !filteredEmployees.find(
+            (emp) => emp.employee_id === currentEmployee.employee_id
+          )
+        ) {
+          filteredEmployees = [currentEmployee, ...filteredEmployees];
+        }
+      }
+
+      setEmployee(filteredEmployees);
+    })
+    .catch((err) => {
+      setFormErrors(err.message);
+    });
+}, [org?.organization_id, formData.employee_id, mode]);
+
 
   console.log();
 
@@ -82,15 +104,29 @@ function EmployeeExitForm({ mode }) {
     const getdataById = async () => {
       try {
         const response = await axios.get(
-          `${MAIN_URL}/api/organizations/${org.organization_id}/employee-exit/${id}`,
+          `${MAIN_URL}/api/organizations/${org?.organization_id}/employee-exit/${id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        const a = response.data.employeexit;
-        setFormData(a);
+
+        const a = response?.data?.employeexit;
+        console.log("ata is coming in ", a);
+
+        const formattedData = {
+          ...a,
+          organization_employment_exit_reason_id:
+            a?.exit_reason?.organization_employment_exit_reason_id || "",
+          //exit_reason_name: a?.exit_reason?.employment_exit_reason_name || "",
+          organization_employment_exit_reason_type_id:
+            a?.exit_reason?.exit_reason_type
+              ?.organization_employment_exit_reason_type_id || "",
+          // exit_reason_type_name: a?.exit_reason?.exit_reason_type?.employment_exit_reason_type_name || "",
+        };
+
+        setFormData(formattedData);
       } catch (error) {
         console.error("Error fetching employee exit data:", error);
       } finally {
@@ -98,7 +134,7 @@ function EmployeeExitForm({ mode }) {
       }
     };
 
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -110,8 +146,6 @@ function EmployeeExitForm({ mode }) {
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
     }));
-
-
   };
   useEffect(() => {
     const fetchExitReasons = async () => {
@@ -227,7 +261,7 @@ function EmployeeExitForm({ mode }) {
       if (mode === "edit") {
         // Call edit API
         await axios.put(
-          `${MAIN_URL}/api/organizations/${org.organization_id}/employee-exit/${id}`,
+          `${MAIN_URL}/api/organizations/${org?.organization_id}/employee-exit/${id}`,
           formData,
           {
             headers: {
@@ -237,7 +271,7 @@ function EmployeeExitForm({ mode }) {
         );
       } else {
         await axios.post(
-          `${MAIN_URL}/api/organizations/${org.organization_id}/employee-exit`,
+          `${MAIN_URL}/api/organizations/${org?.organization_id}/employee-exit`,
           formData,
           {
             headers: {
@@ -291,145 +325,215 @@ function EmployeeExitForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Employee Name/ID"
-                  name="employee_id"
-                  value={formData?.employee_id}
-                  onChange={handleChange}
-                  error={!!formErrors.employee_id}
-                  helperText={formErrors.employee_id}
-                  required
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {employee?.map((option) => {
-                    const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.employee_code || ""}`.trim();
+                  <Autocomplete
+                    fullWidth
+                    options={employee || []}
+                    getOptionLabel={(option) =>
+                      `${option?.name || ""} (${option?.employee_code || ""})`.trim()
+                    }
+                    value={
+                      employee?.find(
+                        (emp) => emp.employee_id === formData?.employee_id
+                      ) || null
+                    }
+                    onChange={(event, newValue) => {
+                      handleChange({
+                        target: {
+                          name: "employee_id",
+                          value: newValue?.employee_id || "",
+                        },
+                      });
+                    }}
+                    disabled={mode === "view" || employee?.length === 0}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Employee Name/ID"
+                        name="employee_id"
+                        error={!!formErrors.employee_id}
+                        helperText={formErrors.employee_id}
+                        required
+                        fullWidth
+                      />
+                    )}
+                  />
 
-                    //  `${option.first_name || ""} ${option.middle_name || ""} ${option.last_name || ""} ➖ ${option.designation.designation_name}`.trim();
-                    return (
-                      <MenuItem
-                        key={option?.employee_id}
-                        value={option?.employee_id}
-                      >
-                        {fullName ? fullName : option?.employee_id}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Resignation Date"
+                    name="resignation_date"
+                    value={formData.resignation_date}
+                    onChange={handleChange}
+                    error={!!formErrors.resignation_date}
+                    helperText={formErrors.resignation_date}
+                    required
+                    disabled={mode === "view"}
+                    InputLabelProps={{ shrink: true }}
+                  />
 
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Resignation Date"
-                  name="resignation_date"
-                  value={formData.resignation_date}
-                  onChange={handleChange}
-                  error={!!formErrors.resignation_date}
-                  helperText={formErrors.resignation_date}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Notice Period Start Date"
+                    name="notice_period_start"
+                    value={formData.notice_period_start}
+                    onChange={handleChange}
+                    error={!!formErrors.notice_period_start}
+                    helperText={formErrors.notice_period_start}
+                    required
+                    disabled={mode === "view"}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Box>
 
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Notice Period Start Date"
-                  name="notice_period_start"
-                  value={formData.notice_period_start}
-                  onChange={handleChange}
-                  error={!!formErrors.notice_period_start}
-                  helperText={formErrors.notice_period_start}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
-
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Notice Period End Date"
-                  name="notice_period_end"
-                  value={formData.notice_period_end}
-                  onChange={handleChange}
-                  error={!!formErrors.notice_period_end}
-                  helperText={formErrors.notice_period_end}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
-
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Last Working Date"
-                  name="last_working_date"
-                  value={formData.last_working_date}
-                  onChange={handleChange}
-                  error={!!formErrors.last_working_date}
-                  helperText={formErrors.last_working_date}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
-
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Relieving Date"
-                  name="relieving_date"
-                  value={formData.relieving_date}
-                  onChange={handleChange}
-                  error={!!formErrors.relieving_date}
-                  helperText={formErrors.relieving_date}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
-
-                <TextField
-                  select
-                  fullWidth
-                  label="Exit Reason Category"
-                  name="organization_employment_exit_reason_type_id"
-                  value={formData.organization_employment_exit_reason_type_id}
-                  onChange={handleChange}
-                  error={
-                    !!formErrors?.organization_employment_exit_reason_type_id
-                  }
-                  helperText={
-                    formErrors?.organization_employment_exit_reason_type_id
-                  }
-                  required
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {ExitReasonType?.map((option) => (
-                    <MenuItem
-                      key={option?.organization_employment_exit_reason_type_id}
-                      value={
-                        option?.organization_employment_exit_reason_type_id
-                      }
-                    >
-                      {option?.employment_exit_reason_type_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Notice Period End Date"
+                    name="notice_period_end"
+                    value={formData.notice_period_end}
+                    onChange={handleChange}
+                    error={!!formErrors.notice_period_end}
+                    helperText={formErrors.notice_period_end}
+                    required
+                    disabled={mode === "view"}
+                    InputLabelProps={{ shrink: true }}
+                  />
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Exit Reason"
-                  name="organization_employment_exit_reason_id"
-                  value={formData.organization_employment_exit_reason_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_employment_exit_reason_id}
-                  helperText={formErrors.organization_employment_exit_reason_id}
-                  required
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Last Working Date"
+                    name="last_working_date"
+                    value={formData.last_working_date}
+                    onChange={handleChange}
+                    error={!!formErrors.last_working_date}
+                    helperText={formErrors.last_working_date}
+                    required
+                    disabled={mode === "view"}
+                    InputLabelProps={{ shrink: true }}
+                  />
+
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Relieving Date"
+                    name="relieving_date"
+                    value={formData.relieving_date}
+                    onChange={handleChange}
+                    error={!!formErrors.relieving_date}
+                    helperText={formErrors.relieving_date}
+                    required
+                    disabled={mode === "view"}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {ExitReason?.map((option) => (
-                    <MenuItem
-                      key={option.organization_employment_exit_reason_id}
-                      value={option.organization_employment_exit_reason_id}
-                    >
-                      {option.employment_exit_reason_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  <Autocomplete
+                    fullWidth
+                    options={ExitReasonType || []}
+                    getOptionLabel={(option) =>
+                      option.employment_exit_reason_type_name || ""
+                    }
+                    value={
+                      ExitReasonType?.find(
+                        (option) =>
+                          option.organization_employment_exit_reason_type_id ===
+                          formData.organization_employment_exit_reason_type_id
+                      ) || null
+                    }
+                    onChange={(event, newValue) => {
+                      handleChange({
+                        target: {
+                          name: "organization_employment_exit_reason_type_id",
+                          value:
+                            newValue?.organization_employment_exit_reason_type_id ||
+                            "",
+                        },
+                      });
+                    }}
+                    disabled={mode === "view" || ExitReasonType?.length === 0}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Exit Reason Category"
+                        error={
+                          !!formErrors.organization_employment_exit_reason_type_id
+                        }
+                        helperText={
+                          formErrors.organization_employment_exit_reason_type_id
+                        }
+                        required
+                        fullWidth
+                      />
+                    )}
+                  />
+
+                  <Autocomplete
+                    fullWidth
+                    options={ExitReason || []}
+                    getOptionLabel={(option) =>
+                      option.employment_exit_reason_name || ""
+                    }
+                    value={
+                      ExitReason?.find(
+                        (option) =>
+                          option.organization_employment_exit_reason_id ===
+                          formData.organization_employment_exit_reason_id
+                      ) || null
+                    }
+                    onChange={(event, newValue) => {
+                      handleChange({
+                        target: {
+                          name: "organization_employment_exit_reason_id",
+                          value:
+                            newValue?.organization_employment_exit_reason_id ||
+                            "",
+                        },
+                      });
+                    }}
+                    disabled={mode === "view" || ExitReason?.length === 0}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Exit Reason"
+                        error={
+                          !!formErrors.organization_employment_exit_reason_id
+                        }
+                        helperText={
+                          formErrors.organization_employment_exit_reason_id
+                        }
+                        required
+                        fullWidth
+                      />
+                    )}
+                  />
+                </Box>
 
                 <FormControlLabel
                   control={
@@ -445,6 +549,7 @@ function EmployeeExitForm({ mode }) {
                     />
                   }
                   label="Exit Interview Done"
+                  disabled={mode === "view"}
                 />
                 {formErrors.exit_interview_done && (
                   <FormHelperText error>
@@ -461,6 +566,9 @@ function EmployeeExitForm({ mode }) {
                   error={!!formErrors.comments}
                   helperText={formErrors.comments}
                   required
+                  multiline
+                  rows={3}
+                  disabled={mode === "view"}
                 />
               </Grid>
 
@@ -471,11 +579,11 @@ function EmployeeExitForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading  || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,
-                      mt:3,
+                      mt: 3,
                       textTransform: "capitalize",
                       fontWeight: 500,
                     }}
@@ -496,6 +604,7 @@ function EmployeeExitForm({ mode }) {
                       size="medium"
                       onClick={() => navigate(-1)}
                       sx={{
+                        mt: 3,
                         borderRadius: 2,
                         minWidth: 120,
                         textTransform: "capitalize",

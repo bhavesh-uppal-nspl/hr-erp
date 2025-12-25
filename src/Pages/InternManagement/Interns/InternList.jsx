@@ -18,12 +18,12 @@ import CustomisetableReport from "../../../Components/Table/CustomisetableReport
 import { TableConfig } from "../../../Configurations/TableDataConfig";
 import TableDataGeneric from "../../../Configurations/TableDataGeneric";
 import Layout4 from "../../DataLayouts/Layout4";
-import { fetchInterns } from "../../../Apis/InternManagement";
+import { fetchInterns, fetchInternsss } from "../../../Apis/InternManagement";
 
 const DEFAULT_COLUMNS = [
   {
-    field: "intern_code",
-    label: "intern_code",
+    field: "Intern_Code",
+    label: "Intern_Code",
     visible: true,
     width: 150,
     filterable: true,
@@ -32,19 +32,8 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
-    field: "Intern_name",
-    label: "Intern_name",
-    visible: true,
-    width: 150,
-    filterable: true,
-    sortable: true,
-    pinned: "none",
-    required: false,
-  },
-
-  {
-    field: "date_of_birth",
-    label: "date_of_birth",
+    field: "Name",
+    label: "Name",
     visible: true,
     width: 150,
     filterable: true,
@@ -54,8 +43,19 @@ const DEFAULT_COLUMNS = [
   },
 
   {
-    field: "gender",
-    label: "gender",
+    field: "Department",
+    label: "Department",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+
+  {
+    field: "Functional_Role",
+    label: "Functional_Role",
     visible: true,
     width: 150,
     filterable: true,
@@ -132,56 +132,28 @@ function InternList({ mode }) {
   }, [org?.organization_id]);
 
   // load data
-  useEffect(() => {
-    if (org?.organization_id) {
-      setLoading(true);
-      fetchInterns(org?.organization_id)
-        .then((data) => {
-          const interns = data?.intership?.data || [];
+useEffect(() => {
+  if (org?.organization_id) {
+    setLoading(true);
+    fetchInternsss(org.organization_id)
+      .then((data) => {
+        if (!Array.isArray(data)) {
+          console.error("Invalid data format:", data);
+          setIntern([]);
+          return;
+        }
+        // Filter out exited interns
+        const activeInterns = data.filter(
+          (item) => item.Internship_Status !== "Exited"
+        );
 
-          // ✅ Filter out interns where status is "Exited"
-          const activeInterns = interns.filter(
-            (item) => item.status?.internship_status_name !== "Exited"
-          );
+        setIntern(activeInterns);
+      })
+      .catch((err) => console.error("Error fetching interns:", err))
+      .finally(() => setLoading(false));
+  }
+}, [org]);
 
-          // ✅ Map and transform the filtered data
-          const formatted = activeInterns.map((item) => {
-            const imageUrl = item.profile_image_url
-              ? `${item.profile_image_url}`
-              : "";
-            const date_of_birth = item.date_of_birth
-              ? new Date(item.date_of_birth).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })
-              : "N/A";
-            const date_of_joining = item.date_of_joining
-              ? new Date(item.date_of_joining).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })
-              : "N/A";
-
-            return {
-              ...item,
-              id: item?.intern_id,
-              Intern_name: [item.first_name, item.middle_name, item.last_name]
-                .filter(Boolean)
-                .join(" "),
-              imageUrl,
-              date_of_birth,
-              date_of_joining,
-            };
-          });
-
-          setIntern(formatted);
-        })
-        .catch((err) => console.error("Error fetching interns:", err))
-        .finally(() => setLoading(false));
-    }
-  }, [org]);
 
   console.log("intern is ", intern);
 
@@ -196,6 +168,19 @@ function InternList({ mode }) {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Intern";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -253,10 +238,21 @@ function InternList({ mode }) {
     },
   ];
 
+
+
+     const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/intern/intern-details/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   return (
     <>
       <Layout4
         loading={loading}
+        delete_action={"INTERN_DELETE"}
         heading={
           <div style={{ cursor: "pointer" }} onClick={() => navigate(-1)}>
             Interns
@@ -291,20 +287,21 @@ function InternList({ mode }) {
         ]}
         Route={"/organization/intern/intern-details"}
         setData={setIntern}
-        DeleteFunc={deleteIntern}
+        DeleteFunc={handleDelete}
       />
       {fromDashboard ? (
         <TableDataGeneric
           tableName="Interns"
-          primaryKey="intern_id"
+          primaryKey="id"
           heading="Interns"
           data={intern}
           sortname={"intern_name"}
           showActions={true}
           CardData={carddata}
+          handleShow={handleShow}
           // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/employee`}
           Route="/organization/intern/intern-details"
-          DeleteFunc={handleDelete}
+          DeleteFunc={deleteIntern}
           EditFunc={handleEdit}
           token={localStorage.getItem("token")}
           configss={configColumns}
@@ -313,14 +310,15 @@ function InternList({ mode }) {
       ) : (
         <TableDataGeneric
           tableName="Interns"
-          primaryKey="intern_id"
+          primaryKey="id"
           heading="Intern"
           data={intern}
           sortname={"Intern_name"}
           showActions={true}
           CardData={carddata}
           Route="/organization/intern/intern-details"
-          DeleteFunc={handleDelete}
+          DeleteFunc={deleteIntern}
+          handleShow={handleShow}
           EditFunc={handleEdit}
           token={localStorage.getItem("token")}
           configss={configColumns}

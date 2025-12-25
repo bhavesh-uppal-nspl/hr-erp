@@ -62,7 +62,7 @@ function OrganizationEmployementExitReasonsForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -142,10 +142,10 @@ function OrganizationEmployementExitReasonsForm({ mode }) {
     <Box px={4} py={4}>
       <Header
         mode={mode}
-        updateMessage={" Exit Reason"}
-        addMessage={" Exit Reason"}
+        updateMessage={"Exit Reason"}
+        addMessage={"Exit Reason"}
         homeLink={"/organization-configration/employement-exit-reason"}
-        homeText={" Exit Reason"}
+        homeText={"Exit Reason"}
       />
       {loading ? (
         <Grid container spacing={2}>
@@ -164,6 +164,7 @@ function OrganizationEmployementExitReasonsForm({ mode }) {
                   name="employment_exit_reason_name"
                   value={formData.employment_exit_reason_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.employment_exit_reason_name}
                   helperText={formErrors.employment_exit_reason_name}
                   required
@@ -183,6 +184,7 @@ function OrganizationEmployementExitReasonsForm({ mode }) {
                   helperText={
                     formErrors.organization_employment_exit_reason_type_id
                   }
+                  disabled={exitReasonType?.length === 0 || mode === "view"}
                 >
                   {exitReasonType.map((type) => (
                     <MenuItem
@@ -200,6 +202,7 @@ function OrganizationEmployementExitReasonsForm({ mode }) {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
                   required
@@ -214,7 +217,7 @@ function OrganizationEmployementExitReasonsForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

@@ -68,7 +68,7 @@ function OrganizationEmployementTypesForm({ mode }) {
     setTimeout(() => {
       const success = true;
       if (success) {
-        toast.success(mode === "edit" ? "Employement's Type updated!" : "Employement's Type created!");
+        toast.success(mode === "edit" ? "Employment's Type updated!" : "Employment's Type created!");
         navigate(-1);
       } else {
 
@@ -80,10 +80,10 @@ function OrganizationEmployementTypesForm({ mode }) {
   return (
     <Box px={4} py={4}>
       <Header mode={mode}
-        updateMessage={"Employement's Type"}
-        addMessage={"Employement's Type"}
+        updateMessage={"Employment's Type"}
+        addMessage={"Employment's Type"}
         homeLink={"/employement/types"}
-        homeText={"Employement's Type"}
+        homeText={"Employment's Type"}
       />
       {loading ? (
         <Grid container spacing={2}>
@@ -114,7 +114,7 @@ function OrganizationEmployementTypesForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

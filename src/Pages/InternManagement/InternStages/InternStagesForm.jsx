@@ -10,6 +10,7 @@ import {
   TextField,
   FormHelperText,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -80,7 +81,7 @@ const [Status , setStatus]=useState([])
       }
     };
 
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode ==="view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -183,30 +184,47 @@ const [Status , setStatus]=useState([])
               <Grid container spacing={2}>
                 
                 
-             
 
+                 <Autocomplete
+                fullWidth
+                  options={Status || []}
+                  getOptionLabel={(option) =>
+                    option.internship_status_name || ""
+                  }
+                  value={
+                    Status?.find(
+                      (option) =>
+                        option.organization_internship_status_id ===
+                        formData.organization_internship_status_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_internship_status_id",
+                        value:
+                          newValue?.organization_internship_status_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || Status?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Internship Status"
+                      error={
+                        !!formErrors.organization_internship_status_id
+                      }
+                      helperText={
+                        formErrors.organization_internship_status_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
 
-                
-
-                <TextField
-                  select
-                  fullWidth
-                  label="Internship Status"
-                  name="organization_internship_status_id"
-                  value={formData?.organization_internship_status_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_internship_status_id}
-                  helperText={formErrors.organization_internship_status_id}
-                >
-                  {(Status || [])?.map((option) => (
-                    <MenuItem
-                      key={option.organization_internship_status_id}
-                      value={option?.organization_internship_status_id}
-                    >
-                      {option.internship_status_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
 
               
               
@@ -216,6 +234,7 @@ const [Status , setStatus]=useState([])
                   name="internship_stage_name"
                   value={formData.internship_stage_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.internship_stage_name}
                   helperText={formErrors.internship_stage_name}
                 
@@ -226,6 +245,7 @@ const [Status , setStatus]=useState([])
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                   disabled={mode === "view"}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
                   multiline
@@ -242,7 +262,7 @@ const [Status , setStatus]=useState([])
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       mt: 3,
                       borderRadius: 2,

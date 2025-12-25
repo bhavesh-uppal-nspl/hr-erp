@@ -7,6 +7,7 @@ import {
   TextField,
   MenuItem,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -76,7 +77,7 @@ function OrganizationDepartmentForm({ mode }) {
 
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -180,12 +181,24 @@ function OrganizationDepartmentForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
+
+
+                 
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+                   <TextField
                   fullWidth
                   label="Department Name"
                   name="department_name"
                   value={formData.department_name}
                   onChange={handleChange}
+                   disabled={mode === "view"}
                   error={!!formErrors.department_name}
                   helperText={formErrors.department_name}
                   inputProps={{ maxLength: 50 }}
@@ -196,6 +209,7 @@ function OrganizationDepartmentForm({ mode }) {
                   fullWidth
                   label="Short Name"
                   name="department_short_name"
+                  disabled={mode === "view"}
                   value={formData.department_short_name}
                   onChange={handleChange}
                   error={!!formErrors.department_short_name}
@@ -203,9 +217,90 @@ function OrganizationDepartmentForm({ mode }) {
                   inputProps={{ maxLength: 20 }}
                 />
 
+
+                </Box>
+
+
+
+
+                 
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                   <TextField
+                  fullWidth
+                  label="Department Email"
+                   disabled={mode === "view"}
+                  name="department_mail_id"
+                  type="text"
+                  value={formData.department_mail_id}
+                  onChange={handleChange}
+                  error={!!formErrors.department_mail_id}
+                  helperText={formErrors.department_mail_id}
+                  inputProps={{ maxLength: 100 }}
+                />
+
+             
+
+
+                <Autocomplete
+                fullWidth
+               
+                  options={deptlocations || []}
+                  getOptionLabel={(option) =>
+                    option.city?.city_name || ""
+                  }
+                  value={
+                    deptlocations?.find(
+                      (option) =>
+                        option.organization_location_id ===
+                        formData.organization_location_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_location_id",
+                        value:
+                          newValue?.organization_location_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || deptlocations?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Department Location"
+                      error={
+                        !!formErrors.organization_location_id
+                      }
+                      helperText={
+                        formErrors.organization_location_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+                  
+                </Box>
+
+
+
+
+
+               
                 <TextField
                   fullWidth
                   label="Description"
+                   disabled={mode === "view"}
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
@@ -216,38 +311,11 @@ function OrganizationDepartmentForm({ mode }) {
                   inputProps={{ maxLength: 255 }}
                 />
 
-                <TextField
-                  fullWidth
-                  label="Department Email"
-                  name="department_mail_id"
-                  type="text"
-                  value={formData.department_mail_id}
-                  onChange={handleChange}
-                  error={!!formErrors.department_mail_id}
-                  helperText={formErrors.department_mail_id}
-                  inputProps={{ maxLength: 100 }}
-                />
+               
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Department Location"
-                  name="organization_location_id"
-                  value={formData.organization_location_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_location_id}
-                  helperText={formErrors.organization_location_id}
-                  required
-                >
-                  {deptlocations?.map((option) => (
-                    <MenuItem
-                      key={option.organization_location_id}
-                      value={option.organization_location_id}
-                    >
-                      {option?.city?.city_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+
+
+
 
              
               </Grid>
@@ -259,7 +327,7 @@ function OrganizationDepartmentForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

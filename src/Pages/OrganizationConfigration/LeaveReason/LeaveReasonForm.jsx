@@ -7,6 +7,7 @@ import {
   Paper,
   TextField,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -60,7 +61,7 @@ function LeaveReasonForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -157,32 +158,55 @@ function LeaveReasonForm({ mode }) {
                   name="leave_reason_name"
                   value={formData.leave_reason_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.leave_reason_name}
                   helperText={formErrors.leave_reason_name}
                   required
                       inputProps={{ maxLength: 50 }}
                 />
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Leave Reason Type"
-                  name="organization_leave_reason_type_id"
-                  value={formData.organization_leave_reason_type_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_leave_reason_type_id}
-                  helperText={formErrors.organization_leave_reason_type_id}
-                  required
-                >
-                  {leaveReasonType?.map((option) => (
-                    <MenuItem
-                      key={option.organization_leave_reason_type_id}
-                      value={option.organization_leave_reason_type_id}
-                    >
-                      {option.leave_reason_type_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+              
+
+                  <Autocomplete
+                fullWidth
+                  options={leaveReasonType || []}
+                  getOptionLabel={(option) =>
+                    option.leave_reason_type_name || ""
+                  }
+                  value={
+                    leaveReasonType?.find(
+                      (option) =>
+                        option.organization_leave_reason_type_id ===
+                        formData.organization_leave_reason_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_leave_reason_type_id",
+                        value:
+                          newValue?.organization_leave_reason_type_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || leaveReasonType?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Leave Reason Type"
+                      error={
+                        !!formErrors.organization_leave_reason_type_id
+                      }
+                      helperText={
+                        formErrors.organization_leave_reason_type_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
 
                 <TextField
                   fullWidth
@@ -190,6 +214,9 @@ function LeaveReasonForm({ mode }) {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                  disabled={mode === "view"}
+                  multiline
+                  rows={3}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
                       inputProps={{ maxLength: 255 }}
@@ -206,7 +233,7 @@ function LeaveReasonForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,
@@ -253,3 +280,4 @@ function LeaveReasonForm({ mode }) {
 }
 
 export default LeaveReasonForm;
+

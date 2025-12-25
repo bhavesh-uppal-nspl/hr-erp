@@ -129,7 +129,7 @@ const formatMinutesToHours = (minutes) => {
     <Layout1
       loading={loading}
       heading={"Intern Attendance Records"}
-      btnName={"Add Attendance Record"}
+      btnName={null}
       Data={attendance}
       delete_action={"LEAVE_DELETE"}
       tableHeaders={[

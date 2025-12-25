@@ -215,7 +215,7 @@ function LevaeBalanceReportList() {
       <Layout4
         loading={loading}
         heading={"Employee Leave Balance Report"}
-        btnName={" Report"}
+        btnName={null}
         Data={leaves}
         tableHeaders={[
           {
@@ -260,7 +260,7 @@ function LevaeBalanceReportList() {
         data={leaves}
         sortname={"employee_name"}
         y
-        showActions={true}
+        showActions={false}
         // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/leave-balances/taken`}
         Route="/employee-leave-balance-report"
         DeleteFunc={handleDelete}

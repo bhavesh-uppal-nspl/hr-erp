@@ -44,7 +44,7 @@ function WorkShiftTypeForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -144,6 +144,7 @@ function WorkShiftTypeForm({ mode }) {
                   name="work_shift_type_name"
                   value={formData.work_shift_type_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.work_shift_type_name}
                   helperText={formErrors.work_shift_type_name}
                   inputProps={{ maxLength: 50 }}
@@ -156,6 +157,7 @@ function WorkShiftTypeForm({ mode }) {
                   name="work_shift_type_short_name"
                   value={formData.work_shift_type_short_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.work_shift_type_short_name}
                   helperText={formErrors.work_shift_type_short_name}
                   inputProps={{ maxLength: 30 }}
@@ -172,7 +174,7 @@ function WorkShiftTypeForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

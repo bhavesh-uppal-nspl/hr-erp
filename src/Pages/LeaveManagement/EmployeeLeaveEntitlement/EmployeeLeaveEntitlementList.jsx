@@ -170,6 +170,21 @@ function EmployeeLeaveEntitlementList() {
           },
         }
       );
+
+       if (response.status === 200) {
+              toast.success(response.data.message);
+              console.log(" Leave Entitlment Deleted:", response.data.message);
+            } else {
+              const errorMessage =
+                response.data.message ||
+                response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+                "Failed to delete Entitlment";
+      
+              toast.error(errorMessage);
+              console.warn("Deletion error:", response.status, response.data);
+            }
+
+
     } catch (error) { if (error.response && error.response.status === 401) {
   toast.error("Session Expired!");
   window.location.href = "/login";
@@ -219,6 +234,17 @@ function EmployeeLeaveEntitlementList() {
 
   );
 
+
+
+   
+      const handleShow = useCallback(
+    (item) => {
+      navigate(`/leave/employee-entitlements/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   
 
 
@@ -228,6 +254,8 @@ function EmployeeLeaveEntitlementList() {
       loading={loading}
       heading={"Employee Leave Entitlement"}
       btnName={"Add Employee Leave Entitlement"}
+      add_action={"EMPLOYEE_ENTITLEMENT_ADD"}
+      delete_action={"EMPLOYEE_ENTITLEMENT_DELETE"}
       Data={leaves}
       tableHeaders={[
         { name: "Leave Type", value_key: "leavetype" },
@@ -274,7 +302,9 @@ function EmployeeLeaveEntitlementList() {
               //  apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/employee-entitlements`}
             Route="/leave/employee-entitlements"
             DeleteFunc={handleDelete}
+            handleShow={handleShow}
             EditFunc={handleEdit}
+            edit_delete_action={["EMPLOYEE_ENTITLEMENT_DELETE", "EMPLOYEE_ENTITLEMENT_EDIT"]}
             token={localStorage.getItem("token")}
 configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

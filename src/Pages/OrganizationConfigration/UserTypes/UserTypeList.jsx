@@ -27,13 +27,12 @@ function UserTypeList() {
       setLoading(true);
       fetchUserTypes(org.organization_id)
         .then((data) => {
-          let a = data.userTypes.data;
+          let a = data?.userTypes?.data;
           console.log(a);
           let b = a.map((item) => {
             return {
               ...item,
               id: item.organization_user_type_id,
-            
               description: item.description===null ? "" :item?.description,
               user_type_code: item.user_type_code===null ? "" :item?.user_type_code,
             };
@@ -56,6 +55,18 @@ function UserTypeList() {
           },
         }
       );
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete User Type";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -80,14 +91,24 @@ function UserTypeList() {
 
 
 
+                        const handleShow = useCallback(
+      (item) => {
+        navigate(`/organization-configration/user-types/view/${item.id}`)
+      },
+      [navigate],
+    )
+
+
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"User Types"}
         btnName={"Add User types"}
+        add_action={"USER_TYPE_ADD"}
         Data={UserTypes}
-        delete_action={"ORG_CONFIG_DELETE"}
+        delete_action={"USER_TYPE_DELETE"}
         tableHeaders={[
           {
             name: "Employee Type",
@@ -109,18 +130,20 @@ function UserTypeList() {
       />
 
         <TableDataGeneric
-          tableName="Employees"
+          tableName="User Types"
           primaryKey="organization_user_type_id"
           heading="User Types"
           data={UserTypes}
           sortname={"user_type_name"}
           showActions={true}
+          handleShow={handleShow}
           // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/user-type`}
           Route="/organization-configration/user-types"
           DeleteFunc={deleteUserTypes}
           
   EditFunc={handleEdit}
           token={localStorage.getItem("token")}
+          edit_delete_action={["USER_TYPE_DELETE", "USER_TYPE_EDIT"]}
 
                   organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}

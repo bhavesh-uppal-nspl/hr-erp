@@ -600,13 +600,13 @@ export default function MultiTableConfig() {
         datagridKeyProp: `Intern Certificate_grid_${org?.organization_id}`,
       },
 
-      {
-        id: "internship_status",
-        tablename: "Internship Status",
-        tableheading: "internship_status",
-        apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/internship-status?mode=1`,
-        datagridKeyProp: `Internship Status_grid_${org?.organization_id}`,
-      },
+      // {
+      //   id: "internship_status",
+      //   tablename: "Internship Status",
+      //   tableheading: "internship_status",
+      //   apiFieldsConfig: `${MAIN_URL}/api/organizations/${org?.organization_id}/internship-status?mode=1`,
+      //   datagridKeyProp: `Internship Status_grid_${org?.organization_id}`,
+      // },
   
       {
         id: "user_role",

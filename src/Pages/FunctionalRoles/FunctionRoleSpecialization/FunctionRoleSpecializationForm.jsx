@@ -62,7 +62,7 @@ function FunctionRoleSpecializationForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -170,6 +170,7 @@ function FunctionRoleSpecializationForm({ mode }) {
                 error={!!formErrors.organization_functional_role_id}
                 helperText={formErrors.organization_functional_role_id}
                 required
+                 disabled={Role?.length === 0 || mode === "view"}
               >
                 {Role?.map((type) => (
                   <MenuItem
@@ -189,6 +190,7 @@ function FunctionRoleSpecializationForm({ mode }) {
                   name="functional_role_specialization_name"
                   value={formData.functional_role_specialization_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.functional_role_specialization_name}
                   helperText={formErrors.functional_role_specialization_name}
                   required
@@ -201,6 +203,7 @@ function FunctionRoleSpecializationForm({ mode }) {
                   name="functional_role_specialization_code"
                   value={formData.functional_role_specialization_code}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.functional_role_specialization_code}
                   helperText={formErrors.functional_role_specialization_code}
                   inputProps={{ maxLength: 20 }}
@@ -214,7 +217,7 @@ function FunctionRoleSpecializationForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

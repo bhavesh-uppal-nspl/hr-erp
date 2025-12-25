@@ -51,7 +51,7 @@ function LeaveCategoryForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -138,6 +138,7 @@ function LeaveCategoryForm({ mode }) {
                   label="Leave Category Name"
                   name="leave_category_name"
                   value={formData.leave_category_name}
+                  disabled={mode === "view"}
                   onChange={handleChange}
                   error={!!formErrors.leave_category_name}
                   helperText={formErrors.leave_category_name}
@@ -151,6 +152,7 @@ function LeaveCategoryForm({ mode }) {
                   name="leave_category_code"
                   value={formData.leave_category_code}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.leave_category_code}
                   helperText={formErrors.leave_category_code}
                   inputProps={{ maxLength: 50 }}
@@ -161,6 +163,7 @@ function LeaveCategoryForm({ mode }) {
                   label="Description"
                   name="description"
                   value={formData.description}
+                  disabled={mode === "view"}
                   onChange={handleChange}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
@@ -175,7 +178,7 @@ function LeaveCategoryForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

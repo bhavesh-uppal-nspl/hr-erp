@@ -73,25 +73,6 @@ function EmployeeMedicalForm({ mode, employeeId }) {
 
   let navigate = useNavigate();
 
-  // useEffect(() => {
-  //   let getdataById = async () => {
-  //     const response = await axios.get(
-  //       `${MAIN_URL}/api/organizations/${org.organization_id}/employee-medical/${id}`,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //         },
-  //       }
-  //     );
-  //     let a = response.data.education;
-  //     setMedical?.[0]?(a);
-  //     setLoading(false);
-  //   };
-  //   if (mode === "edit" && id) {
-  //     setLoading(true);
-  //     getdataById();
-  //   }
-  // }, [mode, id]);
 
   const handleChange = (e, idx) => {
     const { name, value } = e.target;
@@ -102,54 +83,6 @@ function EmployeeMedicalForm({ mode, employeeId }) {
     setMedicalData(name, checked, idx);
   };
 
-  //   if (!validateForm()) return;
-  //   setbtnLoading(true);
-
-  //   try {
-  //     if (mode === "edit") {
-  //       await axios.put(
-  //         `${MAIN_URL}/api/organizations/${org.organization_id}/employee-medical/${id}`,
-  //         Medical?.[0]?,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //           },
-  //         }
-  //       );
-  //     } else {
-  //       await axios.post(
-  //         `${MAIN_URL}/api/organizations/${org.organization_id}/employee-medical`,
-  //         Medical?.[0]?,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //           },
-  //         }
-  //       );
-  //     }
-
-  //     toast.success(
-  //       mode === "edit"
-  //         ? "Employee Medical Information Updated!"
-  //         : "Employee Medical Information Created!"
-  //     );
-  //     setMedicalErrors[idx]({});
-  //   } catch (err) {
-  //     console.error(err);
-  //     if (err.response?.status === 422) {
-  //       const validationErrors = err.response.data.errors || {};
-  //       setMedicalErrors[idx](validationErrors);
-  //       const errorMessages = Object.values(validationErrors)
-  //         .map((arr) => arr[0])
-  //         .join(" ");
-  //       toast.error(errorMessages || "Validation failed.");
-  //     } else {
-  //       toast.error("Something went wrong.");
-  //     }
-  //   } finally {
-  //     setbtnLoading(false);
-  //   }
-  // };
 
   return (
     <Box px={4}>
@@ -202,7 +135,23 @@ function EmployeeMedicalForm({ mode, employeeId }) {
                 <Grid item xs={12} md={8}>
                   <Paper elevation={4} sx={{ p: 3 }}>
                     <Grid container spacing={2}>
-                      <FormControl
+
+
+
+<Box
+  sx={{
+    display: "flex",
+    justifyContent: "center",  // centers the row
+    gap: 2,                    // space between fields
+    width: "100%",             // ensures proper centering
+  }}
+>
+
+ <FormControl
+
+                      disabled ={mode==="view"}
+                     
+
                         fullWidth
                         required
                         error={!!MedicalErrors?.[idx]?.blood_group}
@@ -242,6 +191,7 @@ function EmployeeMedicalForm({ mode, employeeId }) {
                           Disability Status
                         </InputLabel>
                         <Select
+                        disabled ={mode==="view"}
                           labelId="disability-status-label"
                           id="disability-status"
                           name="disability_status"
@@ -262,7 +212,18 @@ function EmployeeMedicalForm({ mode, employeeId }) {
                         )}
                       </FormControl>
 
+
+</Box>
+
+                     
+
+
+
+
                       <TextField
+                      disabled ={mode==="view"}
+                     
+
                         fullWidth
                         label="Disability Description"
                         name="disability_description"
@@ -278,6 +239,9 @@ function EmployeeMedicalForm({ mode, employeeId }) {
                       />
 
                       <TextField
+                      disabled ={mode==="view"}
+                     
+
                         fullWidth
                         label="Allergies"
                         name="allergies"
@@ -291,6 +255,7 @@ function EmployeeMedicalForm({ mode, employeeId }) {
                       />
 
                       <TextField
+                      disabled ={mode==="view"}
                         fullWidth
                         label="Diseases"
                         name="diseases"
@@ -301,12 +266,18 @@ function EmployeeMedicalForm({ mode, employeeId }) {
                         error={!!MedicalErrors?.[idx]?.diseases}
                         helperText={MedicalErrors?.[idx]?.diseases}
                         inputProps={{ maxLength: 100 }}
+                       
+
                       />
 
                       <FormControl
+                      disabled ={mode==="view"}
                         component="fieldset"
                         error={!!MedicalErrors?.[idx]?.is_fit_for_duty}
-                        sx={{ mt: 2 }}
+                        sx={{ mt: 2 , "& .Mui-disabled": {
+    WebkitTextFillColor: "rgba(0,0,0,0.7)",
+    color: "rgba(0,0,0,0.7)",
+  },}}
                       >
                         <FormControlLabel
                           control={
@@ -330,6 +301,9 @@ function EmployeeMedicalForm({ mode, employeeId }) {
                       </FormControl>
 
                       <TextField
+                      disabled ={mode==="view"}
+                     
+
                         fullWidth
                         label="Last HealthCheck on"
                         type="date"
@@ -344,6 +318,9 @@ function EmployeeMedicalForm({ mode, employeeId }) {
                       />
 
                       <TextField
+                      disabled ={mode==="view"}
+                     
+
                         fullWidth
                         label="Medical Notes"
                         name="medical_notes"

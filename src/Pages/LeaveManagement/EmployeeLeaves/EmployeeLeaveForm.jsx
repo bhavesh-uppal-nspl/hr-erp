@@ -7,6 +7,7 @@ import {
   MenuItem,
   TextField,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -61,7 +62,7 @@ function EmployeeLeaveForm({ mode }) {
   const [employee, setEmployee] = useState([]);
   const [LeaveReasonType, setLeaveReasonType] = useState([]);
 
-const [disablecat, setDisablecat] = useState(false);
+  const [disablecat, setDisablecat] = useState(false);
 
   let navigate = useNavigate();
 
@@ -69,7 +70,10 @@ const [disablecat, setDisablecat] = useState(false);
     {
       fetchOrganizationEmployee(org?.organization_id)
         .then((data) => {
-          setEmployee(data?.employees);
+          const filteredEmployees = data?.filter(
+            (item) => item.employment_status !== "Exited"
+          );
+          setEmployee(filteredEmployees);
         })
         .catch((err) => {
           setFormErrors(err.message);
@@ -82,7 +86,7 @@ const [disablecat, setDisablecat] = useState(false);
 
   useEffect(() => {
     {
-      fetchLeaveCategory(org.organization_id)
+      fetchLeaveCategory(org?.organization_id)
         .then((data) => {
           setLeaveCategory(data?.leavecategory?.data);
         })
@@ -94,17 +98,21 @@ const [disablecat, setDisablecat] = useState(false);
 
   console.log("category ", leavecategory);
 
+  //  how i get the leave type id   and get its relaed data
   useEffect(() => {
-    {
-      fetchOrganizationLeaveReasonTypes(org?.organization_id)
-        .then((data) => {
-          setLeaveReasonType(data?.leavereasontype);
-        })
-        .catch((err) => {
-          setFormErrors(err.message);
-        });
-    }
-  }, []);
+    if (!org?.organization_id || !formData.organization_leave_type_id) return;
+
+    fetchOrganizationLeaveReasonTypes(
+      org?.organization_id,
+      formData.organization_leave_type_id
+    )
+      .then((data) => {
+        setLeaveReasonType(data?.leavereasontype);
+      })
+      .catch((err) => {
+        setFormErrors(err.message);
+      });
+  }, [formData.organization_leave_type_id]);
 
   useEffect(() => {
     if (!formData.organization_leave_reason_type_id || !org?.organization_id) {
@@ -133,7 +141,7 @@ const [disablecat, setDisablecat] = useState(false);
 
   useEffect(() => {
     {
-      fetchLeaveTypes(org.organization_id)
+      fetchLeaveTypes(org?.organization_id)
         .then((data) => {
           setLeaveType(data?.leavetypes?.data);
         })
@@ -158,69 +166,46 @@ const [disablecat, setDisablecat] = useState(false);
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
   }, [mode, id]);
 
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   setFormData((prev) => {
-  //     let updatedData = { ...prev, [name]: value };
-
-  //     if (name === "organization_leave_type_id") {
-  //       const selectedType = leavetype?.find(
-  //         (lt) => lt.organization_leave_type_id === value
-  //       );
-  //       if (selectedType?.leave_compensation_type !== "paid") {
-  //         updatedData.organization_leave_category_id = "";
-  //       }
-  //     }
-
-  //     return updatedData;
-  //   });
-  // };
-
-
-
   const handleChange = (e) => {
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  setFormData((prev) => {
-    let updatedData = { ...prev, [name]: value };
+    setFormData((prev) => {
+      let updatedData = { ...prev, [name]: value };
 
-    if (name === "organization_leave_type_id") {
-      const selectedType = leavetype?.find(
-        (lt) => String(lt.organization_leave_type_id) === String(value)
-      );
-
-      if (selectedType) {
-        // Try to find matching category by compensation_code
-        const matchedCategory = leavecategory?.find(
-          (cat) => cat.leave_category_code === selectedType.compensation_code
+      if (name === "organization_leave_type_id") {
+        const selectedType = leavetype?.find(
+          (lt) => String(lt.organization_leave_type_id) === String(value)
         );
 
-        if (matchedCategory) {
-          updatedData.organization_leave_category_id =
-            matchedCategory.organization_leave_category_id;
-            setDisablecat(true)
+        if (selectedType) {
+          // Try to find matching category by compensation_code
+          const matchedCategory = leavecategory?.find(
+            (cat) => cat.leave_category_code === selectedType.compensation_code
+          );
+
+          if (matchedCategory) {
+            updatedData.organization_leave_category_id =
+              matchedCategory.organization_leave_category_id;
+            setDisablecat(true);
+          } else {
+            updatedData.organization_leave_category_id = "";
+            setDisablecat(false);
+          }
         } else {
           updatedData.organization_leave_category_id = "";
-         setDisablecat(false);  
+          setDisablecat(false);
         }
-      } else {
-        updatedData.organization_leave_category_id = "";
-        setDisablecat(false);  
       }
-    }
 
-    return updatedData;
-  });
-};
-
-
+      return updatedData;
+    });
+  };
 
   const validateForm = () => {
     const errors = {};
@@ -233,14 +218,14 @@ const [disablecat, setDisablecat] = useState(false);
       errors.organization_leave_type_id = "Leave type is required.";
     }
 
-    if (!formData.organization_leave_reason_id) {
-      errors.organization_leave_reason_id = "Leave reason is required.";
-    }
+    // if (!formData.organization_leave_reason_id) {
+    //   errors.organization_leave_reason_id = "Leave reason is required.";
+    // }
 
-    if (!formData.organization_leave_reason_type_id) {
-      errors.organization_leave_reason_type_id =
-        "Leave reason Type is required.";
-    }
+    // if (!formData.organization_leave_reason_type_id) {
+    //   errors.organization_leave_reason_type_id =
+    //     "Leave reason Type is required.";
+    // }
 
     if (!formData.leave_duration_type) {
       errors.leave_duration_type = "Leave duration type is required.";
@@ -259,7 +244,8 @@ const [disablecat, setDisablecat] = useState(false);
     // Validate leave_end_date
     if (!formData.leave_end_date) {
       errors.leave_end_date = "Leave end date is required.";
-    } else if (formData.leave_start_date > formData.leave_end_date) {
+    }
+    else if (formData.leave_start_date > formData.leave_end_date) {
       errors.leave_end_date = "End date cannot be before start date.";
     }
 
@@ -416,129 +402,208 @@ const [disablecat, setDisablecat] = useState(false);
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Employee Name/ID"
-                  name="employee_id"
-                  value={formData?.employee_id}
-                  onChange={handleChange}
-                  error={!!formErrors.employee_id}
-                  helperText={formErrors.employee_id}
-                  required
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {employee?.map((option) => {
-                    const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.employee_code || ""}`.trim();
 
-                    //  `${option.first_name || ""} ${option.middle_name || ""} ${option.last_name || ""} ➖ ${option.designation.designation_name}`.trim();
-                    return (
-                      <MenuItem
-                        key={option?.employee_id}
-                        value={option?.employee_id}
-                      >
-                        {fullName ? fullName : option?.employee_id}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-
-                <TextField
-                  select
+                  <Autocomplete
                   fullWidth
-                  label="Leave Type"
-                  name="organization_leave_type_id"
-                  value={formData.organization_leave_type_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_leave_type_id}
-                  helperText={formErrors.organization_leave_type_id}
-                  required
-                >
-                  {leavetype?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_leave_type_id}
-                        value={option.organization_leave_type_id}
-                      >
-                        {option.leave_type_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+                  options={employee || []}
+                  getOptionLabel={(option) =>
+                    `${option?.name || ""} (${option?.employee_code || ""})`.trim()
+                  }
+                  value={
+                    employee?.find(
+                      (emp) => emp.employee_id === formData?.employee_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "employee_id",
+                        value: newValue?.employee_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || employee?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Employee Name/ID"
+                      name="employee_id"
+                      error={!!formErrors.employee_id}
+                      helperText={formErrors.employee_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
 
+           
+
+                <Autocomplete
+                  fullWidth
+                  options={leavetype || []}
+                  getOptionLabel={(option) => option.leave_type_name || ""}
+                  value={
+                    leavetype?.find(
+                      (option) =>
+                        option.organization_leave_type_id ===
+                        formData.organization_leave_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_leave_type_id",
+                        value: newValue?.organization_leave_type_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || leavetype?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Leave Type"
+                      error={!!formErrors.organization_leave_type_id}
+                      helperText={formErrors.organization_leave_type_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
 
                
-               <TextField
-  select
-  fullWidth
-  label="Leave Category"
-  name="organization_leave_category_id"
-  value={formData.organization_leave_category_id}
-  onChange={handleChange}
-  error={!!formErrors.organization_leave_category_id}
-  helperText={formErrors.organization_leave_category_id}
-  disabled={disablecat}   
->
-  {leavecategory?.map((option) => (
-    <MenuItem
-      key={option.organization_leave_category_id}
-      value={option.organization_leave_category_id}
-    >
-      {option.leave_category_name}
-    </MenuItem>
-  ))}
-</TextField>
+        
 
-
-                <TextField
-                  select
+                <Autocomplete
                   fullWidth
-                  label="Leave Reason Type"
-                  name="organization_leave_reason_type_id"
-                  value={formData.organization_leave_reason_type_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_leave_reason_type_id}
-                  helperText={formErrors.organization_leave_reason_type_id}
-                  required
+                  options={leavecategory || []}
+                  getOptionLabel={(option) => option.leave_category_name || ""}
+                  value={
+                    leavecategory?.find(
+                      (option) =>
+                        option.organization_leave_category_id ===
+                        formData.organization_leave_category_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_leave_category_id",
+                        value: newValue?.organization_leave_category_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || leavecategory?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Leave Category"
+                      error={!!formErrors.organization_leave_category_id}
+                      helperText={formErrors.organization_leave_category_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+                </Box>
+
+
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {LeaveReasonType?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_leave_reason_type_id}
-                        value={option.organization_leave_reason_type_id}
-                      >
-                        {option.leave_reason_type_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+
+                  
+                <Autocomplete
+                  fullWidth
+                  options={LeaveReasonType || []}
+                  getOptionLabel={(option) =>
+                    option.leave_reason_type_name || ""
+                  }
+                  value={
+                    LeaveReasonType?.find(
+                      (option) =>
+                        option.organization_leave_reason_type_id ===
+                        formData.organization_leave_reason_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_leave_reason_type_id",
+                        value:
+                          newValue?.organization_leave_reason_type_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || LeaveReasonType?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Leave Reason Type"
+                      error={
+                        !!formErrors.organization_employment_exit_reason_type_id
+                      }
+                      helperText={
+                        formErrors.organization_employment_exit_reason_type_id
+                      }
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+                <Autocomplete
+                  fullWidth
+                  options={leaveReason || []}
+                  getOptionLabel={(option) => option.leave_reason_name || ""}
+                  value={
+                    leaveReason?.find(
+                      (option) =>
+                        option.organization_leave_reason_id ===
+                        formData.organization_leave_reason_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_leave_reason_id",
+                        value: newValue?.organization_leave_reason_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || leaveReason?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Leave Reason"
+                      error={!!formErrors.organization_leave_reason_id}
+                      helperText={formErrors.organization_leave_reason_id}
+                      
+                      fullWidth
+                    />
+                  )}
+                />
 
                 <TextField
                   select
                   fullWidth
-                  label="Leave Reason"
-                  name="organization_leave_reason_id"
-                  value={formData.organization_leave_reason_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_leave_reason_id}
-                  helperText={formErrors.organization_leave_reason_id}
-                  required
-                >
-                  {leaveReason?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_leave_reason_id}
-                        value={option.organization_leave_reason_id}
-                      >
-                        {option.leave_reason_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-
-                <TextField
-                  select
-                  fullWidth
+                  disabled={mode === "view"}
                   label="Leave Duration Type"
                   name="leave_duration_type"
                   value={formData.leave_duration_type}
@@ -552,43 +617,62 @@ const [disablecat, setDisablecat] = useState(false);
                   <MenuItem value="short_leave">Short Leave</MenuItem>
                 </TextField>
 
-              <TextField
-  fullWidth
-  type="number"
-  label="Total Leave Days"
-  name="total_leave_days"
-  value={formData.total_leave_days}
-  onChange={(e) => {
-    const value = e.target.value;
-    
-    // Allow empty input
-    if (value === '') {
-      handleChange(e);
-      return;
-    }
-    
-    const numValue = parseFloat(value);
-    
-    // Check if it's a valid number and a multiple of 0.5
-    if (!isNaN(numValue) && (numValue * 2) % 1 === 0) {
-      handleChange(e);
-    }
-    // If not valid, don't update (prevent typing invalid values)
-  }}
-  error={!!formErrors.total_leave_days}
-  helperText={formErrors.total_leave_days}
-  required
-  InputLabelProps={{ shrink: true }}
-  inputProps={{ 
-    step: "0.5",
-    min: "0",
-    max: "100" 
-  }}
-/>
+                </Box>
+
+
+                
+                
+
+
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                  
+                <TextField
+                  fullWidth
+                  type="number"
+                  disabled= {mode === "view"}
+                  label="Total Leave Days"
+                  name="total_leave_days"
+                  value={formData.total_leave_days}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    // Allow empty input
+                    if (value === "") {
+                      handleChange(e);
+                      return;
+                    }
+
+                    const numValue = parseFloat(value);
+
+                    // Check if it's a valid number and a multiple of 0.5
+                    if (!isNaN(numValue) && (numValue * 2) % 1 === 0) {
+                      handleChange(e);
+                    }
+                  }}
+                  error={!!formErrors.total_leave_days}
+                  helperText={formErrors.total_leave_days}
+                  required
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{
+                    step: "0.5",
+                    min: "0",
+                    max: "100",
+                  }}
+                />
 
                 <TextField
                   fullWidth
                   type="date"
+                  disabled= {mode === "view"}
                   label="Leave Start Date"
                   name="leave_start_date"
                   value={formData.leave_start_date}
@@ -599,22 +683,32 @@ const [disablecat, setDisablecat] = useState(false);
                   InputLabelProps={{ shrink: true }}
                 />
 
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Leave End Date"
-                  name="leave_end_date"
-                  value={formData.leave_end_date}
-                  onChange={handleChange}
-                  error={!!formErrors.leave_end_date}
-                  helperText={formErrors.leave_end_date}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
+               
+                  <TextField
+                    fullWidth
+                    type="date"
+                    disabled= {mode === "view"}
+                    label="Leave End Date"
+                    name="leave_end_date"
+                    value={formData.leave_end_date}
+                    onChange={handleChange}
+                   
+                    error={!!formErrors.leave_end_date}
+                    helperText={formErrors.leave_end_date}
+                    InputLabelProps={{ shrink: true }}
+                  />
+           
+
+
+                </Box>
+                
+
+
 
                 <TextField
                   fullWidth
                   label="Supporting Documents URL"
+                  disabled= {mode === "view"}
                   name="supporting_document_url"
                   value={formData.supporting_document_url}
                   onChange={handleChange}
@@ -629,6 +723,7 @@ const [disablecat, setDisablecat] = useState(false);
                   name="employee_remarks"
                   value={formData.employee_remarks}
                   onChange={handleChange}
+                  disabled= {mode === "view"}
                   error={!!formErrors.employee_remarks}
                   helperText={formErrors.employee_remarks}
                   inputProps={{ maxLength: 100 }}
@@ -637,11 +732,23 @@ const [disablecat, setDisablecat] = useState(false);
                   maxRows={5}
                 />
 
-                <TextField
+
+                
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                   <TextField
                   select
                   fullWidth
                   label="Leave Status"
                   name="leave_status"
+                  disabled={mode==="view"}
                   value={formData.leave_status}
                   onChange={(e) => {
                     const { value } = e.target;
@@ -698,67 +805,109 @@ const [disablecat, setDisablecat] = useState(false);
                   error={!!formErrors.approval_date}
                   helperText={formErrors.approval_date}
                   InputLabelProps={{ shrink: true }}
-                  disabled={formData.leave_status !== "Approved"} // Enable only when Approved
+                  disabled={formData.leave_status !== "Approved"  || mode === "view"} // Enable only when Approved
                   required={formData.leave_status === "Approved"} // Required only when Approved
                 />
 
-                <TextField
-                  select
+               
+                <Autocomplete
                   fullWidth
-                  label="Approved By"
-                  name="approved_by"
-                  value={formData.approved_by}
-                  onChange={handleChange}
-                  error={!!formErrors.approved_by}
-                  helperText={formErrors.approved_by}
-                  disabled={formData.leave_status !== "Approved"} // Enable only when Approved
-                >
-                  {employee
-                    .filter(
-                      (option) => option.employee_id !== formData.employee_id
-                    )
-                    .map((option) => {
-                      const fullName =
-                        `${option.first_name || ""} ${option.middle_name || ""} ${option.last_name || ""}`.trim();
-                      return (
-                        <MenuItem
-                          key={option.employee_id}
-                          value={option.employee_id}
-                        >
-                          {fullName || option.employee_id}
-                        </MenuItem>
-                      );
-                    })}
-                </TextField>
+                  options={
+                    employee
+                      ? employee.filter(
+                          (option) =>
+                            option.employee_id !== formData.employee_id
+                        )
+                      : []
+                  }
+                  getOptionLabel={(option) =>
+                    `${option?.name|| ""}  (${option?.employee_code})`.trim()
+                  }
+                  value={
+                    employee?.find(
+                      (emp) => emp.employee_id === formData.approved_by
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "approved_by",
+                        value: newValue?.employee_id || "",
+                      },
+                    });
+                  }}
+                  disabled={formData.leave_status !== "Approved"  || mode === "view"}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Approved By"
+                      name="approved_by"
+                      error={!!formErrors.approved_by}
+                      helperText={formErrors.approved_by}
+                      fullWidth
+                    />
+                  )}
+                />
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Rejected By"
-                  name="rejected_by"
-                  value={formData.rejected_by}
-                  onChange={handleChange}
-                  error={!!formErrors.rejected_by}
-                  helperText={formErrors.rejected_by}
-                  disabled={formData.leave_status !== "Rejected"} // Enable only when Rejected
+
+
+                </Box>
+
+
+
+
+                
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {employee
-                    .filter(
-                      (option) => option.employee_id !== formData.employee_id
-                    )
-                    .map((option) => {
-                      const fullName =
-                        `${option.first_name || ""} ${option.middle_name || ""} ${option.last_name || ""}`.trim();
-                      return (
-                        <MenuItem
-                          key={option.employee_id}
-                          value={option.employee_id}
-                        >
-                          {fullName || option.employee_id}
-                        </MenuItem>
-                      );
-                    })}
-                </TextField>
+
+                  
+                <Autocomplete
+                  fullWidth
+                  options={
+                    employee
+                      ? employee.filter(
+                          (option) =>
+                            option.employee_id !== formData.employee_id
+                        )
+                      : []
+                  }
+                  getOptionLabel={(option) =>
+                    `${option?.name  ||""}  (${option?.employee_code})`.trim()
+                  }
+                  value={
+                    employee?.find(
+                      (emp) => emp.employee_id === formData.rejected_by
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "rejected_by",
+                        value: newValue?.employee_id || "",
+                      },
+                    });
+                  }}
+                  disabled={formData.leave_status !== "Rejected"  || mode ==='view'} // Enable only when Rejected
+                  isOptionEqualToValue={(option, value) =>
+                    option.employee_id === value.employee_id
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Rejected By"
+                      name="rejected_by"
+                      error={!!formErrors.rejected_by}
+                      helperText={formErrors.rejected_by}
+                      fullWidth
+                    />
+                  )}
+                />
 
                 <TextField
                   fullWidth
@@ -786,54 +935,57 @@ const [disablecat, setDisablecat] = useState(false);
                   disabled={formData.leave_status !== "Rejected"} // Enable only when Rejected
                 />
 
+
+                </Box>
+
+               
                
               </Grid>
 
-             
-                           <Grid container spacing={2} mt={2}>
-                             <Grid item>
-                               <Button
-                                 variant="contained"
-                                 color="primary"
-                                 size="medium"
-                                 onClick={handleSubmit}
-                                 disabled={loading || btnLoading}
-                                 sx={{
-                                   borderRadius: 2,
-                                   minWidth: 120,
-                                   textTransform: "capitalize",
-                                   fontWeight: 500,
-                                 }}
-                               >
-                                 {loading || btnLoading ? (
-                                   <CircularProgress size={22} sx={{ color: "#fff" }} />
-                                 ) : (
-                                   "Submit"
-                                 )}
-                               </Button>
-                             </Grid>
-             
-                             {mode === "edit" && (
-                               <Grid item>
-                                 <Button
-                                   variant="contained"
-                                   color="primary"
-                                   size="medium"
-                                   onClick={() => navigate(-1)}
-                                   sx={{
-                                     borderRadius: 2,
-                                     minWidth: 120,
-                                     textTransform: "capitalize",
-                                     fontWeight: 500,
-                                     backgroundColor: "#1976d2",
-                                     "&:hover": { backgroundColor: "#115293" },
-                                   }}
-                                 >
-                                   Cancel
-                                 </Button>
-                               </Grid>
-                             )}
-                           </Grid>
+              <Grid container spacing={2} mt={2}>
+                <Grid item>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="medium"
+                    onClick={handleSubmit}
+                    disabled={loading || btnLoading || mode === "view"}
+                    sx={{
+                      borderRadius: 2,
+                      minWidth: 120,
+                      textTransform: "capitalize",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {loading || btnLoading ? (
+                      <CircularProgress size={22} sx={{ color: "#fff" }} />
+                    ) : (
+                      "Submit"
+                    )}
+                  </Button>
+                </Grid>
+
+                {mode === "edit" && (
+                  <Grid item>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="medium"
+                      onClick={() => navigate(-1)}
+                      sx={{
+                        borderRadius: 2,
+                        minWidth: 120,
+                        textTransform: "capitalize",
+                        fontWeight: 500,
+                        backgroundColor: "#1976d2",
+                        "&:hover": { backgroundColor: "#115293" },
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
+                )}
+              </Grid>
             </Paper>
           </Grid>
         </Grid>

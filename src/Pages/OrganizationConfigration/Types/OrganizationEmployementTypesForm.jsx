@@ -114,10 +114,10 @@ function OrganizationEmployementTypesForm({ mode }) {
   return (
     <Box px={4} py={4}>
       <Header mode={mode}
-        updateMessage={"Employement's Type"}
-        addMessage={"Employement's Type"}
+        updateMessage={"Employment's Type"}
+        addMessage={"Employment's Type"}
         homeLink={"/organization-configration/employement-type"}
-        homeText={"Employement's Type"}
+        homeText={"Employment's Type"}
       />
       {loading ? (
         <Grid container spacing={2}>
@@ -126,8 +126,7 @@ function OrganizationEmployementTypesForm({ mode }) {
           </Box>
         </Grid>
       ) : (
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
+        
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
 
@@ -153,7 +152,7 @@ function OrganizationEmployementTypesForm({ mode }) {
                                    color="primary"
                                    size="medium"
                                    onClick={handleSubmit}
-                                   disabled={loading || btnLoading}
+                                   disabled={loading || btnLoading || mode === "view"}
                                    sx={{
                                      borderRadius: 2,
                                      minWidth: 120,
@@ -191,8 +190,7 @@ function OrganizationEmployementTypesForm({ mode }) {
                                )}
                              </Grid>
             </Paper>
-          </Grid>
-        </Grid>
+        
       )}
     </Box>
   );

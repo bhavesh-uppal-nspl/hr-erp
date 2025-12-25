@@ -105,7 +105,6 @@ function UserRoleList() {
       setLoading(true);
       fetchApplicationUserRoles()
         .then((data) => {
-          console.log("nnxc", data);
           let a = data.userroles;
           try {
             let b = a.map((item) => {
@@ -134,6 +133,18 @@ function UserRoleList() {
       const response = await axios.delete(
         `${MAIN_URL}/api/application/userrole/${id}`
       );
+
+      if (response.status === 200) {
+        toast.success(response.data.message);
+      } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Role";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -152,10 +163,18 @@ function UserRoleList() {
     [navigate]
   );
 
+  const handleShow = useCallback(
+    (item) => {
+      navigate(`/application/user-roles/view/${item.id}`);
+    },
+    [navigate]
+  );
+
   return (
     <>
       <Layout4
         loading={loading}
+        delete_action={"USER_ROLE_DELETE"}
         heading={"User Roles"}
         btnName={"Add User Roles"}
         Data={userroles}
@@ -177,7 +196,7 @@ function UserRoleList() {
 
       <TableDataGeneric
         tableName="User Roles"
-        primaryKey="application_user_role_id"
+        primaryKey="id"
         heading="User Roles"
         data={userroles}
         sortname={"user_role_name"}
@@ -186,8 +205,10 @@ function UserRoleList() {
         Route="/application/user-roles"
         DeleteFunc={deleteuserroles}
         EditFunc={handleEdit}
+        edit_delete_action={["USER_ROLE_DELETE", "USER_ROLE_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
+        handleShow={handleShow}
         {...(tableConfig && { config: tableConfig })}
       />
     </>

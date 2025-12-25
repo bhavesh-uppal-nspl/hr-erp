@@ -11,6 +11,7 @@ import {
   Paper,
   MenuItem,
   FormControlLabel,
+  Autocomplete,
   Checkbox,
   TextField,
   FormHelperText,
@@ -69,7 +70,8 @@ function EmployeeRecordForm({ mode }) {
     {
       fetchOrganizationEmployee(org?.organization_id)
         .then((data) => {
-          setEmployee(data?.employees);
+            const filteredEmployees = data?.filter((item) => item.employment_status !== "Exited")
+          setEmployee(filteredEmployees);
         })
         .catch((err) => {
           setFormErrors(err.message);
@@ -134,7 +136,7 @@ function EmployeeRecordForm({ mode }) {
       }
     };
 
-    if (mode === "edit" && id) {
+    if ((mode === "edit"  || mode === "view"  ) && id) {
       setLoading(true);
       getdataById();
     }
@@ -254,10 +256,10 @@ const handleChange = (e) => {
     <Box px={4} py={4}>
       <Header
         mode={mode}
-        updateMessage={"Employee Records "}
-        addMessage={"Employee Records"}
+        updateMessage={"Employement Records "}
+        addMessage={"Employement Records"}
         homeLink={"/organization/employee/records"}
-        homeText={"Employee Records"}
+        homeText={"Employement Records"}
       />
       {loading ? (
         <Grid container spacing={2}>
@@ -270,101 +272,195 @@ const handleChange = (e) => {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Employee Name/ID"
-                  name="employee_id"
-                  value={formData?.employee_id}
-                  onChange={handleChange}
-                  error={!!formErrors.employee_id}
-                  helperText={formErrors.employee_id}
-                  required
+
+
+
+                 <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {employee?.map((option) => {
-                    const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.employee_code || ""}`.trim();
 
-                    //  `${option.first_name || ""} ${option.middle_name || ""} ${option.last_name || ""} ➖ ${option.designation.designation_name}`.trim();
-                    return (
-                      <MenuItem
-                        key={option?.employee_id}
-                        value={option?.employee_id}
-                      >
-                        {fullName ? fullName : option?.employee_id}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+                   <Autocomplete
+                                  fullWidth
+                                  options={employee || []}
+                                  getOptionLabel={(option) =>
+                                    `${option?.name || ""} -- ${option?.employee_code || ""}`.trim()
+                                  }
+                                  value={
+                                    employee?.find(
+                                      (emp) => emp.employee_id === formData?.employee_id
+                                    ) || null
+                                  }
+                                  onChange={(event, newValue) => {
+                                    handleChange({
+                                      target: {
+                                        name: "employee_id",
+                                        value: newValue?.employee_id || "",
+                                      },
+                                    });
+                                  }}
+                                  disabled={mode === "view" || employee?.length === 0}
+                                  renderInput={(params) => (
+                                    <TextField
+                                      {...params}
+                                      label="Employee Name/ID"
+                                      name="employee_id"
+                                      error={!!formErrors.employee_id}
+                                      helperText={formErrors.employee_id}
+                                      required
+                                      fullWidth
+                                    />
+                                  )}
+                                />
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Department"
-                  name="organization_department_id"
-                  value={formData.organization_department_id}
-                  onChange={handleChange}
-                  error={!!formErrors?.organization_department_id}
-                  helperText={formErrors?.organization_department_id}
-                  disabled
-                  required
+                                
+<Autocomplete
+                fullWidth
+                  options={Department || []}
+                  getOptionLabel={(option) =>
+                    option.department_name || ""
+                  }
+                  value={
+                    Department?.find(
+                      (option) =>
+                        option.organization_department_id ===
+                        formData.organization_department_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_department_id",
+                        value:
+                          newValue?.organization_department_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || Department?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Department"
+                      error={
+                        !!formErrors.organization_department_id
+                      }
+                      helperText={
+                        formErrors.organization_department_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+                
+                 <Autocomplete
+                fullWidth
+                  options={Designation || []}
+                  getOptionLabel={(option) =>
+                    option.designation_name || ""
+                  }
+                  value={
+                    Designation?.find(
+                      (option) =>
+                        option.organization_designation_id ===
+                        formData.organization_designation_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_designation_id",
+                        value:
+                          newValue?.organization_designation_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || Designation?.length === 0  ||  Department?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Designation"
+                      error={
+                        !!formErrors.organization_designation_id
+                      }
+                      helperText={
+                        formErrors.organization_designation_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+                </Box>
+              
+                  
+                
+
+
+
+
+
+
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {Department?.map((option) => (
-                    <MenuItem
-                      key={option?.organization_department_id}
-                      value={option?.organization_department_id}
-                    >
-                      {option?.department_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
 
+                  
+<Autocomplete
+                fullWidth
+                  options={Increment || []}
+                  getOptionLabel={(option) =>
+                    option?.increment_type?.employee_increment_type_name || ""
+                  }
+                  value={
+                    Increment?.find(
+                      (option) =>
+                        option.employee_increment_id ===
+                        formData.employee_increment_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "employee_increment_id",
+                        value:
+                          newValue?.employee_increment_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || Increment?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Increments"
+                      error={
+                        !!formErrors.employee_increment_id
+                      }
+                      helperText={
+                        formErrors.employee_increment_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
 
-               
-
-                <TextField
-                  select
-                  fullWidth
-                  label="Designation"
-                  name="organization_designation_id"
-                  value={formData.organization_designation_id}
-                  onChange={handleChange}
-                  error={!!formErrors?.organization_designation_id}
-                  helperText={formErrors?.organization_designation_id}
-                  disabled
-                  required
-                >
-                  {Designation?.map((option) => (
-                    <MenuItem
-                      key={option?.organization_designation_id}
-                      value={option?.organization_designation_id}
-                    >
-                      {option?.designation_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-
-
-                 <TextField
-                  select
-                  fullWidth
-                  label="Increment"
-                  name="employee_increment_id"
-                  value={formData.employee_increment_id}
-                  onChange={handleChange}
-                  error={!!formErrors?.employee_increment_id}
-                  helperText={formErrors?.employee_increment_id}
-                  required
-                >
-                  {Increment?.map((option) => (
-                    <MenuItem
-                      key={option?.employee_increment_id}
-                      value={option?.employee_increment_id}
-                    >
-                      {option?.increment_type?.employee_increment_type_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                
 
                 <TextField
                   fullWidth
@@ -375,6 +471,8 @@ const handleChange = (e) => {
                   onChange={handleChange}
                   error={!!formErrors.start_date}
                   helperText={formErrors.start_date}
+                  disabled={mode === "view"}
+                     
                   
                   InputLabelProps={{ shrink: true }}
                 />
@@ -388,12 +486,37 @@ const handleChange = (e) => {
                   onChange={handleChange}
                   error={!!formErrors.end_date}
                   helperText={formErrors.end_date}
+                  disabled={mode === "view"}
+                     
                   
                   InputLabelProps={{ shrink: true }}
                 />
 
-               
 
+                </Box>
+
+
+
+
+
+
+
+
+
+
+
+
+
+ <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "32.5%", // ensures proper centering
+                  }}
+                >
+
+                  
                 <TextField
                   select
                   fullWidth
@@ -403,6 +526,8 @@ const handleChange = (e) => {
                   onChange={handleChange}
                   error={!!formErrors.change_reason}
                   helperText={formErrors.change_reason}
+                  disabled={mode === "view"}
+                     
                   
                 >
                   <MenuItem value="Promotion">Promotion</MenuItem>
@@ -410,6 +535,10 @@ const handleChange = (e) => {
                   <MenuItem value="Demotion">Demotion</MenuItem>
                   <MenuItem value="Correction">Correction</MenuItem>
                 </TextField>
+                  
+                </Box>
+               
+
 
                 <TextField
                   fullWidth
@@ -419,6 +548,10 @@ const handleChange = (e) => {
                   onChange={handleChange}
                   error={!!formErrors.remarks}
                   helperText={formErrors.remarks}
+                  multiline
+                  rows={3}
+                  disabled={mode === "view"}
+                     
                   
                 />
 
@@ -427,7 +560,7 @@ const handleChange = (e) => {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

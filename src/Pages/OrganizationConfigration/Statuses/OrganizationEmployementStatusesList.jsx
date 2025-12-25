@@ -53,6 +53,20 @@ function OrganizationEmployementStatusesList() {
           },
         }
       );
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Status";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
+
+
     } catch (error) { if (error.response && error.response.status === 401) {
   toast.error("Session Expired!");
   window.location.href = "/login";
@@ -87,9 +101,10 @@ function OrganizationEmployementStatusesList() {
     <Layout4
       loading={loading}
       heading={"Employment Status"}
-      btnName={"Employment Status"}
+      btnName={null}
+      add_action={"EMPLOYEMENT_STATUS_ADD"}
       Data={statuses}
-      delete_action={""}
+      delete_action={"EMPLOYEMENT_STATUS_DELETE"}
       tableHeaders={[
         {
           name: "Employment Status Types",
@@ -127,6 +142,7 @@ function OrganizationEmployementStatusesList() {
             DeleteFunc={deleteemploymentstatus}
              EditFunc={handleEdit}
             token={localStorage.getItem("token")}
+            edit_delete_action={["EMPLOYMENT_STATUS_DELETE", "EMPLOYMENT_STATUS_EDIT"]}
            organizationUserId={userData?.organization_user_id} // Pass user ID
           showLayoutButtons={true}
            config={{

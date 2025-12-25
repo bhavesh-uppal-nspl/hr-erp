@@ -8,6 +8,7 @@ import {
   MenuItem,
   TextField,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -40,7 +41,7 @@ function AttendanceTimelogsForm({ mode }) {
 
   const [formData, setFormData] = useState({
     employee_id: "",
-    attendance_date: "",
+    attendance_date: new Date().toISOString().slice(0, 10),
     attendance_log_type: "",
     attendance_log_time: "",
     attendance_break_type_id: "",
@@ -156,7 +157,13 @@ function AttendanceTimelogsForm({ mode }) {
 
   useEffect(() => {
     fetchOrganizationEmployee(org?.organization_id)
-      .then((data) => setEmployee(data?.employees))
+      .then((data) => 
+      {
+        const filteredEmployees = data?.filter(
+          (item) => item.employment_status !== "Exited"
+        );
+        setEmployee(filteredEmployees);
+      })
       .catch((err) => setFormErrors(err.message));
   }, []);
 
@@ -203,7 +210,7 @@ function AttendanceTimelogsForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -242,6 +249,10 @@ function AttendanceTimelogsForm({ mode }) {
       errors.attendance_log_time = "Attendance Log Time is required.";
     }
 
+    if( mode === "edit" && !formData.remarks){
+      errors.remarks = "Remarks is required to Edit the time log.";
+    }
+
     setFormErrors(errors);
     return Object.keys(errors)?.length === 0;
   };
@@ -252,9 +263,16 @@ function AttendanceTimelogsForm({ mode }) {
 
     try {
       if (mode === "edit") {
+
+        let dd =  {
+          ...formData,
+          remarks: formData.remarks +   ` Edited By ${userData?.full_name} --   user Id is ${userData?.application_user_id} -- (Edited on ${format(new Date(), 'yyyy-MM-dd HH:mm:ss')})`
+        }
+
+
         await axios.put(
           `${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-time-logs/${id}`,
-          formData,
+          dd,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -262,9 +280,17 @@ function AttendanceTimelogsForm({ mode }) {
           }
         );
       } else {
+
+        let dd =  {
+          ...formData,
+          remarks: ` Created By ${userData?.full_name} --   user Id is ${userData?.application_user_id} -- (created on ${format(new Date(), 'yyyy-MM-dd HH:mm:ss')})`
+        }
+
+
+
         await axios.post(
           `${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-time-logs`,
-          formData,
+          dd,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -296,6 +322,25 @@ function AttendanceTimelogsForm({ mode }) {
       setbtnLoading(false);
     }
   };
+
+
+const formatDisplayDate = (date) => {
+  if (!date) return "";
+  const [year, month, day] = date.split("-");
+  return `${day}/${month}/${year}`;
+};
+
+const formatToDatabase = (value) => {
+  if (!value) return "";
+  const [day, month, year] = value.split("/");
+  return `${year}-${month}-${day}`;
+};
+
+
+
+
+
+
 
   const isDeviationEnabled = (() => {
     if (
@@ -345,36 +390,57 @@ function AttendanceTimelogsForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Employee Name/ID"
-                  name="employee_id"
-                  value={formData?.employee_id}
-                  onChange={handleChange}
-                  error={!!formErrors.employee_id}
-                  helperText={formErrors.employee_id}
-                  required
+
+                
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {employee?.map((option) => {
-                    const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.employee_code || ""}`.trim();
-                    return (
-                      <MenuItem
-                        key={option?.employee_id}
-                        value={option?.employee_id}
-                      >
-                        {fullName ? fullName : option?.employee_id}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+
+                    <Autocomplete
+                  fullWidth
+                  options={employee || []}
+                  getOptionLabel={(option) =>
+                    `${option?.name || ""} -- ${option?.employee_code || ""}`.trim()
+                  }
+                  value={
+                    employee?.find(
+                      (emp) => emp.employee_id === formData?.employee_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "employee_id",
+                        value: newValue?.employee_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || employee?.length === 0  || mode === "view"}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Employee Name/ID"
+                      name="employee_id"
+                      error={!!formErrors.employee_id}
+                      helperText={formErrors.employee_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
 
                 <TextField
                   select
                   fullWidth
                   label="Attendance Log Type"
                   name="attendance_log_type"
+                  disabled= {mode === "view"}
                   value={formData?.attendance_log_type}
                   onChange={(e) => {
                     const { name, value } = e.target;
@@ -417,8 +483,8 @@ function AttendanceTimelogsForm({ mode }) {
                   disabled={
                     !(
                       formData?.attendance_log_type === "Break Start" ||
-                      formData?.attendance_log_type === "Break End"
-                    )
+                      formData?.attendance_log_type === "Break End" || mode === "view"
+                    ) || mode === "view"
                   }
                 >
                   {breakType?.map((option) => {
@@ -433,18 +499,33 @@ function AttendanceTimelogsForm({ mode }) {
                   })}
                 </TextField>
 
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Attendance Date"
-                  name="attendance_date"
-                  value={formData?.attendance_date}
-                  onChange={handleChange}
-                  error={!!formErrors.attendance_date}
-                  helperText={formErrors.attendance_date}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
+                </Box>
+
+
+              
+               
+
+               
+<TextField
+  fullWidth
+  label="Attendance Date"
+  name="attendance_date"
+  disabled={mode === "view"}
+  value={formatDisplayDate(formData.attendance_date)}
+  onChange={(e) =>
+    handleChange({
+      target: {
+        name: "attendance_date",
+        value: formatToDatabase(e.target.value),
+      },
+    })
+  }
+  placeholder="dd/mm/yy"
+  error={!!formErrors.attendance_date}
+  helperText={formErrors.attendance_date}
+  required
+/>
+
 
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <TimePicker
@@ -497,6 +578,7 @@ function AttendanceTimelogsForm({ mode }) {
                 </LocalizationProvider>
 
                 <DateTimePicker
+                disabled={mode === "view"}
                   label="Attendance Log Time"
                   value={
                     formData?.attendance_log_time
@@ -517,32 +599,11 @@ function AttendanceTimelogsForm({ mode }) {
                   )}
                 />
 
-                {/*
-                <TextField
-                  select
-                  fullWidth
-                  label="Attendance Source Type"
-                  name="attendance_source_type_id"
-                  value={formData?.attendance_source_type_id}
-                  onChange={handleChange}
-                  error={!!formErrors.attendance_source_type_id}
-                  helperText={formErrors.attendance_source_type_id}
-                >
-                  {source?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_attendance_source_id}
-                        value={option?.organization_attendance_source_id}
-                      >
-                        {option?.attendance_source_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField> */}
-
+              
                 <TextField
                   fullWidth
                   label="Remarks"
+                  disabled= {mode === "view"}
                   name="remarks"
                   value={formData?.remarks}
                   onChange={handleChange}
@@ -550,6 +611,7 @@ function AttendanceTimelogsForm({ mode }) {
                   helperText={formErrors.remarks}
                   inputProps={{ maxLength: 255 }}
                   multiline
+                  required  = {mode === "edit" ? true : false}
                   minRows={3}
                   maxRows={5}
                 />
@@ -563,7 +625,8 @@ function AttendanceTimelogsForm({ mode }) {
                   onChange={handleChange}
                   error={!!formErrors.deviation_reason_type_id}
                   helperText={formErrors.deviation_reason_type_id}
-                  disabled={!isDeviationEnabled}
+                  disabled={!isDeviationEnabled  || mode === "view"}
+                  
                 >
                   {deviationType?.map((option) => {
                     return (
@@ -590,7 +653,7 @@ function AttendanceTimelogsForm({ mode }) {
                   onChange={handleChange}
                   error={!!formErrors.deviation_reason_id}
                   helperText={formErrors.deviation_reason_id}
-                  disabled={!isDeviationEnabled}
+                  disabled={!isDeviationEnabled   || mode === "view"}
                 >
                   {deviation?.map((option) => {
                     return (
@@ -611,7 +674,7 @@ function AttendanceTimelogsForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

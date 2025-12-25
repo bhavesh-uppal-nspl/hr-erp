@@ -142,6 +142,19 @@ function InternDocumentTypeList() {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Document Type";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -162,13 +175,22 @@ function InternDocumentTypeList() {
     [navigate]
   );
 
+
+               const handleShow = useCallback(
+    (item) => {
+      navigate(`/intern/document/types/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Document Types"}
         btnName={"Add Types"}
-        delete_action={"ATTENDANCE_DELETE"}
+        delete_action={"INTERN_DOCUMENT_DELETE"}
         Data={types}
         tableHeaders={[
           {
@@ -213,6 +235,7 @@ function InternDocumentTypeList() {
         showActions={true}
         Route="/intern/document/types"
         DeleteFunc={deleteStatus}
+        handleShow={handleShow}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
         configss={configColumns}

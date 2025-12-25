@@ -33,6 +33,16 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
+    field: "description",
+    label: "description",
+    visible: true,
+    width: 150,
+    filterable: true,
+    sortable: true,
+    pinned: "none",
+    required: false,
+  },
+  {
     field: "is_active",
     label: "is_active",
     visible: true,
@@ -141,6 +151,18 @@ function AttendenceSourceList() {
           },
         }
       );
+      if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Source";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -184,13 +206,22 @@ function AttendenceSourceList() {
     [navigate]
   );
 
+
+         const handleShow = useCallback(
+    (item) => {
+      navigate(`/attendance/source/view/${item.id}`)
+    },
+    [navigate],
+  )
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Attendance Source"}
         btnName={"Add Source"}
-        delete_action={"ATTENDANCE_DELETE"}
+        delete_action={"ATTENDANCE_SOURCE_DELETE"}
+        add_action={"ATTENDANCE_SOURCE_ADD"}
         Data={source}
         tableHeaders={[
           {
@@ -232,6 +263,8 @@ function AttendenceSourceList() {
         Route="/attendance/source"
         DeleteFunc={handleDelete}
         EditFunc={handleEdit}
+        handleShow={handleShow}
+        edit_delete_action={["ATTENDANCE_SOURCE_DELETE", "ATTENDANCE_SOURCE_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

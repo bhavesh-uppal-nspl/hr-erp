@@ -12,6 +12,7 @@ import {
   FormControlLabel,
   Switch,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -124,7 +125,7 @@ function WorkShiftForm({ mode }) {
       });
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit"  || mode === "view" ) && id) {
       setLoading(true);
       getdataById();
     }
@@ -210,10 +211,11 @@ function WorkShiftForm({ mode }) {
                   value={formData.work_shift_name}
                   onChange={handleChange}
                   error={!!formErrors.work_shift_name}
+                  disabled={mode === "view"}
                   helperText={formErrors.work_shift_name}
                   required
                 />
-
+{/* 
                 <TextField
                   select
                   fullWidth
@@ -224,6 +226,7 @@ function WorkShiftForm({ mode }) {
                   error={!!formErrors.organization_work_shift_type_id}
                   helperText={formErrors.organization_work_shift_type_id}
                   required
+                       disabled={mode === "view"   ||  shiftTypes?.length === 0}
                 >
                   {shiftTypes?.map((option) => (
                     <MenuItem
@@ -233,33 +236,105 @@ function WorkShiftForm({ mode }) {
                       {option.work_shift_type_name}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextField> */}
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Location"
-                  name="organization_location_id"
-                  value={formData.organization_location_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_location_id}
-                  helperText={formErrors.organization_location_id}
-                  required
-                >
-                  {location?.map((option) => (
-                    <MenuItem
-                      key={option.organization_location_id}
-                      value={option.organization_location_id}
-                    >
-                      {option.location_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+
+
+<Autocomplete
+                fullWidth
+                  options={shiftTypes || []}
+                  getOptionLabel={(option) =>
+                    option.work_shift_type_name || ""
+                  }
+                  value={
+                    shiftTypes?.find(
+                      (option) =>
+                        option.organization_work_shift_type_id ===
+                        formData.organization_work_shift_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_work_shift_type_id",
+                        value:
+                          newValue?.organization_work_shift_type_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || shiftTypes?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Shift Type"
+                      error={
+                        !!formErrors.organization_work_shift_type_id
+                      }
+                      helperText={
+                        formErrors.organization_work_shift_type_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+
+
+
+
+                 <Autocomplete
+                fullWidth
+                  options={location || []}
+                  getOptionLabel={(option) =>
+                    option.location_name || ""
+                  }
+                  value={
+                    location?.find(
+                      (option) =>
+                        option.organization_location_id ===
+                        formData.organization_location_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_location_id",
+                        value:
+                          newValue?.organization_location_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || location?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Location"
+                      error={
+                        !!formErrors.organization_location_id
+                      }
+                      helperText={
+                        formErrors.organization_location_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+
+
+
 
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   {/* Start Time */}
                   <TimePicker
                     label="Start Time"
+                     disabled={mode === "view"}
                     views={["hours", "minutes"]}
                     ampm={true}
                     value={
@@ -286,6 +361,7 @@ function WorkShiftForm({ mode }) {
                       <TextField
                         {...params}
                         fullWidth
+                       
                         error={!!formErrors.work_shift_start_time}
                         helperText={formErrors.work_shift_start_time}
                         required
@@ -296,6 +372,7 @@ function WorkShiftForm({ mode }) {
                   {/* End Time */}
                   <TimePicker
                     label="End Time"
+                     disabled={mode === "view"}
                     views={["hours", "minutes"]}
                     ampm={true}
                     value={
@@ -320,6 +397,7 @@ function WorkShiftForm({ mode }) {
                       <TextField
                         {...params}
                         fullWidth
+                       
                         error={!!formErrors.work_shift_end_time}
                         helperText={formErrors.work_shift_end_time}
                         required
@@ -331,6 +409,7 @@ function WorkShiftForm({ mode }) {
                 <FormControlLabel
                   control={
                     <Switch
+                     disabled={mode === "view"}
                       checked={
                         formData.is_active === "1" ||
                         formData.is_active === true
@@ -354,6 +433,7 @@ function WorkShiftForm({ mode }) {
                     select
                     fullWidth
                     label="Break Duration (minutes)"
+                     disabled={mode === "view"}
                     name="break_duration_minutes"
                     value={formData.break_duration_minutes}
                     onChange={(e) => {
@@ -375,6 +455,7 @@ function WorkShiftForm({ mode }) {
                   <TextField
                     fullWidth
                     type="number"
+                     disabled={mode === "view"}
                     label="Custom Break Duration (minutes)"
                     name="break_duration_minutes"
                     value={formData.break_duration_minutes}
@@ -387,6 +468,7 @@ function WorkShiftForm({ mode }) {
                     InputProps={{
                       endAdornment: (
                         <Button
+                        disabled={mode === "view"}
                           size="small"
                           onClick={() =>
                             setFormData((prev) => ({
@@ -407,6 +489,7 @@ function WorkShiftForm({ mode }) {
                   type="number"
                   label="Work Duration (minutes)"
                   name="work_duration_minutes"
+                   disabled={mode === "view"}
                   value={formData.work_duration_minutes}
                   onChange={(e) => {
                     let value = e.target.value;
@@ -430,6 +513,7 @@ function WorkShiftForm({ mode }) {
                     endAdornment: (
                       <Button
                         size="small"
+                         disabled={mode === "view"}
                         onClick={() =>
                           setFormData((prev) => ({
                             ...prev,
@@ -451,7 +535,7 @@ function WorkShiftForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

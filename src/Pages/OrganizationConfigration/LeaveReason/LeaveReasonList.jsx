@@ -33,6 +33,7 @@ function LeaveReasonList() {
               return {
                ...item,
                 id:item.organization_leave_reason_id,
+                leave_reason_type_name:item?.leave_reason_type_name,
                 leavereasontype:item?.leavereasontype[0]?.leave_reason_type_name,
               
                 description:item?.description==null ? "" :item?.description
@@ -55,6 +56,20 @@ function LeaveReasonList() {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },}
       );
+
+         if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Leave Reason";
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
+
+
     } catch (error) { if (error.response && error.response.status === 401) {
   toast.error("Session Expired!");
   window.location.href = "/login";
@@ -80,15 +95,25 @@ const handleEdit = useCallback(
   );
 
 
+                       const handleShow = useCallback(
+      (item) => {
+        navigate(`/organization-configration/leave-reason/view/${item.id}`)
+      },
+      [navigate],
+    )
+
+
+
 
   return (
     <>
     <Layout4
       loading={loading}
       heading={"Leave Reasons"}
+      add_action={"LEAVE_REASON_ADD"}
       btnName={"Add Leave Reason"}
       Data={leaveReason}
-       delete_action={"ORG_CONFIG_DELETE"}
+       delete_action={"LEAVE_REASON_DELETE"}
       tableHeaders={[
         {name : "Leave Reasons" , value_key : "leave_reason_name" ,textStyle: "capitalize",},
           {name : "Leave Reason Type" , value_key : "reason_type" ,textStyle: "capitalize",},
@@ -127,8 +152,10 @@ const handleEdit = useCallback(
         Route="/organization-configration/leave-reason"
         DeleteFunc={deletereason}
           EditFunc={handleEdit}
+          handleShow={handleShow}
+          edit_delete_action={["LEAVE_REASON_DELETE", "LEAVE_REASON_EDIT"]}
         token={localStorage.getItem("token")}
-                   organizationUserId={userData?.organization_user_id} // Pass user ID
+       organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}
         config={{
           defaultVisibleColumns: ["leave_reason_name","leavereasontype","description"],

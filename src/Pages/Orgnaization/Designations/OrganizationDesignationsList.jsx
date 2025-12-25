@@ -201,10 +201,18 @@ function OrganizationDesignationsList() {
 
   const handleEdit = useCallback(
     (item) => {
-      navigate(`/organization/units/edit/${item.id}`);
+      navigate(`/organization/designation/edit/${item.id}`);
     },
     [navigate]
   );
+
+
+       const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/designation/view/${item.id}`)
+    },
+    [navigate],
+  )
 
   return (
     <>
@@ -213,7 +221,8 @@ function OrganizationDesignationsList() {
         heading={"Designations"}
         btnName={"Add Designation"}
         Data={designations}
-        delete_action={"ORG_STRUCTURE_DELETE"}
+        add_action={"DESIGNATION_ADD"}
+        delete_action={"DESIGNATION_DELETE"}
         Icons={[
           <LocalPoliceIcon sx={{ fontSize: 60, color: "grey.500", mb: 2 }} />,
           <NextWeekIcon color="primary" />,
@@ -241,6 +250,8 @@ function OrganizationDesignationsList() {
           Route="/organization/designation"
           DeleteFunc={deletedesignation}
           EditFunc={handleEdit}
+          edit_delete_action={["DESIGNATION_DELETE", "DESIGNATION_EDIT"]}
+          handleShow={handleShow}
           token={localStorage.getItem("token")}
           configss={configColumns}
           {...(tableConfig && { config: tableConfig })}

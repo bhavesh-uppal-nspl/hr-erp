@@ -20,8 +20,8 @@ import Layout4 from "../../DataLayouts/Layout4";
 
 const DEFAULT_COLUMNS = [
   {
-    field: "",
-    label: "",
+    field: "attendance_status_type_name",
+    label: "attendance_status_type_name",
     visible: true,
     width: 150,
     filterable: true,
@@ -30,8 +30,8 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
-    field: "",
-    label: "",
+    field: "description",
+    label: "description",
     visible: true,
     width: 150,
     filterable: true,
@@ -41,8 +41,8 @@ const DEFAULT_COLUMNS = [
   },
 
   {
-    field: "",
-    label: "",
+    field: "is_active",
+    label: "is_active",
     visible: true,
     width: 150,
     filterable: true,
@@ -130,6 +130,7 @@ function AttendenceStatusTypeList() {
             return {
               ...item,
               id: item?.organization_attendance_status_type_id,
+              description:item?.description ?  item?.description :  "-",
             
               is_active:item?.is_active == 1 ? "✔": "✖"
             };
@@ -152,6 +153,11 @@ function AttendenceStatusTypeList() {
           },
         }
       );
+
+       toast.success(response.data.message);
+
+    return response.data;
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -165,28 +171,8 @@ function AttendenceStatusTypeList() {
   };
 
   
-    const handleDelete = async (id) => {
-      try {
-        const response = await fetch(
-          `${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-status-type/${id}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        console.log("Successfully deleted units-types with id:", id);
-        return Promise.resolve();
-      } catch (error) {
-        console.error("Delete failed:", error);
-        return Promise.reject(error);
-      }
-    };
+
+
 
 
     const handleEdit = useCallback(
@@ -200,6 +186,15 @@ function AttendenceStatusTypeList() {
     [navigate]
 
   );
+
+
+
+         const handleShow = useCallback(
+    (item) => {
+      navigate(`/attendance/status-type/view/${item.id}`)
+    },
+    [navigate],
+  )
   
 
   return (
@@ -208,7 +203,8 @@ function AttendenceStatusTypeList() {
         loading={loading}
         heading={"Attendance Status Type"}
         btnName={"Add Status Type"}
-        delete_action={"ATTENDANCE_DELETE"}
+        delete_action={"ATTENDANCE_STATUS_DELETE"}
+        add_action={"ATTENDANCE_STATUS_TYPE_ADD"}
         Data={statusType}
         tableHeaders={[
           {
@@ -253,9 +249,11 @@ function AttendenceStatusTypeList() {
           sortname={"attendance_status_type_name"}
           showActions={true}
           // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-status-type`}
-          Route="/attendance/source"
-          DeleteFunc={handleDelete}
+          Route="/attendance/status-type"
+          DeleteFunc={deleteStatus}
           EditFunc={handleEdit}
+          handleShow={handleShow}
+          edit_delete_action={["ATTENDANCE_STATUS_TYPE_DELETE", "ATTENDANCE_STATUS_TYPE_EDIT"]}
           token={localStorage.getItem("token")}
           configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

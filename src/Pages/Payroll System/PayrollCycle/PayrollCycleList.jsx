@@ -92,6 +92,7 @@ function PayrollCycleList() {
         loading={loading}
         heading={"Payroll Cycles"}
         btnName={"Add Payroll Cycle"}
+        add_action={"PAYROLL_CYCLE_ADD"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
@@ -131,6 +132,7 @@ function PayrollCycleList() {
         showActions={true}
         Route="/payroll/cycles"
         DeleteFunc={deleteBreak}
+        edit_delete_action={["PAYROLL_CYCLE_DELETE", "PAYROLL_CYCLE_EDIT"]}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
       />

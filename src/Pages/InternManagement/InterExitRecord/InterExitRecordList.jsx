@@ -182,6 +182,19 @@ function InterExitRecordList() {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Intern Record";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -204,10 +217,20 @@ function InterExitRecordList() {
     [navigate]
   );
 
+
+               const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/intern/intern-exit/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   return (
     <>
       <Layout4
         loading={loading}
+        delete_action={"INTERN_EXIT_DELETE"}
         heading={"Intern  Exit Record"}
         btnName={"Add Record"}
         Data={exit}
@@ -270,6 +293,7 @@ function InterExitRecordList() {
         Route="/organization/intern/intern-exit"
         DeleteFunc={deleteExit}
         EditFunc={handleEdit}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

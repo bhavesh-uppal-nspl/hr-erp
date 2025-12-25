@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createTheme } from "react-data-table-component";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -47,12 +47,28 @@ function Users() {
   const [deleteDialog, setDeleteDialog] = useState(null);
     const { Permission, setPermission } = usePermissionDataStore();
 const [showNotAllowed, setShowNotAllowed]=useState(false)
+
+const [debouncedSearch, setDebouncedSearch] = useState("");
+
   const navigate = useNavigate();
+
+  // Permission checks
+  const hasAddPermission = useMemo(() => {
+    return Permission && Array.isArray(Permission) && Permission.includes("USER_ADD");
+  }, [Permission]);
+
+  const hasEditPermission = useMemo(() => {
+    return Permission && Array.isArray(Permission) && Permission.includes("USER_EDIT");
+  }, [Permission]);
+
+  const hasDeletePermission = useMemo(() => {
+    return Permission && Array.isArray(Permission) && Permission.includes("USER_DELETE");
+  }, [Permission]);
 
   const handleDeleteConfirm = async () => {
     if (!deleteDialog) return;
-    const permissionArray = Object.values(Permission);
-    if (!permissionArray.includes("USER_DELETE")) {
+    if (!hasDeletePermission) {
+      setDeleteDialog(null);
       setShowNotAllowed(true);
       return;
     }
@@ -71,6 +87,7 @@ const [showNotAllowed, setShowNotAllowed]=useState(false)
       );
       setDeleteDialog(null);
       toast.success("User deleted successfully");
+      window.location.reload();
     } catch (err) {
       console.error(err);
       if (err.response?.status === 422) {
@@ -122,6 +139,19 @@ const [showNotAllowed, setShowNotAllowed]=useState(false)
   }
 };
 
+
+
+useEffect(() => {
+  const handler = setTimeout(() => {
+    setDebouncedSearch(search);
+  }, 500); // 500ms delay
+
+  return () => clearTimeout(handler);
+}, [search]);
+
+
+
+
   const ToggleStatus = async (userId, is_active, id) => {
     console.log("userid", userId);
     console.log("New Status:", is_active);
@@ -147,40 +177,67 @@ const [showNotAllowed, setShowNotAllowed]=useState(false)
     }
   };
 
-useEffect(() => {
+// useEffect(() => {
 
+//   if (!org?.organization_id) return;
+//   setLoading(true);
+
+//   const fetchUsers = async () => {
+//     try {
+//       const data = await getOrganizationUser(org?.organization_id, search, filterStatus);
+//       console.log("data is ", data)
+//       setFilteredUsers(data.users);
+//     } catch (error) {
+//       console.error("Failed to fetch users:", error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+//   fetchUsers();
+// }, [org?.organization_id]);
+
+
+
+// useEffect(() => {
+//   if (!org?.organization_id) return;
+//   const fetchUsers = async () => {
+//     try {
+   
+//        const data = await getOrganizationUser(org?.organization_id);
+//       console.log("saysgugugugugugs", data)
+//       setFilteredUsers(data?.users);
+//     } catch (error) {
+//       console.error("Failed to fetch users:", error);
+//     }
+//   };
+//   fetchUsers();
+// }, [search, filterStatus, org?.organization_id]);
+
+
+
+useEffect(() => {
   if (!org?.organization_id) return;
-  setLoading(true);
 
   const fetchUsers = async () => {
     try {
-      const data = await getOrganizationUser(org?.organization_id, search, filterStatus);
-      console.log("data is ", data)
-      setFilteredUsers(data.users);
+      setLoading(true);
+
+      const data = await getOrganizationUser(
+        org?.organization_id,
+        debouncedSearch,     // ⬅ IMPORTANT
+        filterStatus
+      );
+
+      setFilteredUsers(data?.users || []);
     } catch (error) {
       console.error("Failed to fetch users:", error);
     } finally {
       setLoading(false);
     }
   };
-  fetchUsers();
-}, [org?.organization_id]);
 
-useEffect(() => {
-  if (!org?.organization_id) return;
-  const fetchUsers = async () => {
-    try {
-   
-       const data = await getOrganizationUser(org?.organization_id);
-      console.log("saysgugugugugugs", data)
-      setFilteredUsers(data?.users);
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-    }
-  };
   fetchUsers();
-}, [search, filterStatus, org?.organization_id]);
-
+}, [org?.organization_id, debouncedSearch, filterStatus]);
 
 
 
@@ -218,24 +275,28 @@ useEffect(() => {
       width: "180px",
       cell: (row) => (
         <Stack direction="row" spacing={1}>
-          <IconButton
-            color="primary"
-            onClick={() => navigate(`/users/edit/${row.organization_user_id}`)}
-          >
-            <EditIcon />
-          </IconButton>
+          {hasEditPermission && (
+            <IconButton
+              color="primary"
+              onClick={() => navigate(`/users/edit/${row.organization_user_id}`)}
+            >
+              <EditIcon />
+            </IconButton>
+          )}
           <IconButton
             color={row.is_active ? "success" : "default"}
             onClick={() => ToggleStatusTable(row, !row.is_active)}
           >
             <PowerSettingsNewIcon />
           </IconButton>
-          <IconButton
-            color="error"
-            onClick={() => setDeleteDialog(row.organization_user_id)}
-          >
-            <DeleteIcon />
-          </IconButton>
+          {hasDeletePermission && (
+            <IconButton
+              color="error"
+              onClick={() => setDeleteDialog(row.organization_user_id)}
+            >
+              <DeleteIcon />
+            </IconButton>
+          )}
         </Stack>
       ),
       ignoreRowClick: true,
@@ -263,13 +324,15 @@ if(showNotAllowed)
             <Typography variant="h5" fontWeight={600}>
               Users Management
             </Typography>
-            <Button
-              variant="contained"
-              onClick={() => navigate(`/users/add`)}
-              sx={{ borderRadius: 2 }}
-            >
-              Add User
-            </Button>
+            {hasAddPermission && (
+              <Button
+                variant="contained"
+                onClick={() => navigate(`/users/add`)}
+                sx={{ borderRadius: 2 }}
+              >
+                Add User
+              </Button>
+            )}
           </Box>
 
           {/* Search, Filter & View Controls */}
@@ -367,14 +430,16 @@ if(showNotAllowed)
                       </Typography>
 
                       <Stack direction="row" spacing={1} mt={2}>
-                        <IconButton
-                          color="primary"
-                          onClick={() =>
-                            navigate(`/users/edit/${user.organization_user_id}`)
-                          }
-                        >
-                          <EditIcon />
-                        </IconButton>
+                        {hasEditPermission && (
+                          <IconButton
+                            color="primary"
+                            onClick={() =>
+                              navigate(`/users/edit/${user.organization_user_id}`)
+                            }
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        )}
                         <IconButton
                           color={user.is_active ? "success" : "default"}
                           onClick={() =>
@@ -387,15 +452,16 @@ if(showNotAllowed)
                         >
                           <PowerSettingsNewIcon />
                         </IconButton>
-
-                        <IconButton
-                          color="error"
-                          onClick={() =>
-                            setDeleteDialog(user.organization_user_id)
-                          }
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                        {hasDeletePermission && (
+                          <IconButton
+                            color="error"
+                            onClick={() =>
+                              setDeleteDialog(user.organization_user_id)
+                            }
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        )}
                       </Stack>
                     </CardContent>
                   </Card>
@@ -432,14 +498,16 @@ if(showNotAllowed)
                     </Typography>
                   </Box>
                   <Stack direction="row" spacing={1}>
-                    <IconButton
-                      color="primary"
-                      onClick={() =>
-                        navigate(`/users/edit/${user.organization_user_id}`)
-                      }
-                    >
-                      <EditIcon />
-                    </IconButton>
+                    {hasEditPermission && (
+                      <IconButton
+                        color="primary"
+                        onClick={() =>
+                          navigate(`/users/edit/${user.organization_user_id}`)
+                        }
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    )}
                     <IconButton
                       color={user.is_active ? "success" : "default"}
                       onClick={() =>
@@ -448,12 +516,14 @@ if(showNotAllowed)
                     >
                       <PowerSettingsNewIcon />
                     </IconButton>
-                    <IconButton
-                      color="error"
-                      onClick={() => setDeleteDialog(user.organization_user_id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    {hasDeletePermission && (
+                      <IconButton
+                        color="error"
+                        onClick={() => setDeleteDialog(user.organization_user_id)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    )}
                   </Stack>
                 </Box>
               ))}

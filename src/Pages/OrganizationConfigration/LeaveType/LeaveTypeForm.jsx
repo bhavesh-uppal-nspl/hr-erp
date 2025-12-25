@@ -52,7 +52,7 @@ function LeaveTypeForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -159,35 +159,44 @@ function LeaveTypeForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
+
+
+
+
+  
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                  
                 <TextField
                   fullWidth
                   label="Leave Type Name"
                   name="leave_type_name"
                   value={formData.leave_type_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.leave_type_name}
                   helperText={formErrors.leave_type_name}
                   inputProps={{ maxLength: 50 }}
                   required
                 />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      name="requires_approval"
-                      checked={formData.requires_approval}
-                      onChange={handleChange}
-                    />
-                  }
-                  label="Requires Approval"
-                />
 
-                <TextField
+
+
+                   <TextField
                   select
                   fullWidth
                   label="Compenation Type"
                   name="leave_compensation_type"
                   value={formData.leave_compensation_type}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.leave_compensation_type}
                   helperText={formErrors.leave_compensation_type}
                   required
@@ -203,26 +212,33 @@ function LeaveTypeForm({ mode }) {
                   name="compensation_code"
                   value={formData.compensation_code}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.compensation_code}
                   helperText={formErrors.compensation_code}
                   inputProps={{ maxLength: 4 }}
                   required
                 />
 
-                <TextField
-                  fullWidth
-                  label="Leave Code"
-                  name="leave_type_code"
-                  value={formData.leave_type_code}
-                  onChange={handleChange}
-                  error={!!formErrors.leave_type_code}
-                  helperText={formErrors.leave_type_code}
-                  inputProps={{ maxLength: 20 }}
-                />
+                  
+                </Box>
+
 
                 <FormControlLabel
                   control={
                     <Checkbox
+                    disabled={mode === "view"}
+                      name="requires_approval"
+                      checked={formData.requires_approval}
+                      onChange={handleChange}
+                    />
+                  }
+                  label="Requires Approval"
+                />
+
+                 <FormControlLabel
+                  control={
+                    <Checkbox
+                    disabled={mode === "view"}
                       name="is_active"
                       checked={formData.is_active}
                       onChange={handleChange}
@@ -231,21 +247,12 @@ function LeaveTypeForm({ mode }) {
                   label="Is Active"
                 />
 
-                <TextField
-                  fullWidth
-                  label="Max Days Allow"
-                  type="number"
-                  name="max_days_allowed"
-                  value={formData.max_days_allowed}
-                  onChange={handleChange}
-                  error={!!formErrors.max_days_allowed}
-                  helperText={formErrors.max_days_allowed}
-                  required
-                />
 
-                <FormControlLabel
+
+                   <FormControlLabel
                   control={
                     <Checkbox
+                    disabled={mode === "view"}
                       name="carry_forward"
                       checked={formData.carry_forward}
                       onChange={handleChange}
@@ -254,12 +261,59 @@ function LeaveTypeForm({ mode }) {
                   label="Carry Forward"
                 />
 
+
+                  
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                   <TextField
+                  fullWidth
+                  label="Leave Code"
+                  disabled={mode === "view"}
+                  name="leave_type_code"
+                  value={formData.leave_type_code}
+                  onChange={handleChange}
+                  error={!!formErrors.leave_type_code}
+                  helperText={formErrors.leave_type_code}
+                  inputProps={{ maxLength: 20 }}
+                />
+
+
+                <TextField
+                  fullWidth
+                  label="Max Days Allow"
+                  type="number"
+                  disabled={mode === "view"}
+                  name="max_days_allowed"
+                  value={formData.max_days_allowed}
+                  onChange={handleChange}
+                  error={!!formErrors.max_days_allowed}
+                  helperText={formErrors.max_days_allowed}
+                  required
+                />
+                  
+                </Box>
+
+               
+
+               
+
+             
                 <TextField
                   fullWidth
                   label="Description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                  disabled={mode === "view"}
+                  multiline
+                  rows={3}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
                   inputProps={{ maxLength: 255 }}
@@ -275,7 +329,7 @@ function LeaveTypeForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

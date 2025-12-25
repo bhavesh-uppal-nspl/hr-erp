@@ -55,6 +55,19 @@ function OrganizationEmployementExitReasonsList() {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Exit Reason";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -77,6 +90,15 @@ function OrganizationEmployementExitReasonsList() {
     [navigate]
   );
 
+
+                   const handleShow = useCallback(
+      (item) => {
+        navigate(`/organization-configration/employement-exit-reason/view/${item.id}`)
+      },
+      [navigate],
+    )
+
+
   return (
     <>
       <Layout4
@@ -84,7 +106,8 @@ function OrganizationEmployementExitReasonsList() {
         heading={" Exit Reasons"}
         btnName={"Add Exit Reason"}
         Data={ExitReasons}
-        delete_action={"ORG_CONFIG_DELETE"}
+        add_action={"EXIT_REASON_ADD"}
+        delete_action={"EXIT_REASON_DELETE"}
         tableHeaders={[
           {
             name: "Exit Reason",
@@ -129,6 +152,8 @@ function OrganizationEmployementExitReasonsList() {
         Route="/organization-configration/employement-exit-reason"
         DeleteFunc={deleteexitreason}
         EditFunc={handleEdit}
+        handleShow={handleShow}
+        edit_delete_action={["EXIT_REASON_DELETE", "EXIT_REASON_EDIT"]}
         token={localStorage.getItem("token")}
         
                organizationUserId={userData?.organization_user_id} // Pass user ID

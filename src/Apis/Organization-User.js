@@ -16,7 +16,7 @@ export const getOrganizationUser = async (org_id, search = "", status = "") => {
     }
   );
 
-  console.log("jbjbjdsc", response.data);
+  console.log("abc", response.data);
   return response.data;
 };
 

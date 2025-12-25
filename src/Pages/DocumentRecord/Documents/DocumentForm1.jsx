@@ -271,7 +271,6 @@ function DocumentForm1({ mode }) {
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={2}>
-                {/* Document Type and Document Name - Same Line, Equal Width */}
                 <Box display="flex" gap={2} width="100%">
                   <Box flex={1}>
                     <FormControl
@@ -282,6 +281,7 @@ function DocumentForm1({ mode }) {
                         Employee Document Type *
                       </InputLabel>
                       <Select
+                        disabled={mode === "view" || docType?.length === 0}
                         labelId={`employee-document-type-label-${idx}`}
                         id={`employee_document_type_id-${idx}`}
                         name="employee_document_type_id"
@@ -311,6 +311,7 @@ function DocumentForm1({ mode }) {
 
                   <Box flex={1}>
                     <TextField
+                      disabled={mode === "view"}
                       fullWidth
                       label="Document Name"
                       name="document_name"
@@ -352,6 +353,7 @@ function DocumentForm1({ mode }) {
                           <FormControlLabel
                             control={
                               <Checkbox
+                                disabled={mode === "view"}
                                 checked={
                                   section?.mainData?.organization_employee_profile_section_id?.includes(
                                     option.organization_employee_profile_section_id
@@ -387,6 +389,7 @@ function DocumentForm1({ mode }) {
                 <Grid item xs={12}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <Button
+                      disabled={mode === "view"}
                       variant="contained"
                       component="label"
                       sx={{
@@ -395,6 +398,11 @@ function DocumentForm1({ mode }) {
                         py: 1,
                         borderRadius: 2,
                         flexGrow: 1,
+                        backgroundColor: "#9e9e9e", // grey
+                        color: "#fff", // white text
+                        "&:hover": {
+                          backgroundColor: "#7d7d7d", // darker grey on hover
+                        },
                       }}
                     >
                       {section?.mainData?.document_url
@@ -476,6 +484,7 @@ function DocumentForm1({ mode }) {
         ))}
 
         <Button
+          disabled={mode === "view"}
           variant="contained"
           sx={{ mt: 2 }}
           onClick={() => {

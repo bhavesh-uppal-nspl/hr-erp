@@ -146,6 +146,7 @@ function ComponentList() {
         showActions={true}
         // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/workshift-breaks`}
         Route="/payroll/components"
+        edit_delete_action={["PAYROLL_COMPONENT_DELETE", "PAYROLL_COMPONENT_EDIT"]}
         DeleteFunc={deleteBreak}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}

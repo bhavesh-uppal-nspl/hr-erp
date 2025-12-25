@@ -7,6 +7,7 @@ import {
   MenuItem,
   TextField,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -38,17 +39,31 @@ function IncrementForm({ mode }) {
     remarks: "",
   });
 
-  useEffect(() => {
-    {
-      fetchOrganizationEmployee(org.organization_id)
-        .then((data) => {
-          setEmployee(data?.employees);
-        })
-        .catch((err) => {
-          setFormErrors(err.message);
-        });
-    }
-  }, []);
+useEffect(() => {
+  fetchOrganizationEmployee(org?.organization_id)
+    .then((data) => {
+      let filteredEmployees = data?.filter(
+        (item) => item.employment_status !== "Exited"
+      );
+
+      // ⭐ Include the current employee ONLY in edit/view mode
+      if ((mode === "edit" || mode === "view") && formData.employee_id) {
+        const current = data.find(
+          (emp) => emp.employee_id === formData.employee_id
+        );
+
+        if (
+          current &&
+          !filteredEmployees.some((emp) => emp.employee_id === current.employee_id)
+        ) {
+          filteredEmployees = [current, ...filteredEmployees];
+        }
+      }
+
+      setEmployee(filteredEmployees);
+    })
+    .catch((err) => setFormErrors(err.message));
+}, [formData.employee_id, mode]);
 
   useEffect(() => {
     {
@@ -82,7 +97,7 @@ function IncrementForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode ==="view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -186,62 +201,98 @@ function IncrementForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Employee Name/ID"
-                  name="employee_id"
-                  value={formData?.employee_id}
-                  onChange={handleChange}
-                  error={!!formErrors.employee_id}
-                  helperText={formErrors.employee_id}
-                  required
+              
+
+               
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {employee?.map((option) => {
-                    const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.employee_code || ""}`.trim();
-
-                    //  `${option.first_name || ""} ${option.middle_name || ""} ${option.last_name || ""} ➖ ${option.designation.designation_name}`.trim();
-                    return (
-                      <MenuItem
-                        key={option?.employee_id}
-                        value={option?.employee_id}
-                      >
-                        {fullName ? fullName : option?.employee_id}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-
-                <TextField
-                  select
+                   <Autocomplete
                   fullWidth
-                  label="Increment Type"
-                  name="organization_employee_increment_type_id"
-                  value={formData.organization_employee_increment_type_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_employee_increment_type_id}
-                  helperText={
-                    formErrors.organization_employee_increment_type_id
+                  options={employee || []}
+                  getOptionLabel={(option) =>
+                    `${option?.name || ""} (${option?.employee_code || ""})`.trim()
                   }
-                  required
-                >
-                  {increments?.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_employee_increment_type_id}
-                        value={option.organization_employee_increment_type_id}
-                      >
-                        {option?.employee_increment_type_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+                  value={
+                    employee?.find(
+                      (emp) => emp.employee_id === formData?.employee_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "employee_id",
+                        value: newValue?.employee_id || "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || employee?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Employee Name/ID"
+                      name="employee_id"
+                      error={!!formErrors.employee_id}
+                      helperText={formErrors.employee_id}
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
+
+
+                 <Autocomplete
+                fullWidth
+                  options={increments || []}
+                  getOptionLabel={(option) =>
+                    option.employee_increment_type_name || ""
+                  }
+                  value={
+                    increments?.find(
+                      (option) =>
+                        option.organization_employee_increment_type_id ===
+                        formData.organization_employee_increment_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_employee_increment_type_id",
+                        value:
+                          newValue?.organization_employee_increment_type_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || increments?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Increments"
+                      error={
+                        !!formErrors.organization_employee_increment_type_id
+                      }
+                      helperText={
+                        formErrors.organization_employee_increment_type_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
 
                 <TextField
                   fullWidth
                   label="Previous CTC"
                   name="previous_ctc_amount"
+                  disabled={mode === "view"}
                   type="number"
                   value={formData?.previous_ctc_amount}
                    onChange={(e) => {
@@ -269,11 +320,26 @@ function IncrementForm({ mode }) {
                   }}
                 />
 
-                <TextField
+
+                </Box>
+
+
+                 
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                   <TextField
                   fullWidth
                   label="Increment %"
                   name="increment_percentage"
                   type="number"
+                   disabled={mode === "view"}
                   value={formData?.increment_percentage}
                   onChange={handleChange}
                   required
@@ -285,6 +351,7 @@ function IncrementForm({ mode }) {
                   fullWidth
                   label="Increment Amount"
                   name="increment_amount"
+                   disabled={mode === "view"}
                   type="number"
                   value={formData?.increment_amount}
                   onChange={(e) => {
@@ -315,6 +382,7 @@ function IncrementForm({ mode }) {
                   fullWidth
                   label="New CTC"
                   name="new_ctc_amount"
+                   disabled={mode === "view"}
                   type="number"
                   value={formData?.new_ctc_amount}
                   onChange={(e) => {
@@ -340,10 +408,25 @@ function IncrementForm({ mode }) {
                   }}
                 />
 
+
+                </Box>
+
+
+                 
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+                  
                 <TextField
                   fullWidth
                   label="Increment Date"
                   name="increment_date"
+                   disabled={mode === "view"}
                   type="date"
                   value={formData.increment_date}
                   onChange={handleChange}
@@ -356,6 +439,7 @@ function IncrementForm({ mode }) {
                   fullWidth
                   label="Effective Date"
                   name="effective_date"
+                   disabled={mode === "view"}
                   type="date"
                   value={formData.effective_date}
                   onChange={handleChange}
@@ -365,9 +449,17 @@ function IncrementForm({ mode }) {
                   required
                 />
 
+                </Box>
+
+               
+
+               
+
+
                 <TextField
                   fullWidth
                   label="Remarks"
+                   disabled={mode === "view"}
                   name="remarks"
                   value={formData.remarks}
                   onChange={handleChange}
@@ -384,7 +476,7 @@ function IncrementForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

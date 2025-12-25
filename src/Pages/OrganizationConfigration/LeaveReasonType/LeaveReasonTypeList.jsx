@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Layout1 from "../../DataLayouts/Layout1";
 import NextWeekIcon from "@mui/icons-material/NextWeek";
 import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
-import { fetchOrganizationLeaveReasonTypes } from "../../../Apis/Leave-api";
+import { fetchOrganizationLeaveReasonTypes, fetchOrganizationLeaveReasonTypesData } from "../../../Apis/Leave-api";
 import axios from "axios";
 import useAuthStore from "../../../Zustand/Store/useAuthStore";
 import toast from "react-hot-toast";
@@ -25,7 +25,7 @@ function LeaveReasonTypeList() {
   useEffect(() => {
     if (org?.organization_id) {
       setLoading(true);
-      fetchOrganizationLeaveReasonTypes(org.organization_id)
+      fetchOrganizationLeaveReasonTypesData(org.organization_id)
         .then((data) => {
           let a = data?.leavereasontype;
           console.log("aaa", a);
@@ -34,6 +34,8 @@ function LeaveReasonTypeList() {
               ...item,
               id: item.organization_leave_reason_type_id,
               leaveType: item.leavetype[0].leave_type_name,
+              leave_reason_type_name: item?.leave_reason_type_name,
+              description: item?.description == null ? "" : item?.description,
         
             };
           });
@@ -55,6 +57,21 @@ function LeaveReasonTypeList() {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Leave Reason Type";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
+
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -81,16 +98,27 @@ function LeaveReasonTypeList() {
   );
 
 
+
+                       const handleShow = useCallback(
+      (item) => {
+        navigate(`/organization-configration/leave-reason-type/view/${item.id}`)
+      },
+      [navigate],
+    )
+
+
+
     
 
   return (
     <>
       <Layout4
         loading={loading}
+        add_action={"LEAVE_REASON_TYPE_ADD"}
         heading={"Leave Reason Types"}
         btnName={"Add Leave Reason Type"}
         Data={leaveReasonType}
-        delete_action={"ORG_CONFIG_DELETE"}
+        delete_action={"LEAVE_REASON_TYPE_DELETE"}
         tableHeaders={[
           {
             name: "Leave Reason Types",
@@ -124,7 +152,7 @@ function LeaveReasonTypeList() {
 
 
       <TableDataGeneric
-        tableName="Employees"
+        tableName="Leave Reason Types"
         primaryKey="organization_leave_reason_type_id"
         heading="Leave Reason Type"
         data={leaveReasonType}
@@ -133,14 +161,18 @@ function LeaveReasonTypeList() {
           //  apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/leave-reason-type`}
         Route="/organization-configration/leave-reason-type"
         DeleteFunc={deletereason}
+        handleShow={handleShow}
          EditFunc={handleEdit}
         token={localStorage.getItem("token")}
-                     organizationUserId={userData?.organization_user_id} // Pass user ID
+        edit_delete_action={["LEAVE_REASON_TYPE_DELETE", "LEAVE_REASON_TYPE_EDIT"]}
+         organizationUserId={userData?.organization_user_id} // Pass user ID
         showLayoutButtons={true}
         config={{
           defaultVisibleColumns: ["leave_reason_type_name","leavetype","description"],
           mandatoryColumns: ["leave_reason_type_name","leavetype","description"],
         }}
+      
+                 
       
       />
 

@@ -80,7 +80,7 @@ function WorkshiftBreakForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -179,8 +179,7 @@ function WorkshiftBreakForm({ mode }) {
           </Box>
         </Grid>
       ) : (
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
+      
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
                 <TextField
@@ -189,10 +188,12 @@ function WorkshiftBreakForm({ mode }) {
                   label="Workshift"
                   name="organization_work_shift_id"
                   value={formData.organization_work_shift_id}
+                
                   onChange={handleChange}
                   error={!!formErrors.organization_work_shift_id}
                   helperText={formErrors.organization_work_shift_id}
                   required
+                    disabled={workshift?.length === 0 || mode === "view"}
                 >
                   {workshift?.map((option) => (
                     <MenuItem
@@ -211,6 +212,7 @@ function WorkshiftBreakForm({ mode }) {
                   name="organization_attendance_break_id"
                   value={formData.organization_attendance_break_id}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.organization_attendance_break_id}
                   helperText={formErrors.organization_attendance_break_id}
                   required
@@ -233,7 +235,7 @@ function WorkshiftBreakForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,
@@ -271,8 +273,7 @@ function WorkshiftBreakForm({ mode }) {
                 )}
               </Grid>
             </Paper>
-          </Grid>
-        </Grid>
+         
       )}
     </Box>
   );

@@ -29,7 +29,7 @@ export default function CommonFormLayout({
                 color="primary"
                 size="medium"
                 onClick={onSubmit}
-                disabled={loading || btnLoading}
+                disabled={loading || btnLoading || mode === "view"}
                 sx={{
                   borderRadius: 2,
                   minWidth: 120,

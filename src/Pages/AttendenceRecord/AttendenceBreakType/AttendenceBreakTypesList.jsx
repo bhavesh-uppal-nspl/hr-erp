@@ -49,7 +49,7 @@ function AttendenceBreakTypesList() {
   const { userData } = useAuthStore();
   const org = userData?.organization;
   const [loading, setLoading] = useState(true);
- const [tableConfig, setTableConfig] = useState(null);
+  const [tableConfig, setTableConfig] = useState(null);
   const [configColumns, setConfigColumns] = useState(DEFAULT_COLUMNS);
   const [loadingConfig, setLoadingConfig] = useState(true);
 
@@ -66,13 +66,10 @@ function AttendenceBreakTypesList() {
       }
 
       try {
-        const configRes = await fetch(
-          `${MAIN_URL}/api/general-datagrids`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        const configRes = await fetch(`${MAIN_URL}/api/general-datagrids`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
 
         if (configRes.ok) {
           const configResponse = await configRes.json();
@@ -144,6 +141,18 @@ function AttendenceBreakTypesList() {
           },
         }
       );
+
+      if (response.status === 200) {
+        toast.success(response.data.message);
+      } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Break Type";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -187,13 +196,21 @@ function AttendenceBreakTypesList() {
     [navigate]
   );
 
+  const handleShow = useCallback(
+    (item) => {
+      navigate(`/attendance/break-type/view/${item.id}`);
+    },
+    [navigate]
+  );
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Attendance BreakType"}
         btnName={"Add BreakType"}
-        delete_action={"ATTENDANCE_DELETE"}
+        add_action={"ATTENDANCE_BREAK_TYPE_ADD"}
+        delete_action={"ATTENDANCE_BREAK_TYPE_DELETE"}
         Data={source}
         tableHeaders={[
           {
@@ -221,7 +238,7 @@ function AttendenceBreakTypesList() {
         ]}
         Route={"/attendance/break-type"}
         setData={setSource}
-        DeleteFunc={deleteSource}
+        DeleteFunc={handleDelete}
       />
 
       <TableDataGeneric
@@ -235,8 +252,10 @@ function AttendenceBreakTypesList() {
         Route="/attendance/break-type"
         DeleteFunc={handleDelete}
         EditFunc={handleEdit}
+        handleShow={handleShow}
+        edit_delete_action={["ATTENDANCE_BREAK_TYPE_DELETE", "ATTENDANCE_BREAK_TYPE_EDIT"]}
         token={localStorage.getItem("token")}
-       configss={configColumns}
+        configss={configColumns}
         {...(tableConfig && { config: tableConfig })}
       />
     </>

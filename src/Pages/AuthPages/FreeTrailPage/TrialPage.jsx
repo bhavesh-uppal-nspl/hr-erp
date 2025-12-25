@@ -5,7 +5,10 @@ import logo from "../../../Assets/Images/logo.png";
 import axios from "axios";
 import { MAIN_URL } from "../../../Configurations/Urls";
 import { Eye, EyeOff } from "lucide-react";
-import { fetchGeneralCountries, fetchGeneralCountriesall } from "../../../Apis/OrganizationLocation";
+import {
+  fetchGeneralCountries,
+  fetchGeneralCountriesall,
+} from "../../../Apis/OrganizationLocation";
 import SelectWithImage from "../../../Components/Inputs/SelectWithImage";
 import {
   isValidPhoneNumber,
@@ -25,11 +28,17 @@ const FreeTrialPage = ({
   const [agree, setAgree] = useState(false);
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [strength, setStrength] = useState("");
   const [loading, setLoading] = useState(false);
   const [countries, setCountries] = useState([]);
   const [formErrors, setFormErrors] = useState("");
 
-  const [showConflictModal, setShowConflictModal] = useState(false); // ⬅️ NEW STATE
+  const [showConflictModal, setShowConflictModal] = useState({
+    show: false,
+    title: "",
+    message: "",
+    actionType: "", // can be 'email' or 'phone'
+  }); // ⬅️ NEW STATE
 
   const navigate = useNavigate();
 
@@ -63,11 +72,12 @@ const FreeTrialPage = ({
     if (!email) {
       formErrors.email = "Email is required";
       isValid = false;
-    } else if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)) {
+    } else if (
+      !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)
+    ) {
       formErrors.email = "Invalid email format";
       isValid = false;
     }
-
 
     if (!password) {
       formErrors.password = "Password is required";
@@ -115,15 +125,42 @@ const FreeTrialPage = ({
 
       let res = await axios.post(`${MAIN_URL}/api/auth/create-user`, {
         email,
+        phone,
       });
+      console.log("res is ", res);
 
       navigate("/otp-verify", { state: { ...payload, otp: res.data.otp } });
     } catch (error) {
       if (error.response && error.response.data) {
-        const { errors, message, status, data } = error.response;
+        // const { errors, message, status, data } = error.response;
 
-        if (status === 409 && data.message === "User already Exist.") {
-          setShowConflictModal(true);
+        const { errors, message } = error.response.data; // ✅ FIXED
+        const status = error.response.status; // ✅ FIXED
+
+        if (status === 409 && message === "Phone number already exists.") {
+          setShowConflictModal({
+            show: true,
+            title: "Phone Number Already Registered",
+            message:
+              "This phone number is already registered. Would you like to log in instead or continue registration?",
+            actionType: "phone",
+          });
+          setErrors((prev) => ({
+            ...prev,
+            phone: "Phone number already in use",
+          }));
+          toast.error("Phone number already registered.");
+          return;
+        }
+
+        if (status === 409 && message === "User already Exist.") {
+          setShowConflictModal({
+            show: true,
+            title: "Email Already Registered",
+            message:
+              "This email is already registered. Would you like to log in instead or continue registration?",
+            actionType: "email",
+          });
           setErrors((prev) => ({ ...prev, email: "Email already in use" }));
         } else if (errors) {
           setErrors(errors);
@@ -187,7 +224,7 @@ const FreeTrialPage = ({
                       <div className="invalid-feedback">{errors.email}</div>
                     )}
                   </div>
-
+                  {/* 
                   <div className="form-group mb-1 position-relative">
                     <input
                       placeholder="Create a secure password"
@@ -212,7 +249,96 @@ const FreeTrialPage = ({
                     )}
                   </div>
                   <div className="form-text mb-2 text-[5px] text-gray-300">
-                    Minimum 8 characters, with at least one number or symbol.
+                    Minimum 8 characters, with at least one number or symbol. */}
+                  {/* </div> */}
+
+                  <div className="form-group mb-1 position-relative">
+                    <input
+                      placeholder="Create a secure password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setPassword(value);
+                        const hasUpperCase = /[A-Z]/.test(value);
+                        const hasNumber = /\d/.test(value);
+                        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(
+                          value
+                        );
+                        const isLongEnough = value.length >= 8;
+                        let error = "";
+                        if (!isLongEnough)
+                          error =
+                            "Password must be at least 8 characters long.";
+                        else if (!hasUpperCase)
+                          error = "Include at least one uppercase letter.";
+                        else if (!hasNumber)
+                          error = "Include at least one number.";
+                        else if (!hasSpecialChar)
+                          error = "Include at least one special character.";
+                        setErrors((prev) => ({ ...prev, password: error }));
+                        // Strength detection
+                        const strengthCount = [
+                          hasUpperCase,
+                          hasNumber,
+                          hasSpecialChar,
+                          isLongEnough,
+                        ].filter(Boolean).length;
+                        if (strengthCount <= 2) setStrength("Weak");
+                        else if (strengthCount === 3) setStrength("Medium");
+                        else setStrength("Strong");
+                      }}
+                      className={`form-control pe-5 ${errors.password ? "is-invalid" : ""}`}
+                    />
+                    <span
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="position-absolute top-50 translate-middle-y"
+                      style={{
+                        right: "15px",
+                        cursor: "pointer",
+                        color: "#6c757d",
+                      }}
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </span>
+                    {errors.password && (
+                      <div className="invalid-feedback">{errors.password}</div>
+                    )}
+                  </div>
+
+                  {/* Password strength meter */}
+                  {password && (
+                    <div
+                      className={`text-xs font-medium mt-1 ${
+                        strength === "Weak"
+                          ? "text-red-500"
+                          : strength === "Medium"
+                            ? "text-yellow-500"
+                            : "text-green-500"
+                      }`}
+                    >
+                      Password Strength: {strength}
+                    </div>
+                  )}
+
+                  {/* Optional visual bar */}
+                  {password && (
+                    <div className="h-1 bg-gray-200 rounded mt-1">
+                      <div
+                        className={`h-1 rounded transition-all duration-300 ${
+                          strength === "Weak"
+                            ? "bg-red-500 w-1/3"
+                            : strength === "Medium"
+                              ? "bg-yellow-500 w-2/3"
+                              : "bg-green-500 w-full"
+                        }`}
+                      ></div>
+                    </div>
+                  )}
+
+                  <div className="form-text mb-2 text-[5px] text-gray-300">
+                    Minimum 8 characters, with at least one uppercase letter,
+                    number, and symbol.
                   </div>
 
                   <div className="form-group mb-3 d-flex">
@@ -329,7 +455,7 @@ const FreeTrialPage = ({
       </div>
 
       {/* Email Already Exists Modal */}
-      {showConflictModal && (
+      {/* {showConflictModal && (
         <div
           className="modal fade show d-block"
           tabIndex="-1"
@@ -348,8 +474,8 @@ const FreeTrialPage = ({
               </div>
               <div className="modal-body">
                 <p>
-                  This email is already registered. Would you like to log in instead or
-                  continue registration?
+                  This email is already registered. Would you like to log in
+                  instead or continue registration?
                 </p>
               </div>
               <div className="modal-footer">
@@ -377,9 +503,79 @@ const FreeTrialPage = ({
             </div>
           </div>
         </div>
+      )} */}
+
+      {showConflictModal.show && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          role="dialog"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{showConflictModal.title}</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() =>
+                    setShowConflictModal({ ...showConflictModal, show: false })
+                  }
+                ></button>
+              </div>
+              <div className="modal-body">
+                <p>{showConflictModal.message}</p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowConflictModal({ ...showConflictModal, show: false });
+                    navigate("/login");
+                  }}
+                >
+                  Login
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setShowConflictModal({ ...showConflictModal, show: false });
+                    if (showConflictModal.actionType === "email") {
+                      navigate("/email-register", { state: { email } });
+                    } else if (showConflictModal.actionType === "phone") {
+                      navigate("/email-register", { state: { phone } });
+                    }
+                  }}
+                >
+                  Continue Registration
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 };
 
 export default FreeTrialPage;
+
+
+
+
+
+
+
+
+// MAIL_MAILER=smtp
+// MAIL_HOST=hr.erp.nsplprojects.com
+// MAIL_PORT=465
+// MAIL_USERNAME=bhavesh.nspl@gmail.com
+// MAIL_PASSWORD=tqhqxlwlczotqavy
+// MAIL_ENCRYPTION=ssl
+// MAIL_FROM_ADDRESS="bhavesh.nspl@gmail.com"
+// MAIL_FROM_NAME="NSPL ERP"

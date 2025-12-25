@@ -98,6 +98,7 @@ function SalaryStructureList() {
         loading={loading}
         heading={"Employee Salary Structure"}
         btnName={"Add Structure"}
+        add_action={"SALARY_STRUCTURE_ADD"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
@@ -131,6 +132,7 @@ function SalaryStructureList() {
       <TableDataGeneric
         tableName="Employee Salary Structure"
         primaryKey="organization_payroll_employee_salary_structure_id"
+        edit_delete_action={["SALARY_STRUCTURE_DELETE", "SALARY_STRUCTURE_EDIT"]}
         heading="Employee Salary Structure"
         data={Break}
         sortname={"salary_basis"}

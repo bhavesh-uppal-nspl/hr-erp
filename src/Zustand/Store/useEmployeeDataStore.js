@@ -18,12 +18,14 @@ const useEmployeeDataStore = create((set, get) => ({
     organization_department_location_id: "",
     organization_employment_type_id: "",
     organization_department_id: "",
+    organization_entity_id: "",
     organization_designation_id: "",
     organization_employment_type_id: "",
+    organization_employment_category_id: "",
     organization_work_model_id: "",
     organization_work_shift_id: "",
     organization_employment_status_id: "",
-    organization_employment_stage_id:"",
+    organization_employment_stage_id: "",
     organization_user_id: "",
     date_of_joining: "",
     organization_user_id: "",
@@ -40,14 +42,12 @@ const useEmployeeDataStore = create((set, get) => ({
           delete updatedErrors[key];
         }
       });
-
       return {
         Employee: { ...state.Employee, ...data },
         EmployeeErrors: updatedErrors,
       };
     }),
 
-  // education error and data
   Education: [
     {
       organization_education_id: "",
@@ -545,11 +545,9 @@ const useEmployeeDataStore = create((set, get) => ({
     // Deep copy errors
     const updatedErrors = { ...MedicalErrors };
 
-
     if (updatedErrors[index]?.[name]) {
       updatedErrors[index] = { ...updatedErrors[index] }; // shallow clone the index block
       delete updatedErrors[index][name];
-
 
       if (Object.keys(updatedErrors[index])?.length === 0) {
         delete updatedErrors[index];
@@ -645,7 +643,7 @@ const useEmployeeDataStore = create((set, get) => ({
       account_number: "",
       account_type: "",
       is_primary: false,
-      upi_id:"",
+      upi_id: "",
       qr_code_url: "",
       remarks: "",
     });
@@ -655,25 +653,22 @@ const useEmployeeDataStore = create((set, get) => ({
   removePaymentMethod: (index) => {
     let { PaymentMethod } = get();
 
-    PaymentMethod.splice(index, 1); 
+    PaymentMethod.splice(index, 1);
 
     set({ PaymentMethod: [...PaymentMethod] });
   },
-
-
 
   Document: [
     {
       employee_document_id: "",
       employee_id: "",
       employee_document_type_id: "",
-      organization_id : "",
+      organization_id: "",
       organization_entity_id: "",
       document_name: "",
       document_url: "",
-      document_size_kb:"",
-      organization_employee_profile_section_id:""
-    
+      document_size_kb: "",
+      organization_employee_profile_section_id: "",
     },
   ],
   DocumentErrors: {},
@@ -716,9 +711,9 @@ const useEmployeeDataStore = create((set, get) => ({
       organization_id: "",
       document_name: "",
       document_url: "",
-      organization_employee_profile_section_id:"",
-      document_size_kb:"",
-      sectionlinks:[]
+      organization_employee_profile_section_id: "",
+      document_size_kb: "",
+      sectionlinks: [],
     });
 
     set({ Document });
@@ -730,7 +725,6 @@ const useEmployeeDataStore = create((set, get) => ({
 
     set({ Document: [...Document] }); // spread to trigger state update
   },
-
 
   resetData: () => {
     set({
@@ -751,11 +745,13 @@ const useEmployeeDataStore = create((set, get) => ({
         organization_department_id: "",
         organization_designation_id: "",
         organization_employment_type_id: "",
+        organization_employment_category_id: "",
         organization_work_model_id: "",
         organization_work_shift_id: "",
         organization_employment_status_id: "",
-        organization_employment_stage_id:"",
+        organization_employment_stage_id: "",
         organization_user_id: "",
+        organization_entity_id: "",
         date_of_joining: "",
         organization_user_id: "",
         reporting_manager_id: "",
@@ -901,30 +897,25 @@ const useEmployeeDataStore = create((set, get) => ({
           account_type: false,
           is_primary: false,
           qr_code_url: "",
-          upi_id:"",
+          upi_id: "",
           remarks: "",
         },
       ],
       PaymentMethodErrors: {},
-      Document:[
+      Document: [
         {
-            employee_id: "",
-            employee_document_type_id: "",
-            organization_id: "",
-            document_name: "",
-            document_url: "",
-            document_size_kb:"",
-            organization_employee_profile_section_id:""
-        }
-
+          employee_id: "",
+          employee_document_type_id: "",
+          organization_id: "",
+          document_name: "",
+          document_url: "",
+          document_size_kb: "",
+          organization_employee_profile_section_id: "",
+        },
       ],
-      DocumentErrors:{}
+      DocumentErrors: {},
     });
   },
-
-
-
-
 
   // setEducationData: (name, value, id) => {
   //   let { Education } = get();
@@ -991,7 +982,9 @@ const useEmployeeDataStore = create((set, get) => ({
     Employees: [],
     Languages: [],
     EmploymentAddressType: [],
-    EmployeeStages:[]
+    EmployeeStages: [],
+    Categories: [],
+    Entities: [],
   },
 
   getDropdowndata: async (orgId) => {
@@ -1017,6 +1010,16 @@ const useEmployeeDataStore = create((set, get) => ({
       })
       .then((response) => {
         DropDownData.Units = response?.data?.Unit?.data;
+      });
+
+    axios
+      .get(`${MAIN_URL}/api/organizations/${orgId}/entity`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        DropDownData.Entities = response?.data?.entity;
       });
 
     axios
@@ -1076,7 +1079,14 @@ const useEmployeeDataStore = create((set, get) => ({
         },
       })
       .then((response) => {
-        DropDownData.Employees = response?.data?.employees;
+        const employees = response?.data ?? [];
+        const filteredEmployees = employees.filter(
+          (emp) => emp?.employment_status !== "Exited"
+        );
+        DropDownData.Employees = filteredEmployees;
+      })
+      .catch((error) => {
+        console.error(error);
       });
 
     axios
@@ -1100,6 +1110,16 @@ const useEmployeeDataStore = create((set, get) => ({
       });
 
     axios
+      .get(`${MAIN_URL}/api/organizations/${orgId}/categories`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        DropDownData.Categories = response?.data?.category?.data;
+      });
+
+    axios
       .get(`${MAIN_URL}/api/organizations/${orgId}/employemnt-addresstype`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -1112,6 +1132,5 @@ const useEmployeeDataStore = create((set, get) => ({
     set({ DropDownData });
   },
 }));
-
 
 export default useEmployeeDataStore;

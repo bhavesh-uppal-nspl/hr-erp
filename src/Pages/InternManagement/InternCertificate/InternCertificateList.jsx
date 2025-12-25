@@ -154,6 +154,19 @@ function InternCertificateList() {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Intern Certificate";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -197,13 +210,22 @@ function InternCertificateList() {
     [navigate]
   );
 
+
+                 const handleShow = useCallback(
+    (item) => {
+      navigate(`/intern/certificates/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Intern Certificate"}
         btnName={"Add Certificate"}
-        delete_action={"ATTENDANCE_DELETE"}
+        delete_action={"INTERN_CERTIFICATE_DELETE"}
         Data={documents}
         tableHeaders={[
           {
@@ -248,7 +270,8 @@ function InternCertificateList() {
         showActions={true}
         // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-status-type`}
         Route="/intern/certificates"
-        DeleteFunc={handleDelete}
+        DeleteFunc={deleteStatus}
+        handleShow={handleShow}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
         configss={configColumns}

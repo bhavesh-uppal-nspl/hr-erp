@@ -10,6 +10,7 @@ import {
   TextField,
   FormHelperText,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -48,23 +49,46 @@ function InternStipendForm({ mode }) {
 
   const Status = ["Fixed", "Hourly", "Monthly", "Project-Based", "Unpaid"];
   const Cycle = ["One-Time", "Monthly", "Quarterly", "End-of-Internship"];
+
 useEffect(() => {
-  fetchInterns(org?.organization_id)
+  if (!org?.organization_id) return;
+
+  fetchInterns(org.organization_id)
     .then((data) => {
-      // Filter interns with is_paid === 1
-      const paidInterns = data?.intership?.data?.filter(
-        (intern) => intern.is_paid === 1
+      const interns = data?.intership?.data || [];
+
+      // Remove exited interns
+      let activeInterns = interns.filter(
+        (item) => item?.status?.internship_status_name !== "Exited"
       );
-      setIntern(paidInterns);
+
+      const selectedInternId = formData?.intern_id;
+
+      // Add selected intern back in BOTH edit and view modes
+      if ((mode === "edit" || mode === "view") && selectedInternId) {
+        const selectedIntern = interns.find(
+          (i) => i.intern_id === selectedInternId
+        );
+
+        if (selectedIntern) {
+          const exists = activeInterns.some(
+            (i) => i.intern_id === selectedInternId
+          );
+
+          if (!exists) {
+            activeInterns.push(selectedIntern);
+          }
+        }
+      }
+
+      setIntern(activeInterns);
     })
     .catch((err) => {
-      setFormErrors(err.message);
+      setFormErrors({ general: err.message });
     });
-}, []);
+}, [org?.organization_id, mode, formData?.intern_id]);
 
-
-
-useEffect(() => {
+  useEffect(() => {
     const fetchCountries = async () => {
       try {
         const res = await axios.get(`${MAIN_URL}/api/general/countries/v1`);
@@ -75,15 +99,9 @@ useEffect(() => {
         console.error("Error fetching countries:", error);
       }
     };
-    
-      fetchCountries()
+
+    fetchCountries();
   }, []);
-
-
-
-
-
-
 
   useEffect(() => {
     const getdataById = async () => {
@@ -105,7 +123,7 @@ useEffect(() => {
       }
     };
 
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -207,80 +225,75 @@ useEffect(() => {
           </Box>
         </Grid>
       ) : (
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
-            <Paper elevation={4} sx={{ p: 3 }}>
-              <Grid container spacing={2}>
+        <Paper elevation={4} sx={{ p: 3 }}>
+          <Grid container spacing={2}>
+           
+            <Autocomplete
+              fullWidth
+              options={Intern || []}
+              getOptionLabel={(option) =>
+                `${option?.first_name || ""} ${option?.middle_name}  ${option?.last_name} (${option?.intern_code || ""})`.trim()
+              }
+              value={
+                Intern?.find(
+                  (intern) => intern?.intern_id === formData?.intern_id
+                ) || null
+              }
+              onChange={(event, newValue) => {
+                handleChange({
+                  target: {
+                    name: "intern_id",
+                    value: newValue?.intern_id || "",
+                  },
+                });
+              }}
+              disabled={Intern?.length === 0 || mode === "view"}
+              isOptionEqualToValue={(option, value) =>
+                option?.intern_id === value?.intern_id
+              }
+              renderInput={(params) => (
                 <TextField
-                  select
-                  fullWidth
+                  {...params}
                   label="Intern Name/ID"
                   name="intern_id"
-                  value={formData?.intern_id}
-                  onChange={handleChange}
-                  error={!!formErrors.intern_id}
-                  helperText={formErrors.intern_id}
                   required
+                  error={!!formErrors?.intern_id}
+                  helperText={formErrors?.intern_id}
+                  fullWidth
+                />
+              )}
+            />
+
+              
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {Intern?.map((option) => {
-                    const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.intern_code || ""}`.trim();
-                    return (
-                      <MenuItem
-                        key={option?.intern_id}
-                        value={option?.intern_id}
-                      >
-                        {fullName}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+                  
+            <TextField
+              select
+              fullWidth
+              label="Stipend Type"
+              name="stipend_type"
+              value={formData.stipend_type}
+              onChange={handleChange}
+              error={!!formErrors.stipend_type}
+              helperText={formErrors.stipend_type}
+              required
+              disabled={Status?.length === 0 || mode === "view"}
+            >
+              {Status?.map((type) => (
+                <MenuItem key={type} value={type}>
+                  {type}
+                </MenuItem>
+              ))}
+            </TextField>
 
-                {/* <TextField
-                  fullWidth
-                  type="date"
-                  label="Effective Start Date"
-                  name="effective_start_date"
-                  value={formData.effective_start_date}
-                  onChange={handleChange}
-                  error={!!formErrors.effective_start_date}
-                  helperText={formErrors.effective_start_date}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                /> */}
-
-                {/* <TextField
-                  fullWidth
-                  type="date"
-                  label="Effective End Date"
-                  name="effective_end_date"
-                  value={formData.effective_end_date}
-                  onChange={handleChange}
-                  error={!!formErrors.effective_end_date}
-                  helperText={formErrors.effective_end_date}
-                  InputLabelProps={{ shrink: true }} */}
-                {/* /> */}
-
-
-                 <TextField
-                  select
-                  fullWidth
-                  label="Stipend Type"
-                  name="stipend_type"
-                  value={formData.stipend_type}
-                  onChange={handleChange}
-                  error={!!formErrors.stipend_type}
-                  helperText={formErrors.stipend_type}
-                  required
-                >
-                  {Status?.map((type) => (
-                    <MenuItem key={type} value={type}>
-                      {type}
-                    </MenuItem>
-                  ))}
-                </TextField>
-
-                <TextField
+             <TextField
                   select
                   fullWidth
                   label="Currency Code"
@@ -289,8 +302,9 @@ useEffect(() => {
                   onChange={handleChange}
                   error={!!formErrors.currency_code}
                   helperText={formErrors.currency_code}
+                  disabled={countrycode?.length === 0 || mode === "view"}
                 >
-                  {(countrycode || [])?.map((option) => (
+                  {(countrycode || []).map((option) => (
                     <MenuItem
                       key={option.currency_code}
                       value={option?.currency_code}
@@ -300,7 +314,7 @@ useEffect(() => {
                   ))}
                 </TextField>
 
-                <TextField
+                 <TextField
                   fullWidth
                   label="Stipend Amount"
                   name="stipend_amount"
@@ -309,115 +323,61 @@ useEffect(() => {
                   onChange={handleChange}
                   error={!!formErrors.stipend_amount}
                   helperText={formErrors.stipend_amount}
+                  disabled={mode === "view"}
                   inputProps={{ min: 0 }}
                 />
 
-                {/* <TextField
-                  fullWidth
-                  type="date"
-                  label="Last Payment Date"
-                  name="last_payment_date"
-                  value={formData.last_payment_date}
-                  onChange={handleChange}
-                  error={!!formErrors.last_payment_date}
-                  helperText={formErrors.last_payment_date}
-                  InputLabelProps={{ shrink: true }}
-                /> */}
-
-                {/* <TextField
-                  fullWidth
-                  type="date"
-                  label="Next Payment Date"
-                  name="next_payment_date"
-                  value={formData.next_payment_date}
-                  onChange={handleChange}
-                  error={!!formErrors.next_payment_date}
-                  helperText={formErrors.next_payment_date}
-                  InputLabelProps={{ shrink: true }}
-                /> */}
-
-               
-
-                {/* <TextField
-                  select
-                  fullWidth
-                  label="Payment Cycle"
-                  name="payment_cycle"
-                  value={formData.payment_cycle}
-                  onChange={handleChange}
-                  error={!!formErrors.payment_cycle}
-                  helperText={formErrors.payment_cycle}
-                  required
-                >
-                  {Cycle?.map((type) => (
-                    <MenuItem key={type} value={type}>
-                      {type}
-                    </MenuItem>
-                  ))}
-                </TextField> */}
-
-                {/* <TextField
-                  fullWidth
-                  label="Remarks"
-                  name="remarks"
-                  value={formData.remarks}
-                  onChange={handleChange}
-                  error={!!formErrors.remarks}
-                  helperText={formErrors.remarks}
-                  multiline
-                  rows={2} // Makes it two lines high
-                /> */}
-              </Grid>
-
-              <Grid container spacing={2}>
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="medium"
-                    onClick={handleSubmit}
-                    disabled={loading || btnLoading}
-                    sx={{
-                      mt: 3,
-                      borderRadius: 2,
-                      minWidth: 120,
-                      textTransform: "capitalize",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {loading || btnLoading ? (
-                      <CircularProgress size={22} sx={{ color: "#fff" }} />
-                    ) : (
-                      "Submit"
-                    )}
-                  </Button>
-                </Grid>
-
-                {mode === "edit" && (
-                  <Grid item>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      size="medium"
-                      onClick={() => navigate(-1)}
-                      sx={{
-                        mt: 3,
-                        borderRadius: 2,
-                        minWidth: 120,
-                        textTransform: "capitalize",
-                        fontWeight: 500,
-                        backgroundColor: "#1976d2",
-                        "&:hover": { backgroundColor: "#115293" },
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </Grid>
-                )}
-              </Grid>
-            </Paper>
+                  
+                </Box>
           </Grid>
-        </Grid>
+
+          <Grid container spacing={2}>
+            <Grid item>
+              <Button
+                variant="contained"
+                color="primary"
+                size="medium"
+                onClick={handleSubmit}
+                disabled={loading || btnLoading || mode === "view"}
+                sx={{
+                  mt: 3,
+                  borderRadius: 2,
+                  minWidth: 120,
+                  textTransform: "capitalize",
+                  fontWeight: 500,
+                }}
+              >
+                {loading || btnLoading ? (
+                  <CircularProgress size={22} sx={{ color: "#fff" }} />
+                ) : (
+                  "Submit"
+                )}
+              </Button>
+            </Grid>
+
+            {mode === "edit" && (
+              <Grid item>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="medium"
+                  onClick={() => navigate(-1)}
+                  sx={{
+                    mt: 3,
+                    borderRadius: 2,
+                    minWidth: 120,
+                    textTransform: "capitalize",
+                    fontWeight: 500,
+                    backgroundColor: "#1976d2",
+                    "&:hover": { backgroundColor: "#115293" },
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Grid>
+            )}
+          </Grid>
+        </Paper>
       )}
     </Box>
   );

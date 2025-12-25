@@ -62,10 +62,10 @@ export async function fetchLeaveReason(orgId) {
   }
 }
 
-export async function fetchOrganizationLeaveReasonTypes(orgId) {
+export async function fetchOrganizationLeaveReasonTypes(orgId, leaveTypeId) {
   try {
     const response = await axios.get(
-      `${MAIN_URL}/api/organizations/${orgId}/leave-reason-type`,
+     `${MAIN_URL}/api/organizations/${orgId}/leave-reason-type/by-leave-type/${leaveTypeId}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -91,6 +91,39 @@ export async function fetchOrganizationLeaveReasonTypes(orgId) {
     }
   }
 }
+
+
+
+export async function fetchOrganizationLeaveReasonTypesData(orgId) {
+  try {
+    const response = await axios.get(
+     `${MAIN_URL}/api/organizations/${orgId}/leave-reason-type`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 401) {
+      toast.error("Session Expired!");
+      window.location.href = "/login";
+    }
+
+    if (error.response) {
+      console.error("API Response Error:", error.response.data);
+      throw new Error(error.response.data.error || "Failed to fetch reasons");
+    } else if (error.request) {
+      console.error("No Response Received:", error.request);
+      throw new Error("No response from server.");
+    } else {
+      console.error("Error:", error.message);
+      throw new Error("An unexpected error occurred.");
+    }
+  }
+}
+
 
 export async function fetchLeaveTypes(orgId) {
   try {

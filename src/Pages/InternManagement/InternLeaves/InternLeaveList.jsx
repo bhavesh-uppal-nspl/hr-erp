@@ -28,8 +28,8 @@ const DEFAULT_COLUMNS = [
     required: false,
   },
   {
-    field: "Intern_name",
-    label: "Intern_name",
+    field: "intern_name",
+    label: "intern_name",
     visible: true,
     width: 150,
     filterable: true,
@@ -140,14 +140,7 @@ function InternLeaveList() {
           console.log("a sis s", a);
 
           const b = a.map((item) => {
-            const fullName = [
-              capitalize(item.intern.first_name),
-              capitalize(item.intern.middle_name || ""),
-              capitalize(item.intern.last_name || ""),
-            ]
-              .filter(Boolean)
-              .join(" ");
-
+           
             const startDate =
               item.leave_start_date != null
                 ? dayjs(item.leave_start_date).format("DD-MM-YYYY")
@@ -170,7 +163,7 @@ function InternLeaveList() {
             return {
               ...item,
               id: item.intern_leave_id,
-              Intern_name: `${fullName}`,
+              intern_name:  `${item?.intern?.first_name || ""} ${item?.intern?.middle_name || ""} ${item?.intern?.last_name || ""}`.trim(),
 
               intern_code: item?.intern?.intern_code,
               leave_start_date: startDate,
@@ -251,6 +244,19 @@ function InternLeaveList() {
           },
         }
       );
+
+       if (response.status === 200) {
+        toast.success(response.data.message);
+           } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Intern Leave";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -294,6 +300,16 @@ function InternLeaveList() {
     [navigate]
   );
 
+
+
+               const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/intern/intern-leaves/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   console.log("leaves is ", leaves);
 
   return (
@@ -303,7 +319,7 @@ function InternLeaveList() {
         heading={"Intern Leave"}
         btnName={"Add Intern Leave"}
         Data={leaves}
-        delete_action={"LEAVE_DELETE"}
+        delete_action={"INTERN_LEAVE_DELETE"}
         tableHeaders={[
           {
             name: "Employee Name",
@@ -346,6 +362,7 @@ function InternLeaveList() {
         Route="/organization/intern/intern-leaves"
         DeleteFunc={handleDelete}
         EditFunc={handleEdit}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

@@ -92,6 +92,7 @@ function PayrollPeriodList() {
       <Layout4
         loading={loading}
         heading={"Payroll Periods"}
+        add_action={"PAYROLL_PERIOD_ADD"}
         btnName={"Add Period"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
@@ -132,6 +133,7 @@ function PayrollPeriodList() {
         showActions={true}
         Route="/payroll/periods"
         DeleteFunc={deleteBreak}
+        edit_delete_action={["PAYROLL_PERIOD_DELETE", "PAYROLL_PERIOD_EDIT"]}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
       />

@@ -103,100 +103,113 @@ function InterPaymentMethod({ mode }) {
                 <Grid item xs={12} md={8}>
                   <Paper elevation={4} sx={{ p: 3 }}>
                     <Grid container spacing={2}>
-                      <TextField
-                        fullWidth
-                        label="A/C Holder Name"
-                        name="account_holder_name"
-                        value={section?.mainData?.account_holder_name}
-                        onChange={(e) => {
-                          const onlyLetters = e.target.value.replace(
-                            /[^a-zA-Z\s]/g,
-                            ""
-                          );
-                          handleChange(
-                            {
-                              target: {
-                                name: "account_holder_name",
-                                value: onlyLetters.toUpperCase(),
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // centers the row
+                          gap: 2, // space between fields
+                          width: "100%", // ensures proper centering
+                        }}
+                      >
+                        <TextField
+                          fullWidth
+                          label="A/C Holder Name"
+                            disabled={mode ==="view"}
+                          name="account_holder_name"
+                          value={section?.mainData?.account_holder_name}
+                          onChange={(e) => {
+                            const onlyLetters = e.target.value.replace(
+                              /[^a-zA-Z\s]/g,
+                              ""
+                            );
+                            handleChange(
+                              {
+                                target: {
+                                  name: "account_holder_name",
+                                  value: onlyLetters.toUpperCase(),
+                                },
                               },
-                            },
-                            idx
-                          );
-                        }}
-                        error={
-                          !!PaymentMethodErrors?.[idx]?.account_holder_name
-                        }
-                        helperText={
-                          PaymentMethodErrors?.[idx]?.account_holder_name
-                        }
-                        required
-                        inputProps={{
-                          style: { textTransform: "uppercase" },
-                          maxLength: 100,
-                        }}
-                      />
+                              idx
+                            );
+                          }}
+                          error={
+                            !!PaymentMethodErrors?.[idx]?.account_holder_name
+                          }
+                          helperText={
+                            PaymentMethodErrors?.[idx]?.account_holder_name
+                          }
+                          required
+                          inputProps={{
+                            style: { textTransform: "uppercase" },
+                            maxLength: 100,
+                          }}
+                        />
 
-                      <TextField
-                        fullWidth
-                        label="Bank Name"
-                        name="bank_name"
-                        value={section?.mainData?.bank_name}
-                        onChange={(e) => {
-                          const cleaned = e.target.value.replace(
-                            /[^a-zA-Z0-9&.\- ]/g,
-                            ""
-                          );
-                          handleChange(
-                            {
-                              target: {
-                                name: "bank_name",
-                                value: cleaned,
+                        <TextField
+                          fullWidth
+                          label="Bank Name"
+                            disabled={mode ==="view"}
+                          name="bank_name"
+                          value={section?.mainData?.bank_name}
+                          onChange={(e) => {
+                            const cleaned = e.target.value.replace(
+                              /[^a-zA-Z0-9&.\- ]/g,
+                              ""
+                            );
+                            handleChange(
+                              {
+                                target: {
+                                  name: "bank_name",
+                                  value: cleaned,
+                                },
                               },
-                            },
-                            idx
-                          );
-                        }}
-                        error={!!PaymentMethodErrors?.[idx]?.bank_name}
-                        helperText={PaymentMethodErrors?.[idx]?.bank_name}
-                        inputProps={{
-                          style: { textTransform: "uppercase" },
-                          maxLength: 100,
-                        }}
-                        required
-                      />
+                              idx
+                            );
+                          }}
+                          error={!!PaymentMethodErrors?.[idx]?.bank_name}
+                          helperText={PaymentMethodErrors?.[idx]?.bank_name}
+                          inputProps={{
+                            style: { textTransform: "uppercase" },
+                            maxLength: 100,
+                          }}
+                          required
+                        />
 
-                      <TextField
-                        fullWidth
-                        label="Branch Name"
-                        name="branch_name"
-                        value={section?.mainData?.branch_name}
-                        onChange={(e) => {
-                          const cleaned = e.target.value.replace(
-                            /[^a-zA-Z0-9&.\- ]/g,
-                            ""
-                          );
-                          handleChange(
-                            {
-                              target: {
-                                name: "branch_name",
-                                value: cleaned,
+                        <TextField
+                          fullWidth
+                          label="Branch Name"
+                            disabled={mode ==="view"}
+                          name="branch_name"
+                          value={section?.mainData?.branch_name}
+                          onChange={(e) => {
+                            const cleaned = e.target.value.replace(
+                              /[^a-zA-Z0-9&.\- ]/g,
+                              ""
+                            );
+                            handleChange(
+                              {
+                                target: {
+                                  name: "branch_name",
+                                  value: cleaned,
+                                },
                               },
-                            },
-                            idx
-                          );
-                        }}
-                        error={!!PaymentMethodErrors?.[idx]?.branch_name}
-                        helperText={PaymentMethodErrors?.[idx]?.branch_name}
-                        inputProps={{
-                          style: { textTransform: "uppercase" },
-                          maxLength: 100,
-                        }}
-                        required
-                      />
+                              idx
+                            );
+                          }}
+                          error={!!PaymentMethodErrors?.[idx]?.branch_name}
+                          helperText={PaymentMethodErrors?.[idx]?.branch_name}
+                          inputProps={{
+                            style: { textTransform: "uppercase" },
+                            maxLength: 100,
+                          }}
+                          required
+                        />
+                      </Box>
 
                       <TextField
                         fullWidth
                         label="A/C Number"
+                          disabled={mode ==="view"}
                         name="account_number"
                         value={section?.mainData?.account_number}
                         onChange={(e) => handleChange(e, idx)}
@@ -209,50 +222,61 @@ function InterPaymentMethod({ mode }) {
                         }}
                         required
                       />
-                      <TextField
-                        fullWidth
-                        label="IFSC Code"
-                        name="ifsc_code"
-                        value={section?.mainData?.ifsc_code}
-                        onChange={(e) => handleChange(e, idx)}
-                        error={!!PaymentMethodErrors?.[idx]?.ifsc_code}
-                        helperText={PaymentMethodErrors?.[idx]?.ifsc_code}
-                        inputProps={{
-                          style: { textTransform: "uppercase" }, // visually show uppercase
-                          maxLength: 11, // IFSC codes are exactly 11 characters
-                        }}
-                        required
-                      />
 
-                      <TextField
-                        fullWidth
-                        label="SWIFT Code"
-                        name="swift_code"
-                        value={section?.mainData?.swift_code}
-                        onChange={(e) => handleChange(e, idx)}
-                        error={!!PaymentMethodErrors?.[idx]?.swift_code}
-                        helperText={PaymentMethodErrors?.[idx]?.swift_code}
-                        inputProps={{
-                          style: { textTransform: "uppercase" }, // visually show uppercase
-                          maxLength: 11, // IFSC codes are exactly 11 characters
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // centers the row
+                          gap: 2, // space between fields
+                          width: "100%", // ensures proper centering
                         }}
-                        
-                      />
+                      >
+                        <TextField
+                          fullWidth
+                          label="IFSC Code"
+                            disabled={mode ==="view"}
+                          name="ifsc_code"
+                          value={section?.mainData?.ifsc_code}
+                          onChange={(e) => handleChange(e, idx)}
+                          error={!!PaymentMethodErrors?.[idx]?.ifsc_code}
+                          helperText={PaymentMethodErrors?.[idx]?.ifsc_code}
+                          inputProps={{
+                            style: { textTransform: "uppercase" }, // visually show uppercase
+                            maxLength: 11, // IFSC codes are exactly 11 characters
+                          }}
+                          required
+                        />
 
-                       <TextField
-                        fullWidth
-                        label="IBAN Number"
-                        name="iban_number"
-                        value={section?.mainData?.iban_number}
-                        onChange={(e) => handleChange(e, idx)}
-                        error={!!PaymentMethodErrors?.[idx]?.iban_number}
-                        helperText={PaymentMethodErrors?.[idx]?.iban_number}
-                        inputProps={{
-                          style: { textTransform: "uppercase" }, // visually show uppercase
-                          maxLength: 11, // IFSC codes are exactly 11 characters
-                        }}
-                        
-                      />
+                        <TextField
+                          fullWidth
+                          label="SWIFT Code"
+                            disabled={mode ==="view"}
+                          name="swift_code"
+                          value={section?.mainData?.swift_code}
+                          onChange={(e) => handleChange(e, idx)}
+                          error={!!PaymentMethodErrors?.[idx]?.swift_code}
+                          helperText={PaymentMethodErrors?.[idx]?.swift_code}
+                          inputProps={{
+                            style: { textTransform: "uppercase" }, // visually show uppercase
+                            maxLength: 11, // IFSC codes are exactly 11 characters
+                          }}
+                        />
+
+                        <TextField
+                          fullWidth
+                          label="IBAN Number"
+                            disabled={mode ==="view"}
+                          name="iban_number"
+                          value={section?.mainData?.iban_number}
+                          onChange={(e) => handleChange(e, idx)}
+                          error={!!PaymentMethodErrors?.[idx]?.iban_number}
+                          helperText={PaymentMethodErrors?.[idx]?.iban_number}
+                          inputProps={{
+                            style: { textTransform: "uppercase" }, // visually show uppercase
+                            maxLength: 11, // IFSC codes are exactly 11 characters
+                          }}
+                        />
+                      </Box>
 
                       {/* <FormControl
                         component="fieldset"
@@ -277,41 +301,46 @@ function InterPaymentMethod({ mode }) {
                         )}
                       </FormControl> */}
 
+                      {(idx === 0 || idx === 1) && (
+                        <FormControl
+                          component="fieldset"
+                          sx={{ marginTop: 2 }}
+                          error={!!PaymentMethodErrors[idx]?.is_primary}
+                        >
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                disabled={mode ==="view"}
+                                checked={section?.mainData?.is_primary ?? false} // default to false
+                                onChange={(e) => handleCheckboxChange(e, idx)}
+                                name="is_primary"
+                              />
+                            }
+                            label="Is Primary"
+                          />
 
-{(idx === 0 || idx === 1) && (
-  <FormControl
-    component="fieldset"
-    sx={{ marginTop: 2 }}
-    error={!!PaymentMethodErrors[idx]?.is_primary}
-  >
-    <FormControlLabel
-      control={
-        <Checkbox
-          checked={section?.mainData?.is_primary ??false} // default to false
-          onChange={(e) => handleCheckboxChange(e, idx)}
-          name="is_primary"
-        />
-      }
-      label="Is Primary"
-    />
-
-    {PaymentMethodErrors[idx]?.is_primary && (
-      <FormHelperText>
-        {PaymentMethodErrors[idx]?.is_primary}
-      </FormHelperText>
-    )}
-  </FormControl>
-)}
-
-
+                          {PaymentMethodErrors[idx]?.is_primary && (
+                            <FormHelperText>
+                              {PaymentMethodErrors[idx]?.is_primary}
+                            </FormHelperText>
+                          )}
+                        </FormControl>
+                      )}
 
 
+<Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
 
-
-
-                      <TextField
+                  <TextField
                         fullWidth
                         label="UPI ID"
+                          disabled={mode ==="view"}
                         name="upi_id"
                         value={section?.mainData?.upi_id}
                         onChange={(e) => handleChange(e, idx)}
@@ -321,12 +350,13 @@ function InterPaymentMethod({ mode }) {
                         inputProps={{
                           maxLength: 50,
                           pattern: "^[\\w.-]{2,50}@[a-zA-Z]{2,50}$",
-                        }} 
+                        }}
                       />
 
                       <TextField
                         fullWidth
                         label="Wallet ID"
+                          disabled={mode ==="view"}
                         name="wallet_id"
                         value={section?.mainData?.wallet_id}
                         onChange={(e) => handleChange(e, idx)}
@@ -338,6 +368,11 @@ function InterPaymentMethod({ mode }) {
                           pattern: "^[A-Za-z0-9_-]{6,30}$",
                         }}
                       />
+
+
+                </Box>
+                       
+                      
                     </Grid>
                   </Paper>
                 </Grid>
@@ -349,6 +384,7 @@ function InterPaymentMethod({ mode }) {
         <Button
           style={{ marginTop: 9 }}
           variant="contained"
+            disabled={mode ==="view"}
           onClick={() => {
             setExpanded(`PaymentMethod ${PaymentMethod?.length + 1}`);
             addPaymentMethod();

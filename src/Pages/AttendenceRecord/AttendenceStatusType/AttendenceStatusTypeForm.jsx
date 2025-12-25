@@ -26,8 +26,7 @@ function AttendenceStatusTypeForm({ mode }) {
   const [formData, setFormData] = useState({
     attendance_status_type_name: "",
     description: "",
-    is_active: "",
-    attendance_status_type_code:""
+    is_active: 1,
   });
 
   const [formErrors, setFormErrors] = useState({});
@@ -50,7 +49,7 @@ function AttendenceStatusTypeForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -130,7 +129,7 @@ function AttendenceStatusTypeForm({ mode }) {
         mode={mode}
         updateMessage={"Attendance Status Type"}
         addMessage={"Attendance Status Type"}
-        homeLink={"/attendence/status-type"}
+        homeLink={"/attendance/status-type"}
         homeText={"Attendance Status Types"}
       />
       {loading ? (
@@ -149,6 +148,7 @@ function AttendenceStatusTypeForm({ mode }) {
                 <TextField
                   fullWidth
                   label="Status Type Name"
+                  disabled={mode === "view"}
                   name="attendance_status_type_name"
                   value={formData.attendance_status_type_name}
                   onChange={handleChange}
@@ -158,7 +158,7 @@ function AttendenceStatusTypeForm({ mode }) {
                   inputProps={{ maxLength: 50 }}
                 />
 
-                 <TextField
+                 {/* <TextField
                   fullWidth
                   label="Status Type Code"
                   name="attendance_status_type_code"
@@ -168,11 +168,12 @@ function AttendenceStatusTypeForm({ mode }) {
                   helperText={formErrors.attendance_status_type_code}
                   required
                   inputProps={{ maxLength: 2 }}
-                />
+                /> */}
 
                 <TextField
                   fullWidth
                   label="Description"
+                  disabled={mode === "view"}
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
@@ -189,7 +190,7 @@ function AttendenceStatusTypeForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

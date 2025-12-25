@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import {
   Box,
@@ -25,9 +24,9 @@ import {
 import { PieChart, BarChart, pieArcLabelClasses } from "@mui/x-charts";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
-
 import useAuthStore from "../../Zustand/Store/useAuthStore";
 import { MAIN_URL } from "../../Configurations/Urls";
+import usePermissionDataStore from "../../Zustand/Store/usePermissionDataStore";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -38,6 +37,9 @@ export default function Dashboard() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
 
+  const { Permission, isPermissionLoaded, setPermission } =
+  usePermissionDataStore();
+
   const [onLeaveTodayApiCount, setOnLeaveTodayApiCount] = React.useState(null);
 
   const [apiUrl, setApiUrl] = React.useState(null);
@@ -45,6 +47,8 @@ export default function Dashboard() {
 
   const [freelancers, setFreelancers] = React.useState([]);
   const [freelancersApiUrl, setFreelancersApiUrl] = React.useState(null);
+
+  console.log("permission coming out is : ", Permission);
 
   React.useEffect(() => {
     if (org?.organization_id) {
@@ -55,10 +59,14 @@ export default function Dashboard() {
         `${MAIN_URL}/api/organizations/${org?.organization_id}/filter/intern`
       );
       setFreelancersApiUrl(
-        `${MAIN_URL}/api/organizations/${org?.organization_id}/filter-freelancer`
+        `${MAIN_URL}/api/organizations/${org?.organization_id}/freelance-employees`
       );
     }
   }, [org?.organization_id]);
+
+
+  console.log("dsata is ojoj", internsApiUrl);
+  
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
@@ -451,67 +459,67 @@ export default function Dashboard() {
     return { present, absent, late };
   }, [employees, currentDate]);
 
-  React.useEffect(() => {
-    const orgId = org?.organization_id || 5;
-    if (!orgId) return;
+  // React.useEffect(() => {
+  //   const orgId = org?.organization_id || 5;
+  //   if (!orgId) return;
 
-    const leavesUrl = `${MAIN_URL}/api/organizations/${orgId}/employee-leaves-all`;
-    const controller = new AbortController();
+  //   const leavesUrl = `${MAIN_URL}/api/organizations/${orgId}/employee-leaves-all`;
+  //   const controller = new AbortController();
 
-    const fetchLeaves = async () => {
-      try {
-        const response = await fetch(leavesUrl, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
-          signal: controller.signal,
-        });
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
+  //   const fetchLeaves = async () => {
+  //     try {
+  //       const response = await fetch(leavesUrl, {
+  //         method: "GET",
+  //         headers: {
+  //           Accept: "application/json",
+  //         },
+  //         signal: controller.signal,
+  //       });
+  //       if (!response.ok)
+  //         throw new Error(`HTTP error! status: ${response.status}`);
 
-        const json = await response.json();
-        let leaves = Array.isArray(json)
-          ? json
-          : json.data || json.leaves || json.results || [];
+  //       const json = await response.json();
+  //       let leaves = Array.isArray(json)
+  //         ? json
+  //         : json.data || json.leaves || json.results || [];
 
-        if (
-          Array.isArray(leaves) &&
-          leaves.length > 0 &&
-          Array.isArray(leaves[0])
-        ) {
-          leaves = leaves[0];
-        }
+  //       if (
+  //         Array.isArray(leaves) &&
+  //         leaves.length > 0 &&
+  //         Array.isArray(leaves[0])
+  //       ) {
+  //         leaves = leaves[0];
+  //       }
 
-        const y = currentDate.getFullYear();
-        const m = currentDate.getMonth();
-        const d = currentDate.getDate();
-        const isSameDay = (dateObj) =>
-          dateObj &&
-          dateObj.getFullYear() === y &&
-          dateObj.getMonth() === m &&
-          dateObj.getDate() === d;
+  //       const y = currentDate.getFullYear();
+  //       const m = currentDate.getMonth();
+  //       const d = currentDate.getDate();
+  //       const isSameDay = (dateObj) =>
+  //         dateObj &&
+  //         dateObj.getFullYear() === y &&
+  //         dateObj.getMonth() === m &&
+  //         dateObj.getDate() === d;
 
-        const count = (leaves || []).reduce((acc, item) => {
-          const startStr =
-            item?.leave_start_date ||
-            item?.start_date ||
-            item?.from_date ||
-            item?.fromDate;
-          if (!startStr) return acc;
-          const start = new Date(startStr);
-          return isSameDay(start) ? acc + 1 : acc;
-        }, 0);
+  //       const count = (leaves || []).reduce((acc, item) => {
+  //         const startStr =
+  //           item?.leave_start_date ||
+  //           item?.start_date ||
+  //           item?.from_date ||
+  //           item?.fromDate;
+  //         if (!startStr) return acc;
+  //         const start = new Date(startStr);
+  //         return isSameDay(start) ? acc + 1 : acc;
+  //       }, 0);
 
-        setOnLeaveTodayApiCount(count);
-      } catch (e) {
-        setOnLeaveTodayApiCount(0);
-      }
-    };
+  //       setOnLeaveTodayApiCount(count);
+  //     } catch (e) {
+  //       setOnLeaveTodayApiCount(0);
+  //     }
+  //   };
 
-    fetchLeaves();
-    return () => controller.abort();
-  }, [org?.organization_id, currentDate]);
+  //   fetchLeaves();
+  //   return () => controller.abort();
+  // }, [org?.organization_id, currentDate]);
 
   const leavesStats = React.useMemo(() => {
     let onLeaveToday = 0;
@@ -705,6 +713,8 @@ export default function Dashboard() {
     }
   }, [internsApiUrl]);
 
+
+
   React.useEffect(() => {
     fetchEmployees();
   }, [fetchEmployees]);
@@ -838,8 +848,8 @@ export default function Dashboard() {
   const employmentTypeCounts = employees.reduce((acc, emp) => {
     let employmentTypeName = "Unknown";
 
-    if (emp.Employment_Type) {
-      employmentTypeName = emp.Employment_Type;
+    if (emp.employment_type) {
+      employmentTypeName = emp.employment_type;
     } else if (
       emp.EmploymentType &&
       Array.isArray(emp.EmploymentType) &&
@@ -1275,13 +1285,199 @@ export default function Dashboard() {
     })(),
   ];
 
+
+
+  // const allWidgetConfigs = [
+  //   {
+  //     id: "totalworkforce",
+  //     title: "Total Workforce",
+  //     icon: null,
+  //     color: "#3B82F6",
+  //     group: "Total Workforce",
+  //     link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc`,
+  //     value: employees.length,
+  //   },
+  //   {
+  //     id: "totalEmployees",
+  //     title: "Employees",
+  //     icon: null,
+  //     color: "#3B82F6",
+  //     group: "Total Workforce",
+  //     link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_employment_type=employee`,
+  //     value: employees.length - freelancers.length,
+  //   },
+  //  {
+  //     id: "totalFreelancers",
+  //     title: "Freelancers",
+  //     icon: null,
+  //     color: "#10B981",
+  //     group: "Total Workforce",
+  //     link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_employment_type=freelancer`,
+  //     value: employees.length   - (employees.length - freelancers.length),
+  //   },
+  //   {
+  //     id: "totalEmployees",
+  //     title: "Employees",
+  //     icon: null,
+  //     color: "#3B82F6",
+  //     group: "Employees",
+  //     link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_employment_type=employee`,
+  //     value: employees.length,
+  //   },
+  //   {
+  //     id: "newJoiningThisMonth",
+  //     title: "New Joining This Month",
+  //     icon: null,
+  //     color: "#10B981",
+  //     group: "Employees",
+  //     link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_Joining_Month=this_month`,
+  //     value: calculateWidgetValues.newJoining,
+  //   },
+
+  //   {
+  //     id: "totalInterns",
+  //     title: "Interns",
+  //     icon: null,
+  //     color: "#10B981",
+  //     group: "Interns",
+  //     value: interns.length,
+  //   },
+
+  //   {
+  //     id: "newJoiningThisMonthInterns",
+  //     title: "New Joining This Month",
+  //     icon: null,
+  //     color: "#10B981",
+  //     group: "Interns",
+  //     value: calculateInternWidgetValues.newJoining,
+  //   },
+
+  //   {
+  //     id: "totalFreelancers",
+  //     title: "Freelancers",
+  //     icon: null,
+  //     color: "#10B981",
+  //     group: "Freelancers",
+  //     link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_employment_type=freelancer`,
+  //     value: freelancers.length,
+  //   },
+
+  //   {
+  //     id: "newJoiningThisMonthFreelancers",
+  //     title: "New Joining This Month",
+  //     icon: null,
+  //     color: "#10B981",
+  //     group: "Freelancers",
+  //     link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_Joining_Month=this_month`,
+  //     value: calculateInternWidgetValues.newJoining,
+  //   },
+
+  //   {
+  //     id: "birthdayThisMonth",
+  //     title: "Birthday This Month",
+  //     icon: null,
+  //     color: "#EC4899",
+  //     group: "Occasions",
+  //     link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_Birth_Month=this_month`,
+  //     value: calculateWidgetValues.birthday,
+  //   },
+  //   {
+  //     id: "workAnniversariesThisMonth",
+  //     title: "Work Anniversaries This Month",
+  //     icon: null,
+  //     color: "#F59E0B",
+  //     group: "Occasions",
+  //     link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_Work_Anniversary=this_month`,
+  //     value: calculateWidgetValues.anniversary,
+  //   },
+
+  //   {
+  //     id: "presentToday",
+  //     title: "Present Today",
+  //     icon: null,
+  //     color: "#10B981",
+  //     group: "Time & Attendance",
+  //     value: attendanceStats.present,
+  //   },
+  //   {
+  //     id: "absentToday",
+  //     title: "Absent Today",
+  //     icon: null,
+  //     color: "#EF4444",
+  //     group: "Time & Attendance",
+  //     value: attendanceStats.absent,
+  //   },
+  //   {
+  //     id: "lateCheckInsToday",
+  //     title: "Late Check-ins Today",
+  //     icon: null,
+  //     color: "#F59E0B",
+  //     group: "Time & Attendance",
+  //     value: attendanceStats.late,
+  //   },
+
+  //   {
+  //     id: "onLeaveToday",
+  //     title: "On Leave Today",
+  //     icon: null,
+  //     color: "#3B82F6",
+  //     group: "Leaves",
+  //     value: leavesStats.onLeaveToday,
+  //   },
+  //   {
+  //     id: "upcomingLeaves",
+  //     title: "Upcoming Leaves (7d)",
+  //     icon: null,
+  //     color: "#8B5CF6",
+  //     group: "Leaves",
+  //     value: leavesStats.upcomingLeaves,
+  //   },
+  //   {
+  //     id: "pendingLeaveRequests",
+  //     title: "Pending Leave Requests",
+  //     icon: null,
+  //     color: "#F97316",
+  //     group: "Leaves",
+  //     value: leavesStats.pending,
+  //   },
+  // ];
+
+
   const allWidgetConfigs = [
+    {
+      id: "totalworkforce",
+      title: "Total Workforce",
+      icon: null,
+      color: "#3B82F6",
+      group: "Total Workforce",
+      link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc`,
+      value: employees.length,
+    },
+    {
+      id: "totalEmployees",
+      title: "Employees",
+      icon: null,
+      color: "#3B82F6",
+      group: "Total Workforce",
+      link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_employment_type=Employee&filter_employment_type_operator=equals`,
+      value: employees.length - freelancers.length,
+    },
+    {
+      id: "totalFreelancers",
+      title: "Freelancers",
+      icon: null,
+      color: "#10B981",
+      group: "Total Workforce",
+      link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_employment_type=Freelancer&filter_employment_type_operator=equals`,
+      value: employees.length - (employees.length - freelancers.length),
+    },
     {
       id: "totalEmployees",
       title: "Employees",
       icon: null,
       color: "#3B82F6",
       group: "Employees",
+      link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_employment_type=Employee&filter_employment_type_operator=equals`,
       value: employees.length,
     },
     {
@@ -1290,6 +1486,7 @@ export default function Dashboard() {
       icon: null,
       color: "#10B981",
       group: "Employees",
+      link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_date_of_joining=&filter_date_of_joining_operator=this_month_joining`,
       value: calculateWidgetValues.newJoining,
     },
 
@@ -1317,6 +1514,7 @@ export default function Dashboard() {
       icon: null,
       color: "#10B981",
       group: "Freelancers",
+      link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_employment_type=Freelancer&filter_employment_type_operator=equals`,
       value: freelancers.length,
     },
 
@@ -1326,7 +1524,8 @@ export default function Dashboard() {
       icon: null,
       color: "#10B981",
       group: "Freelancers",
-      value: calculateInternWidgetValues.newJoining,
+      link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_date_of_joining=&filter_date_of_joining_operator=this_month_joining`,
+      value: calculateFreelancerWidgetValues.newJoining,
     },
 
     {
@@ -1335,6 +1534,7 @@ export default function Dashboard() {
       icon: null,
       color: "#EC4899",
       group: "Occasions",
+      link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_date_of_birth=&filter_date_of_birth_operator=this_month`,
       value: calculateWidgetValues.birthday,
     },
     {
@@ -1343,6 +1543,7 @@ export default function Dashboard() {
       icon: null,
       color: "#F59E0B",
       group: "Occasions",
+      link: `/organization/employee/employee-details?page=1&pageSize=10&sortBy=employee_code&sortOrder=asc&filter_date_of_joining=&filter_date_of_joining_operator=this_month_anniversary`,
       value: calculateWidgetValues.anniversary,
     },
 
@@ -1396,6 +1597,8 @@ export default function Dashboard() {
       value: leavesStats.pending,
     },
   ];
+
+ 
 
   const [visibleChartIds, setVisibleChartIds] = React.useState([]);
   const [visibleWidgetIds, setVisibleWidgetIds] = React.useState([]);
@@ -1461,70 +1664,34 @@ export default function Dashboard() {
     setAnchorEl(event.currentTarget);
   };
 
+
   const handleWidgetClick = (widgetId, widgetTitle) => {
-    // Employees group
+    if (widgetId === "totalworkforce") {
+      navigate("/organization/employee/employee-details", { state: { fromDashboard: true, widgetId ,employmentType: "all" } });
+      return;
+    }
     if (widgetId === "totalEmployees" || widgetId === "newJoiningThisMonth") {
-      navigate("/organization/employee/employee-details", {
-        state: { fromDashboard: true, widgetId },
-      });
+      navigate("/organization/employee/employee-details", { state: { fromDashboard: true, widgetId ,employmentType: "employee" } });
       return;
     }
-
-    // Freelancers group
-    // Freelancers group
-    if (
-      widgetId === "totalFreelancers" ||
-      widgetId === "newJoiningThisMonthFreelancers"
-    ) {
-      navigate("/organization/freelancer/freelancer-details", {
-        state: { fromDashboard: true, widgetId },
-      });
+    if (widgetId === "totalFreelancers" || widgetId === "newJoiningThisMonthFreelancers") {
+      navigate("/organization/freelancer/freelancer-details", { state: { fromDashboard: true, widgetId ,employmentType: "freelancer" } });
       return;
     }
-
-    // Interns group - NEW navigation logic
-    if (
-      widgetId === "totalInterns" ||
-      widgetId === "newJoiningThisMonthInterns"
-    ) {
-      navigate("/organization/intern/intern-details", {
-        state: { fromDashboard: true, widgetId },
-      });
+    if (widgetId === "totalInterns" || widgetId === "newJoiningThisMonthInterns") {
+      navigate("/organization/intern/intern-details", { state: { fromDashboard: true, widgetId } });
       return;
     }
-
-    // Occasions group
-    if (
-      widgetId === "birthdayThisMonth" ||
-      widgetId === "workAnniversariesThisMonth"
-    ) {
-      navigate("/organization/employee/employee-details", {
-        state: { fromDashboard: true, widgetId },
-      });
+    if (widgetId === "birthdayThisMonth" || widgetId === "workAnniversariesThisMonth") {
+      navigate("/organization/employee/employee-details", { state: { fromDashboard: true, widgetId } });
       return;
     }
-
-    // Time & Attendance group
-    if (
-      widgetId === "presentToday" ||
-      widgetId === "absentToday" ||
-      widgetId === "lateCheckInsToday"
-    ) {
-      navigate("/attendance/time-logs", {
-        state: { fromDashboard: true, widgetId },
-      });
+    if (widgetId === "presentToday" || widgetId === "absentToday" || widgetId === "lateCheckInsToday") {
+      navigate("/attendance/time-logs", { state: { fromDashboard: true, widgetId } });
       return;
     }
-
-    // Leaves group
-    if (
-      widgetId === "onLeaveToday" ||
-      widgetId === "upcomingLeaves" ||
-      widgetId === "pendingLeaveRequests"
-    ) {
-      navigate("/leave/employee-leaves", {
-        state: { fromDashboard: true, widgetId },
-      });
+    if (widgetId === "onLeaveToday" || widgetId === "upcomingLeaves" || widgetId === "pendingLeaveRequests") {
+      navigate("/leave/employee-leaves", { state: { fromDashboard: true, widgetId } });
       return;
     }
   };
@@ -1682,38 +1849,47 @@ export default function Dashboard() {
             </Box>
           </Box>
 
-          <Button
-            aria-controls={open ? "settings-menu" : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? "true" : undefined}
-            onClick={handleClick}
-            sx={{ minWidth: "auto", p: 1, borderRadius: "50%" }}
-          >
-            <SettingsIcon sx={{ fontSize: 28, color: "text.secondary" }} />
-          </Button>
+          {Permission && Permission.includes("PERSONALIZE_DASHBOARD") && (
+            <>
+              <Button
+                aria-controls={open ? "settings-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? "true" : undefined}
+                onClick={handleClick}
+                sx={{ minWidth: "auto", p: 1, borderRadius: "50%" }}
+              >
+                <SettingsIcon sx={{ fontSize: 28, color: "text.secondary" }} />
+              </Button>
 
-          <Menu
-            id="settings-menu"
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleCloseMenu}
-            MenuListProps={{
-              "aria-labelledby": "settings-button",
-            }}
-          >
-            <MenuItem onClick={handleOpenPersonalizationPage}>
-              <DashboardCustomize sx={{ mr: 1 }} />
-              Personalize Dashboard
-            </MenuItem>
-          </Menu>
+              <Menu
+                id="settings-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleCloseMenu}
+                MenuListProps={{
+                  "aria-labelledby": "settings-button",
+                }}
+              >
+                <MenuItem onClick={handleOpenPersonalizationPage}>
+                  <DashboardCustomize sx={{ mr: 1 }} />
+                  Personalize Dashboard
+                </MenuItem>
+              </Menu>
+            </>
+          )}
         </Box>
 
         <Grid container spacing={3}>
+            <hr style={{ border: 'none', borderTop: '3px solid #000' , width:"100%"}} />
           {(allWidgetConfigs.some(
             (w) => w.group === "Employees" && visibleWidgetIds.includes(w.id)
+            
           ) ||
             allWidgetConfigs.some(
               (w) => w.group === "Occasions" && visibleWidgetIds.includes(w.id)
+            ) ||
+            allWidgetConfigs.some(
+              (w) => w.group === "Total Workforce" && visibleWidgetIds.includes(w.id)
             ) ||
             allWidgetConfigs.some(
               (w) => w.group === "Interns" && visibleWidgetIds.includes(w.id)
@@ -1731,6 +1907,245 @@ export default function Dashboard() {
               (w) => w.group === "Leaves" && visibleWidgetIds.includes(w.id)
             )) && (
             <Grid container spacing={2}>
+              
+              {/* Employees */}
+              {allWidgetConfigs
+                .filter((w) => w.group === "Total Workforce")
+                .some((w) => visibleWidgetIds.includes(w.id)) && (
+                <Grid item xs={12} md={6}>
+                  
+                  <Typography
+                  
+                    variant="h6"
+                    component="h2"
+                    sx={{
+                      fontWeight: "semibold",
+                      color: "text.primary",
+                      mb: 3,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                    }}
+                  >
+                    Total Workforce
+                  </Typography>
+                  
+                  <Grid container spacing={2}>
+                    {allWidgetConfigs
+                      .filter(
+                        (w) =>
+                          w.group === "Total Workforce" &&
+                          visibleWidgetIds.includes(w.id)
+                      )
+                      .map((widget) => (
+                        <Grid item xs={12} sm={12} md={6} key={widget.id}>
+                          <Card
+                            sx={{
+                              bgcolor:
+                                theme.palette.mode === "dark"
+                                  ? "rgba(255, 255, 255, 0.05)"
+                                  : "#ebebeb",
+                              backdropFilter: "blur(4px)",
+                              border: "none",
+                              boxShadow: 3,
+                              transition: "all 0.3s ease-in-out",
+                              "&:hover": {
+                                boxShadow: 6,
+                                transform: "scale(1.02)",
+                              },
+                              height: "160px",
+                              width: { xs: "80vw", sm: "50vw", lg: "17vw" },
+                              margin: "0 auto",
+                              cursor: "pointer",
+                            }}
+                            onClick={() =>
+                              navigate(widget.link)
+                            }
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                handleWidgetClick(widget.id, widget.title);
+                              }
+                            }}
+                          >
+                            <CardContent sx={{ p: 3 }}>
+                              
+                              {widget.id === "totalworkforce" ? (
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "center",
+                                    height: "100%",
+                                  }}
+                                >
+                                  <Tooltip title={widget.title} placement="top">
+                                    <Typography
+                                      variant="subtitle1"
+                                      sx={{
+                                        fontWeight: "semibold",
+                                        color: "text.primary",
+                                        mb: 0.5,
+                                        display: "block",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        maxWidth: "100%",
+                                      }}
+                                    >
+                                      {widget.title}
+                                    </Typography>
+                                  </Tooltip>
+                                  <Typography
+                                    variant="subtitle2"
+                                    sx={{
+                                      color: "text.secondary",
+                                      fontWeight: "medium",
+                                      mb: 2,
+                                    }}
+                                  >
+                                    Total
+                                  </Typography>
+                                  <Typography
+                                    variant="h4"
+                                    sx={{
+                                      fontWeight: "semibold",
+                                      color: "text.primary",
+                                    }}
+                                  >
+                                    {widget.value}
+                                  </Typography>
+                                </Box>
+                              ) : widget.id === "totalEmployees" ? (
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "center",
+                                    height: "100%",
+                                  }}
+                                >
+                                  <Tooltip title="Total Employess" placement="top">
+                                    <Typography
+                                      variant="subtitle1"
+                                      sx={{
+                                        fontWeight: "semibold",
+                                        color: "text.primary",
+                                        mb: 0.5,
+                                        display: "block",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        maxWidth: "100%",
+                                      }}
+                                    >
+                                      Employees
+                                    </Typography>
+                                  </Tooltip>
+                                  <Typography
+                                    variant="subtitle2"
+                                    sx={{
+                                      color: "text.secondary",
+                                      fontWeight: "medium",
+                                      mb: 2,
+                                    }}
+                                  >
+                                    Total
+                                  </Typography>
+                                  <Typography
+                                    variant="h4"
+                                    sx={{
+                                      fontWeight: "semibold",
+                                      color: "text.primary",
+                                    }}
+                                  >
+                                    {widget.value}
+                                  </Typography>
+                                </Box>
+                              ) : widget.id === "totalFreelancers" ? (
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "center",
+                                    height: "100%",
+                                  }}
+                                >
+                                  <Tooltip title="Total Employess" placement="top">
+                                    <Typography
+                                      variant="subtitle1"
+                                      sx={{
+                                        fontWeight: "semibold",
+                                        color: "text.primary",
+                                        mb: 0.5,
+                                        display: "block",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        maxWidth: "100%",
+                                      }}
+                                    >
+                                      Freelancers
+                                    </Typography>
+                                  </Tooltip>
+                                  <Typography
+                                    variant="subtitle2"
+                                    sx={{
+                                      color: "text.secondary",
+                                      fontWeight: "medium",
+                                      mb: 2,
+                                    }}
+                                  >
+                                    Total
+                                  </Typography>
+                                  <Typography
+                                    variant="h4"
+                                    sx={{
+                                      fontWeight: "semibold",
+                                      color: "text.primary",
+                                    }}
+                                  >
+                                    {widget.value}
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                  }}
+                                >
+                                  <Box>
+                                    <Typography
+                                      variant="subtitle1"
+                                      sx={{
+                                        color: "text.secondary",
+                                        fontWeight: "medium",
+                                        mb: 2,
+                                      }}
+                                    >
+                                      {widget.title}
+                                    </Typography>
+                                    <Typography
+                                      variant="h4"
+                                      sx={{
+                                        fontWeight: "semibold",
+                                        color: "text.primary",
+                                      }}
+                                    >
+                                      {widget.value}
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      ))}
+                  </Grid>
+                </Grid>
+              )}
               {/* Employees */}
               {allWidgetConfigs
                 .filter((w) => w.group === "Employees")
@@ -1764,7 +2179,7 @@ export default function Dashboard() {
                               bgcolor:
                                 theme.palette.mode === "dark"
                                   ? "rgba(255, 255, 255, 0.05)"
-                                  : "rgba(255, 255, 255, 0.8)",
+                                  : "#ebebeb",
                               backdropFilter: "blur(4px)",
                               border: "none",
                               boxShadow: 3,
@@ -1779,7 +2194,7 @@ export default function Dashboard() {
                               cursor: "pointer",
                             }}
                             onClick={() =>
-                              handleWidgetClick(widget.id, widget.title)
+                              navigate(widget.link)
                             }
                             role="button"
                             tabIndex={0}
@@ -1953,7 +2368,7 @@ export default function Dashboard() {
                               bgcolor:
                                 theme.palette.mode === "dark"
                                   ? "rgba(255, 255, 255, 0.05)"
-                                  : "rgba(255, 255, 255, 0.8)",
+                                  : "#ebebeb",
                               backdropFilter: "blur(4px)",
                               border: "none",
                               boxShadow: 3,
@@ -1968,7 +2383,7 @@ export default function Dashboard() {
                               cursor: "pointer",
                             }}
                             onClick={() =>
-                              handleWidgetClick(widget.id, widget.title)
+                              navigate(widget.link)
                             }
                             role="button"
                             tabIndex={0}
@@ -2145,7 +2560,7 @@ export default function Dashboard() {
                               bgcolor:
                                 theme.palette.mode === "dark"
                                   ? "rgba(255, 255, 255, 0.05)"
-                                  : "rgba(255, 255, 255, 0.8)",
+                                  : "#ebebeb",
                               backdropFilter: "blur(4px)",
                               border: "none",
                               boxShadow: 3,
@@ -2335,7 +2750,7 @@ export default function Dashboard() {
                               bgcolor:
                                 theme.palette.mode === "dark"
                                   ? "rgba(255, 255, 255, 0.05)"
-                                  : "rgba(255, 255, 255, 0.8)",
+                                  : "#ebebeb",
                               backdropFilter: "blur(4px)",
                               border: "none",
                               boxShadow: 3,
@@ -2350,7 +2765,7 @@ export default function Dashboard() {
                               cursor: "pointer",
                             }}
                             onClick={() =>
-                              handleWidgetClick(widget.id, widget.title)
+                              navigate(widget.link)
                             }
                             role="button"
                             tabIndex={0}
@@ -2531,7 +2946,7 @@ export default function Dashboard() {
                                   bgcolor:
                                     theme.palette.mode === "dark"
                                       ? "rgba(255, 255, 255, 0.05)"
-                                      : "rgba(255, 255, 255, 0.8)",
+                                      : "#ebebeb",
                                   backdropFilter: "blur(4px)",
                                   border: "none",
                                   boxShadow: 3,
@@ -2625,7 +3040,7 @@ export default function Dashboard() {
                                   bgcolor:
                                     theme.palette.mode === "dark"
                                       ? "rgba(255, 255, 255, 0.05)"
-                                      : "rgba(255, 255, 255, 0.8)",
+                                      : "#ebebeb",
                                   backdropFilter: "blur(4px)",
                                   border: "none",
                                   boxShadow: 3,
@@ -2695,6 +3110,7 @@ export default function Dashboard() {
             visibleChartIds.includes(chart.id)
           ) && (
             <Box sx={{ mt: 6 }}>
+                <hr style={{ border: 'none', borderTop: '3px solid #000' , width:"100%"}} />
               <Typography
                 variant="h6"
                 component="h2"
@@ -2710,6 +3126,7 @@ export default function Dashboard() {
                 <ShowChart sx={{ fontSize: 28, color: "#4F46E5" }} />
                 Employee Distribution Analytics
               </Typography>
+              
               <Grid container spacing={2}>
                 {allChartConfigs
                   .filter((chart) => visibleChartIds.includes(chart.id))
@@ -2720,7 +3137,7 @@ export default function Dashboard() {
                           bgcolor:
                             theme.palette.mode === "dark"
                               ? "rgba(255, 255, 255, 0.05)"
-                              : "rgba(255, 255, 255, 0.8)",
+                              : "#ebebeb",
                           backdropFilter:
                             chartViewModes[chart.id] === "chart"
                               ? "blur(4px)"

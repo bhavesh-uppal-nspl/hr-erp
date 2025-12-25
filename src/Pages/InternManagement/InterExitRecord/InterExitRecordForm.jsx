@@ -10,6 +10,7 @@ import {
   TextField,
   FormHelperText,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -25,7 +26,7 @@ function InterExitRecordForm({ mode }) {
   const org = userData?.organization;
 
   const [formData, setFormData] = useState({
-    intern_id : "",
+    intern_id: "",
     exit_type: "",
     exit_date: "",
     last_working_day: "",
@@ -47,19 +48,43 @@ function InterExitRecordForm({ mode }) {
 
   const Status = ["Pending", "In Progress", "Completed"];
   const Type = ["Completed", "Terminated", "Resigned", "ConvertedToEmployee"];
-  useEffect(() => {
-    {
-      fetchInterns(org?.organization_id)
-        .then((data) => {
-          setIntern(data?.intership?.data);
-        })
-        .catch((err) => {
-          setFormErrors(err.message);
-        });
-    }
-  }, []);
+useEffect(() => {
+  if (!org?.organization_id) return;
 
-  console.log();
+  fetchInterns(org.organization_id)
+    .then((data) => {
+      const interns = data?.intership?.data || [];
+
+      // Remove exited interns
+      let activeInterns = interns.filter(
+        (item) => item?.status?.internship_status_name !== "Exited"
+      );
+
+      const selectedInternId = formData?.intern_id;
+
+      // Add selected intern back in BOTH edit and view modes
+      if ((mode === "edit" || mode === "view") && selectedInternId) {
+        const selectedIntern = interns.find(
+          (i) => i.intern_id === selectedInternId
+        );
+
+        if (selectedIntern) {
+          const exists = activeInterns.some(
+            (i) => i.intern_id === selectedInternId
+          );
+
+          if (!exists) {
+            activeInterns.push(selectedIntern);
+          }
+        }
+      }
+
+      setIntern(activeInterns);
+    })
+    .catch((err) => {
+      setFormErrors({ general: err.message });
+    });
+}, [org?.organization_id, mode, formData?.intern_id]);
 
   useEffect(() => {
     const getdataById = async () => {
@@ -81,7 +106,7 @@ function InterExitRecordForm({ mode }) {
       }
     };
 
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -106,25 +131,7 @@ function InterExitRecordForm({ mode }) {
     if (!formData.exit_date) {
       errors.exit_date = "Exit date is required.";
     }
-    // if (!formData.last_working_day) {
-    //   errors.last_working_day = "Last working date is required.";
-    // }
-
-    // if (!formData.reason_for_exit) {
-    //   errors.reason_for_exit = "Reason for exit is required.";
-    // }
-    // if (!formData.clearance_status) {
-    //   errors.clearance_status = "Clearance status is required.";
-    // }
-
-    // if (
-    //   formData.exit_date &&
-    //   formData.last_working_day &&
-    //   new Date(formData.exit_date) > new Date(formData.last_working_day)
-    // )
-
-    // if (!formData.clearance_status)
-    //   errors.clearance_status = "Clearance stataus is required.";
+   
 
     setFormErrors(errors);
     return Object.keys(errors)?.length === 0;
@@ -204,75 +211,46 @@ function InterExitRecordForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
+                <Autocomplete
                   fullWidth
-                  label="Intern Name/ID"
-                  name="intern_id"
-                  value={formData?.intern_id}
-                  onChange={handleChange}
-                  error={!!formErrors.intern_id}
-                  helperText={formErrors.intern_id}
-                  required
-                >
-                  {Intern?.map((option) => {
-                    const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.employee_code || ""}`.trim();
-                    return (
-                      <MenuItem
-                        key={option?.intern_id}
-                        value={option?.intern_id}
-                      >
-                        {fullName}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Exit Date"
-                  name="exit_date"
-                  value={formData.exit_date}
-                  onChange={handleChange}
-                  error={!!formErrors.exit_date}
-                  helperText={formErrors.exit_date}
-                  required
-                  InputLabelProps={{ shrink: true }}
+                  options={Intern || []}
+                  getOptionLabel={(option) =>
+                    `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""}  ( ${option?.intern_code || ""} )`.trim()
+                  }
+                  value={
+                    Intern?.find(
+                      (intern) => intern?.intern_id === formData?.intern_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "intern_id",
+                        value: newValue?.intern_id || "",
+                      },
+                    });
+                  }}
+                  disabled={Intern?.length === 0 || mode === "view"}
+                  isOptionEqualToValue={(option, value) =>
+                    option?.intern_id === value?.intern_id
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Intern Name/ID"
+                      name="intern_id"
+                      required
+                      error={!!formErrors?.intern_id}
+                      helperText={formErrors?.intern_id}
+                      fullWidth
+                    />
+                  )}
                 />
-
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Last Working Date"
-                  name="last_working_day"
-                  value={formData.last_working_day}
-                  onChange={handleChange}
-                  error={!!formErrors.last_working_day}
-                  helperText={formErrors.last_working_day}
-                  
-                  InputLabelProps={{ shrink: true }}
-                />
-
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Certification Issue Date"
-                  name="certificate_issue_date"
-                  value={formData.certificate_issue_date}
-                  onChange={handleChange}
-                  error={!!formErrors.certificate_issue_date}
-                  helperText={formErrors.certificate_issue_date}
-                  
-                  InputLabelProps={{ shrink: true }}
-                />
-
-
 
                 <FormControlLabel
                   control={
                     <Checkbox
+                    disabled={mode === "view"}
                       checked={formData.certificate_issued}
                       onChange={(e) =>
                         setFormData({
@@ -294,6 +272,7 @@ function InterExitRecordForm({ mode }) {
                 <FormControlLabel
                   control={
                     <Checkbox
+                    disabled={mode === "view"}
                       checked={formData.handover_completed}
                       onChange={(e) =>
                         setFormData({
@@ -312,10 +291,60 @@ function InterExitRecordForm({ mode }) {
                   </FormHelperText>
                 )}
 
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Exit Date"
+                    name="exit_date"
+                    disabled={mode === "view"}
+                    value={formData.exit_date}
+                    onChange={handleChange}
+                    error={!!formErrors.exit_date}
+                    helperText={formErrors.exit_date}
+                    required
+                    InputLabelProps={{ shrink: true }}
+                  />
+
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Last Working Date"
+                    name="last_working_day"
+                    disabled={mode === "view"}
+                    value={formData.last_working_day}
+                    onChange={handleChange}
+                    error={!!formErrors.last_working_day}
+                    helperText={formErrors.last_working_day}
+                    InputLabelProps={{ shrink: true }}
+                  />
+
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Certification Issue Date"
+                    disabled={mode === "view"}
+                    name="certificate_issue_date"
+                    value={formData.certificate_issue_date}
+                    onChange={handleChange}
+                    error={!!formErrors.certificate_issue_date}
+                    helperText={formErrors.certificate_issue_date}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Box>
+
                 <TextField
                   fullWidth
                   label="Handover Notes"
                   name="handover_notes"
+                  disabled={mode === "view"}
                   value={formData.handover_notes}
                   onChange={handleChange}
                   error={!!formErrors.handover_notes}
@@ -327,60 +356,71 @@ function InterExitRecordForm({ mode }) {
                 <TextField
                   fullWidth
                   label="Manager FeedBack"
+                  disabled={mode === "view"}
                   name="manager_feedback"
                   value={formData.manager_feedback}
                   onChange={handleChange}
                   error={!!formErrors.manager_feedback}
                   helperText={formErrors.manager_feedback}
                   multiline
-                  rows={2} 
+                  rows={2}
                 />
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Clearance Status"
-                  name="clearance_status"
-                  value={formData.clearance_status}
-                  onChange={handleChange}
-                  error={!!formErrors.clearance_status}
-                  helperText={formErrors.clearance_status}
-                  required
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
                 >
-                  {Status?.map((type) => (
-                    <MenuItem key={type} value={type}>
-                      {type}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Clearance Status"
+                    disabled={mode === "view"}
+                    name="clearance_status"
+                    value={formData.clearance_status}
+                    onChange={handleChange}
+                    error={!!formErrors.clearance_status}
+                    helperText={formErrors.clearance_status}
+                    required
+                  >
+                    {Status?.map((type) => (
+                      <MenuItem key={type} value={type}>
+                        {type}
+                      </MenuItem>
+                    ))}
+                  </TextField>
 
+                  <TextField
+                    select
+                    fullWidth
+                    label="Exit Type"
+       
+                    name="exit_type"
+                    value={formData.exit_type}
+                    onChange={handleChange}
+                    error={!!formErrors.exit_type}
+                    helperText={formErrors.exit_type}
+                    required
+                    disabled={Type?.length === 0  || mode === "view"}
+                  >
+                    {Type?.map((type) => (
+                      <MenuItem key={type} value={type}>
+                        {type}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
 
                 <TextField
-                  select
-                  fullWidth
-                  label="Exit Type"
-                  name="exit_type"
-                  value={formData.exit_type}
-                  onChange={handleChange}
-                  error={!!formErrors.exit_type}
-                  helperText={formErrors.exit_type}
-                  required
-                >
-                  {Type?.map((type) => (
-                    <MenuItem key={type} value={type}>
-                      {type}
-                    </MenuItem>
-                  ))}
-                </TextField>
-
-
-                <TextField
-
                   fullWidth
                   label="Intern FeedBack"
                   name="intern_feedback"
                   value={formData.intern_feedback}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.intern_feedback}
                   helperText={formErrors.intern_feedback}
                   multiline
@@ -395,9 +435,9 @@ function InterExitRecordForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
-                        mt:3,
+                      mt: 3,
                       borderRadius: 2,
                       minWidth: 120,
                       textTransform: "capitalize",
@@ -420,7 +460,7 @@ function InterExitRecordForm({ mode }) {
                       size="medium"
                       onClick={() => navigate(-1)}
                       sx={{
-                        mt:3,
+                        mt: 3,
                         borderRadius: 2,
                         minWidth: 120,
                         textTransform: "capitalize",

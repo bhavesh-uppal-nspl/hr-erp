@@ -81,6 +81,9 @@ const sections = [
 ];
 
 const DynamicFormPage = ({ mode }) => {
+
+
+  console.log("mode open is", mode)
   const { id } = useParams();
   const { userData } = useAuthStore();
   const org = userData?.organization;
@@ -239,7 +242,7 @@ return (
             <Header
               mode={mode}
               updateMessage={"Employee"}
-              addMessage={"Employee"}
+              addMessage={"Employees"}
               homeLink={"/organization/employee/employee-details"}
               homeText={"Employees"}
             />

@@ -160,6 +160,18 @@ function WorkshiftRotationDayList() {
           },
         }
       );
+       if (response.status === 200) {
+              toast.success(response.data.message);
+              console.log("Workshift Rotation Days Deleted:", response.data.message);
+            } else {
+              const errorMessage =
+                response.data.message ||
+                response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+                "Failed to delete Workshift Rotation Days";
+      
+              toast.error(errorMessage);
+              console.warn("Deletion error:", response.status, response.data);
+            }
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -204,13 +216,24 @@ function WorkshiftRotationDayList() {
     [navigate]
   );
 
+
+  
+      const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/work-shift-rotation-days/view/${item.id}`)
+    },
+    [navigate],
+  )
+
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Workshift Rotation Days"}
         btnName={"Add Days"}
-        delete_action={"SHIFT_DELETE"}
+        add_action={"SHIFT_ROTATION_DAYS_ADD"}
+        delete_action={"SHIFT_ROTATION_DAYS_DELETE"}
         Data={shifts}
         tableHeaders={[
           {
@@ -250,7 +273,9 @@ function WorkshiftRotationDayList() {
         //  apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/workshift-rotation-days`}
         Route="/organization/work-shift-rotation-days"
         DeleteFunc={handleDelete}
+        handleShow={handleShow}
         EditFunc={handleEdit}
+        edit_delete_action={["SHIFT_ROTATION_DAYS_DELETE", "SHIFT_ROTATION_DAYS_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

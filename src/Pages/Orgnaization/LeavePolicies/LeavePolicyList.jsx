@@ -227,6 +227,15 @@ function LeavePolicyList() {
     [navigate]
   );
 
+
+    const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/leave-policy/view/${item.id}`);
+    },
+
+    [navigate]
+  );
+
   return (
     <>
       <Layout4
@@ -234,7 +243,8 @@ function LeavePolicyList() {
         heading={"Leave Policies"}
         btnName={"Add Policy"}
         Data={leaves}
-        delete_action={"LEAVE_DELETE"}
+        add_action={"LEAVE_POLICY_ADD"}
+        delete_action={"LEAVE_POLICY_DELETE"}
         tableHeaders={[
           {
             name: "Employee Name",
@@ -277,7 +287,9 @@ function LeavePolicyList() {
         //  apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/employee-leave`}
         Route="/organization/leave-policy"
         DeleteFunc={handleDelete}
+        handleShow={handleShow}
         EditFunc={handleEdit}
+        edit_delete_action={["LEAVE_POLICY_DELETE", "LEAVE_POLICY_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

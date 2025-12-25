@@ -114,24 +114,27 @@ const SubmitButton = ({ mode }) => {
     if (!Employee.organization_employment_type_id)
       errors.organization_employment_type_id = "Employment Type is required.";
 
+    if (!Employee.organization_employment_category_id)
+      errors.organization_employment_category_id =
+        "Employment Category is required.";
+
     if (!Employee.organization_work_shift_id)
       errors.organization_work_shift_id = "Workshift is required.";
 
-    if (!Employee.organization_employment_stage_id )
-      errors.organization_employment_stage_id  =
-        "Employment Stage is required.";
+    if (!Employee.organization_employment_stage_id)
+      errors.organization_employment_stage_id = "Employment Stage is required.";
 
     if (!Employee.date_of_joining)
       errors.date_of_joining = "Date of Joining is required.";
 
     // Optional: Validate specific formats
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (Employee.date_of_birth && !dateRegex.test(Employee.date_of_birth)) {
-      errors.date_of_birth = "Date of Birth must be in YYYY-MM-DD format.";
-    }
-    if (Employee.date_of_joining && !dateRegex.test(Employee.date_of_joining)) {
-      errors.date_of_joining = "Date of Joining must be in YYYY-MM-DD format.";
-    }
+    // const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    // if (Employee.date_of_birth && !dateRegex.test(Employee.date_of_birth)) {
+    //   errors.date_of_birth = "Date of Birth must be in YYYY-MM-DD format.";
+    // }
+    // if (Employee.date_of_joining && !dateRegex.test(Employee.date_of_joining)) {
+    //   errors.date_of_joining = "Date of Joining must be in YYYY-MM-DD format.";
+    // }
 
     if (Object.keys(errors)?.length > 0) {
       const firstKey = Object.keys(errors)[0];
@@ -678,7 +681,7 @@ const SubmitButton = ({ mode }) => {
       item.organization_id ||
       item.document_name ||
       item.document_url ||
-      item.document_size_kb||
+      item.document_size_kb ||
       item.organization_employee_profile_section_id;
 
     const filtered = Document.filter(isFilled);
@@ -707,20 +710,55 @@ const SubmitButton = ({ mode }) => {
     return true;
   };
 
+  // const formatDate = (dateStr) => {
+  //   if (!dateStr) return "";
+  //   const date = new Date(dateStr);
+  //   if (isNaN(date)) return "";
+  //   const day = String(date.getDate()).padStart(2, "0");
+  //   const month = String(date.getMonth() + 1).padStart(2, "0");
+  //   const year = date.getFullYear();
+  //   return `${year}-${month}-${day}`; // e.g., "2002-11-02"
+  // };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
-    const date = new Date(dateStr);
+    // Extract the YYYY-MM-DD portion from ISO string
+    return dateStr.split("T")[0];
+  };
 
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // months are 0-based
-    const year = date.getFullYear();
+  // Helper function to merge person data from org_persons.person into employee object
+  const mergePersonDataIntoEmployee = (employeeData) => {
+    if (!employeeData?.org_persons) {
+      return employeeData;
+    }
 
-    return `${year}-${month}-${day}`; // e.g., "02-11-2002"
+    const orgPersons = employeeData.org_persons;
+    const person = orgPersons.person;
+    
+    // Merge person data into employee, prioritizing person data if employee fields are null/empty
+    // Note: date_of_birth and date_of_joining will be formatted after merging
+    return {
+      ...employeeData,
+      // Employee code from org_persons.person_code
+      employee_code: employeeData.employee_code || orgPersons.person_code || "",
+      // Person fields from org_persons.person
+      first_name: employeeData.first_name || person?.first_name || "",
+      middle_name: employeeData.middle_name !== null && employeeData.middle_name !== undefined 
+        ? employeeData.middle_name 
+        : (person?.middle_name || ""),
+      last_name: employeeData.last_name || person?.last_name || "",
+      date_of_birth: employeeData.date_of_birth || person?.date_of_birth || "",
+      gender: employeeData.gender || person?.gender || "",
+      marital_status: employeeData.marital_status || person?.marital_status || "",
+      profile_image_url: employeeData.profile_image_url || person?.profile_image_url || "",
+      // Date of joining from org_persons.organization_join_date
+      date_of_joining: employeeData.date_of_joining || orgPersons.organization_join_date || "",
+    };
   };
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
-      if (mode === "edit") {
+      if (mode === "edit" || mode === "view") {
         try {
           const response = await axios.get(
             `${MAIN_URL}/api/organizations/${org?.organization_id}/employee-store/update/${id}`,
@@ -731,15 +769,22 @@ const SubmitButton = ({ mode }) => {
             }
           );
           console.log("Employee fetched:", response.data);
-          response.data.employee.date_of_birth = formatDate(
-            response.data.employee.date_of_birth
+          
+          // Merge person data from org_persons.person into employee BEFORE formatting dates
+          const mergedEmployeeData = mergePersonDataIntoEmployee(response.data.employee);
+          
+          // Format dates after merging
+          mergedEmployeeData.date_of_birth = formatDate(
+            mergedEmployeeData.date_of_birth
           );
-          response.data.employee.date_of_joining = formatDate(
-            response.data.employee.date_of_joining
+          mergedEmployeeData.date_of_joining = formatDate(
+            mergedEmployeeData.date_of_joining
           );
-          response.data.employee.organization_department_id =
-            response?.data?.employee?.department_location[0]?.organization_department_id;
-          setEmployee(response.data.employee);
+
+          mergedEmployeeData.organization_department_id =
+            mergedEmployeeData?.department_location?.[0]?.organization_department_id;
+          
+          setEmployee(mergedEmployeeData);
 
           // response?.data?.education?.organization_education_degree_id = response?.data?.education?.degree?.[0]?.organization_education_degree_id
           setEducation(
@@ -939,7 +984,7 @@ const SubmitButton = ({ mode }) => {
                     document_name: "",
                     document_url: "",
                     employee_document_type_id: "",
-                    document_size_kb:"",
+                    document_size_kb: "",
                     organization_employee_profile_section_id: "",
                   },
                 ]
@@ -1096,7 +1141,7 @@ const SubmitButton = ({ mode }) => {
           item.employee_document_type_id != "" ||
           item.document_name != "" ||
           item.document_url != "" ||
-          item.document_size_kb!="" ||
+          item.document_size_kb != "" ||
           item.organization_employee_profile_section_id != ""
       );
 
@@ -1136,8 +1181,16 @@ const SubmitButton = ({ mode }) => {
       Object.entries(Employee).forEach(([key, value]) => {
         if (key === "profile_image_url" && value instanceof File) {
           formData.append("profile_image_url", value);
+        } else if (key === "reporting_manager_id") {
+          // For reporting_manager_id, only send if it has a valid value
+          // Skip sending if it's empty string, null, or undefined
+          // Don't send 0 either as it's likely not a valid employee_id
+          if (value && value !== "" && value !== null && value !== undefined && value !== 0) {
+            formData.append(key, value);
+          }
+          // If empty/null/undefined/0, don't append at all (skip the field)
         } else {
-          formData.append(key, value ??"");
+          formData.append(key, value ?? "");
         }
       });
 
@@ -1153,7 +1206,20 @@ const SubmitButton = ({ mode }) => {
         }
       );
 
-      setEmployee(response.data.employee);
+      // Merge person data from org_persons.person into employee BEFORE formatting dates
+      const mergedEmployeeData = mergePersonDataIntoEmployee(response.data.employee);
+      
+      // Format dates after merging
+      mergedEmployeeData.date_of_birth = formatDate(
+        mergedEmployeeData.date_of_birth
+      );
+      mergedEmployeeData.date_of_joining = formatDate(
+        mergedEmployeeData.date_of_joining
+      );
+      mergedEmployeeData.organization_department_id =
+        mergedEmployeeData?.department_location?.[0]?.organization_department_id;
+
+      setEmployee(mergedEmployeeData);
 
       if (response.data.education?.length > 0) {
         setEducation(response.data.education);
@@ -1303,7 +1369,7 @@ const SubmitButton = ({ mode }) => {
                 } else if (typeof value === "number") {
                   finalData.append(`${key}[${index}][${field}]`, value);
                 } else {
-                  finalData.append(`${key}[${index}][${field}]`, value ??"");
+                  finalData.append(`${key}[${index}][${field}]`, value ?? "");
                 }
               });
             });
@@ -1361,7 +1427,7 @@ const SubmitButton = ({ mode }) => {
           );
         } else if (hasEducationError) {
           const errors = error.response.data.errors;
-          const educationErrorsArray = errors?.education ??[];
+          const educationErrorsArray = errors?.education ?? [];
           if (educationErrorsArray?.length > 0) {
             const educationErrors = educationErrorsArray[0];
             setEducationError(educationErrors);
@@ -1371,7 +1437,7 @@ const SubmitButton = ({ mode }) => {
           }
         } else if (hasLanguageError) {
           const errors = error.response.data.errors;
-          const languageErrorsArray = errors?.language ??[];
+          const languageErrorsArray = errors?.language ?? [];
           if (languageErrorsArray?.length > 0) {
             const languageErrors = languageErrorsArray[0];
             setLanguageErrors(languageErrors);
@@ -1381,7 +1447,7 @@ const SubmitButton = ({ mode }) => {
           }
         } else if (hasFamilyError) {
           const errors = error.response.data.errors;
-          const familyErrorsArray = errors?.family ??[];
+          const familyErrorsArray = errors?.family ?? [];
           if (familyErrorsArray?.length > 0) {
             const familyErrors = familyErrorsArray[0];
             setFamilyError(familyErrors);
@@ -1391,7 +1457,7 @@ const SubmitButton = ({ mode }) => {
           }
         } else if (hasAddressError) {
           const errors = error.response.data.errors;
-          const addressErrorsArray = errors?.address ??[];
+          const addressErrorsArray = errors?.address ?? [];
           if (addressErrorsArray?.length > 0) {
             const addressErrors = addressErrorsArray[0];
             setAddressError(addressErrors);
@@ -1401,7 +1467,7 @@ const SubmitButton = ({ mode }) => {
           }
         } else if (hasContactError) {
           const errors = error.response.data.errors;
-          const contactErrorsArray = errors?.contact ??[];
+          const contactErrorsArray = errors?.contact ?? [];
           if (contactErrorsArray?.length > 0) {
             const contactErrors = contactErrorsArray[0];
             setContactError(contactErrors);
@@ -1411,7 +1477,7 @@ const SubmitButton = ({ mode }) => {
           }
         } else if (hasExperienceError) {
           const errors = error.response.data.errors;
-          const experienceErrorsArray = errors?.experience ??[];
+          const experienceErrorsArray = errors?.experience ?? [];
           if (experienceErrorsArray?.length > 0) {
             const experienceErrors = experienceErrorsArray[0];
             setExperienceError(experienceErrors);
@@ -1421,7 +1487,7 @@ const SubmitButton = ({ mode }) => {
           }
         } else if (hasMedicalError) {
           const errors = error.response.data.errors;
-          const medicalErrorsArray = errors?.medical ??[];
+          const medicalErrorsArray = errors?.medical ?? [];
           if (medicalErrorsArray?.length > 0) {
             const medicalErrors = medicalErrorsArray[0];
             setEducationError(medicalErrors);
@@ -1431,7 +1497,7 @@ const SubmitButton = ({ mode }) => {
           }
         } else if (hasPaymentMethodError) {
           const errors = error.response.data.errors;
-          const PaymentmethodErrorsArray = errors?.payment_method ??[];
+          const PaymentmethodErrorsArray = errors?.payment_method ?? [];
           if (PaymentmethodErrorsArray?.length > 0) {
             const PaymentmethodErrors = PaymentmethodErrorsArray[0];
             setEducationError(PaymentmethodErrors);
@@ -1441,7 +1507,7 @@ const SubmitButton = ({ mode }) => {
           }
         } else if (hasDocumentError) {
           const errors = error.response.data.errors;
-          const DocumentErrorsArray = errors?.document ??[];
+          const DocumentErrorsArray = errors?.document ?? [];
           if (DocumentErrorsArray?.length > 0) {
             const DocumentErrors = DocumentErrorsArray[0];
             setDocumentError(DocumentErrors);
@@ -1481,33 +1547,34 @@ const SubmitButton = ({ mode }) => {
             fontWeight: 500,
           }}
           onClick={handleSubmitClick}
-          disabled={loading} // disable while loading
+          disabled={loading || mode === "view"}
         >
           {loading ? <CircularProgress size={22} color="inherit" /> : "Submit"}
         </Button>
       </Grid>
 
-      {mode === "edit" && (
-        <Grid item>
-          <Button
-            variant="contained"
-            color="primary"
-            size="medium"
-            onClick={() => navigate(-1)}
-            sx={{
-              borderRadius: 2,
-              minWidth: 120,
-              textTransform: "capitalize",
-              fontWeight: 500,
-              ml: 2, // space between Submit/Edit and Cancel
-              backgroundColor: "#1976d2",
-              "&:hover": { backgroundColor: "#115293" },
-            }}
-          >
-            Cancel
-          </Button>
-        </Grid>
-      )}
+      {mode === "edit" ||
+        (mode === "view" && (
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              size="medium"
+              onClick={() => navigate(-1)}
+              sx={{
+                borderRadius: 2,
+                minWidth: 120,
+                textTransform: "capitalize",
+                fontWeight: 500,
+                ml: 2, // space between Submit/Edit and Cancel
+                backgroundColor: "#1976d2",
+                "&:hover": { backgroundColor: "#115293" },
+              }}
+            >
+              Cancel
+            </Button>
+          </Grid>
+        ))}
     </Grid>
   );
 };

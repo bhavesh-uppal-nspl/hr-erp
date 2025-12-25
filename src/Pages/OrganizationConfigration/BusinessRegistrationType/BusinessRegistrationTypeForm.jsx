@@ -20,6 +20,7 @@ function BusinessRegistrationTypeForm({ mode }) {
   const [formData, setFormData] = useState({
     business_registration_type_code: "",
     usiness_registration_type_name: "",
+    description: "",
   });
 
   const [formErrors, setFormErrors] = useState({});
@@ -44,7 +45,7 @@ function BusinessRegistrationTypeForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode ==="view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -149,6 +150,7 @@ function BusinessRegistrationTypeForm({ mode }) {
                   name="business_registration_type_name"
                   value={formData.business_registration_type_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.business_registration_type_name}
                   helperText={formErrors.business_registration_type_name}
                   required
@@ -161,10 +163,33 @@ function BusinessRegistrationTypeForm({ mode }) {
                   name="business_registration_type_code"
                   value={formData.business_registration_type_code}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.business_registration_type_code}
                   helperText={formErrors.business_registration_type_code}
                   required
                   inputProps={{ maxLength: 20 }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Description"
+                  name="description"
+                  value={formData.description}
+               
+                  onChange={handleChange}
+                  error={!!formErrors.description}
+                  helperText={formErrors.description}
+                  inputProps={{ maxLength: 255 }}
+                  multiline
+                  minRows={3} // Minimum visible height
+                  maxRows={5}
+                  disabled={mode === "view"} 
+                  sx={{
+                    "& .Mui-disabled": {
+                      WebkitTextFillColor: "rgba(0,0,0,0.7)",
+                      color: "rgba(0,0,0,0.7)",
+                    },
+                  }}
                 />
               </Grid>
 
@@ -175,7 +200,7 @@ function BusinessRegistrationTypeForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

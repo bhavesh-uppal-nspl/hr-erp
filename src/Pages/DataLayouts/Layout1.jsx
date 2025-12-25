@@ -1,5 +1,5 @@
 // Layout1.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -41,38 +41,59 @@ const Layout1 = ({
   DeleteFunc,
   showActions,
   showHeaders,
-  delete_action
+  delete_action,
+  add_action,
+  edit_action,
+  search,
+  setSearch
 }) => {
   console.log("table ", tableHeaders);
 
   const navigate = useNavigate();
   const [view, setView] = useState("table");
   const [deleteDialog, setDeleteDialog] = useState(null);
-   const { Permission, setPermission } = usePermissionDataStore();
-  const [search, setSearch] = useState("");
+  const { Permission, setPermission } = usePermissionDataStore();
   const [page, setPage] = useState(0);
   const [perPage, setPerPage] = useState(6);
   const [showNotAllowed, setShowNotAllowed] = useState(false);
+
+  // Permission checks
+  const hasAddPermission = useMemo(() => {
+    if (!add_action) {
+      return true; // If no add_action specified, show button by default
+    }
+    return Permission && Array.isArray(Permission) && Permission.includes(add_action);
+  }, [add_action, Permission]);
+
+  const hasEditPermission = useMemo(() => {
+    if (!edit_action) {
+      return true; // If no edit_action specified, show button by default
+    }
+    return Permission && Array.isArray(Permission) && Permission.includes(edit_action);
+  }, [edit_action, Permission]);
+
+  const hasDeletePermission = useMemo(() => {
+    if (!delete_action) {
+      return true; // If no delete_action specified, show button by default
+    }
+    return Permission && Array.isArray(Permission) && Permission.includes(delete_action);
+  }, [delete_action, Permission]);
 
   const offset = page * perPage;
   const current = Data?.slice(offset, offset + perPage);
   const totalPages = Math.ceil(Data?.length / perPage);
 
   const confirmDelete = async () => {
-
-     const permissionArray = Object.values(Permission);
-        if (!permissionArray.includes(delete_action)) {
-           setDeleteDialog(null);
-          //  toast.error("Not Allowed");
-          setShowNotAllowed(true)
-          return
-        }
+    if (!hasDeletePermission) {
+      setDeleteDialog(null);
+      setShowNotAllowed(true);
+      return;
+    }
     await DeleteFunc(deleteDialog).catch(() => toast.error("Delete failed"));
     setData((prev) => prev.filter((i) => i.id !== deleteDialog));
     toast.success(`${messages[3]} deleted`);
     setDeleteDialog(null);
   };
-
 
   const changeView = (_, v) => v && setView(v);
   const changePage = (delta) => {
@@ -80,14 +101,11 @@ const Layout1 = ({
     if (np >= 0 && np < totalPages) setPage(np);
   };
 
-
-  if(showNotAllowed)
-  {
-    return <NotAllowed/>
+  if (showNotAllowed) {
+    return <NotAllowed />;
   }
 
   return (
-    
     <Box p={4}>
       {loading ? (
         <CircularProgress />
@@ -117,25 +135,27 @@ const Layout1 = ({
                   <ViewListIcon />
                 </ToggleButton>
               </ToggleButtonGroup>
-              <Button
-                variant="contained"
-                onClick={() => navigate(`${Route}/add`)}
-              >
-                {btnName}
-              </Button>
+              {btnName && hasAddPermission && (
+                <Button
+                  variant="contained"
+                  onClick={() => navigate(`${Route}/add`)}
+                >
+                  {btnName}
+                </Button>
+              )}
             </Box>
           </Box>
+<TextField
+  placeholder="Search by name..."
+  fullWidth
+  value={search}
+  onChange={(e) => {
+    setSearch(e.target.value); // use parent's setter
+    setPage(0);
+  }}
+  sx={{ mb: 3 }}
+/>
 
-          <TextField
-            placeholder="Search by name..."
-            fullWidth
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0);
-            }}
-            sx={{ mb: 3 }}
-          />
 
           {!Data?.length ? (
             <Box textAlign="center" mt={8}>
@@ -143,10 +163,15 @@ const Layout1 = ({
                 No results found for “{search}”
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Try adjusting your search or&nbsp;
-                <Button size="small" onClick={() => navigate(`${Route}/add`)}>
-                  Add {messages[1]}
-                </Button>
+                Try adjusting your search
+                {hasAddPermission && (
+                  <>
+                    &nbsp;or&nbsp;
+                    <Button size="small" onClick={() => navigate(`${Route}/add`)}>
+                      Add {messages[1]}
+                    </Button>
+                  </>
+                )}
                 .
               </Typography>
             </Box>
@@ -186,19 +211,23 @@ const Layout1 = ({
                     </Typography>
                   </Box>
                   <Box display="flex" gap={1}>
-                    <Button
-                      size="small"
-                      onClick={() => navigate(`${Route}/edit/${i.id}`)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="small"
-                      color="error"
-                      onClick={() => setDeleteDialog(i.id)}
-                    >
-                      Delete
-                    </Button>
+                    {hasEditPermission && (
+                      <Button
+                        size="small"
+                        onClick={() => navigate(`${Route}/edit/${i.id}`)}
+                      >
+                        Edit
+                      </Button>
+                    )}
+                    {hasDeletePermission && (
+                      <Button
+                        size="small"
+                        color="error"
+                        onClick={() => setDeleteDialog(i.id)}
+                      >
+                        Delete
+                      </Button>
+                    )}
                   </Box>
                 </Box>
               ))}
@@ -240,15 +269,11 @@ const Layout1 = ({
                           </TableCell>
                         </>
                       )}
-                      {
-                        showActions || 
-                         <TableCell align="right">
-                        <b>Actions</b>
+                      {(hasEditPermission || hasDeletePermission) && (
+                        <TableCell align="right">
+                          <b>Actions</b>
                         </TableCell>
-                     
-                       
-                     
-                      }
+                      )}
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -274,29 +299,27 @@ const Layout1 = ({
                             <TableCell>{i.description}</TableCell>
                           </>
                         )}
-                        {
-                          
-                        <TableCell align="right">
-                          {
-                             showActions 
-
-                          }
-                         
-                          <Button
-                            size="small"
-                            onClick={() => navigate(`${Route}/edit/${i.id}`)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="small"
-                            color="error"
-                            onClick={() => setDeleteDialog(i.id)}
-                          >
-                            Delete
-                          </Button>
-                        </TableCell>
-                        }
+                        {(hasEditPermission || hasDeletePermission) && (
+                          <TableCell align="right">
+                            {hasEditPermission && (
+                              <Button
+                                size="small"
+                                onClick={() => navigate(`${Route}/edit/${i.id}`)}
+                              >
+                                Edit
+                              </Button>
+                            )}
+                            {hasDeletePermission && (
+                              <Button
+                                size="small"
+                                color="error"
+                                onClick={() => setDeleteDialog(i.id)}
+                              >
+                                Delete
+                              </Button>
+                            )}
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -324,19 +347,23 @@ const Layout1 = ({
                     </Typography>
                   </Box>
                   <Box display="flex" gap={1}>
-                    <Button
-                      size="small"
-                      onClick={() => navigate(`${Route}/edit/${i.id}`)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="small"
-                      color="error"
-                      onClick={() => setDeleteDialog(i.id)}
-                    >
-                      Delete
-                    </Button>
+                    {hasEditPermission && (
+                      <Button
+                        size="small"
+                        onClick={() => navigate(`${Route}/edit/${i.id}`)}
+                      >
+                        Edit
+                      </Button>
+                    )}
+                    {hasDeletePermission && (
+                      <Button
+                        size="small"
+                        color="error"
+                        onClick={() => setDeleteDialog(i.id)}
+                      >
+                        Delete
+                      </Button>
+                    )}
                   </Box>
                 </Box>
               ))}

@@ -7,6 +7,7 @@ import {
   MenuItem,
   TextField,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -155,11 +156,44 @@ function InternAttendanceTimelogsForm({ mode }) {
     }
   }, []);
 
-  useEffect(() => {
-    fetchInterns(org?.organization_id)
-      .then((data) => setIntern(data?.intership?.data))
-      .catch((err) => setFormErrors(err.message));
-  }, []);
+useEffect(() => {
+  if (!org?.organization_id) return;
+
+  fetchInterns(org.organization_id)
+    .then((data) => {
+      const interns = data?.intership?.data || [];
+
+      // Remove exited interns
+      let activeInterns = interns.filter(
+        (item) => item?.status?.internship_status_name !== "Exited"
+      );
+
+      const selectedInternId = formData?.intern_id;
+
+      // Add selected intern back in BOTH edit and view modes
+      if ((mode === "edit" || mode === "view") && selectedInternId) {
+        const selectedIntern = interns.find(
+          (i) => i.intern_id === selectedInternId
+        );
+
+        if (selectedIntern) {
+          const exists = activeInterns.some(
+            (i) => i.intern_id === selectedInternId
+          );
+
+          if (!exists) {
+            activeInterns.push(selectedIntern);
+          }
+        }
+      }
+
+      setIntern(activeInterns);
+    })
+    .catch((err) => {
+      setFormErrors({ general: err.message });
+    });
+}, [org?.organization_id, mode, formData?.intern_id]);
+
 
   useEffect(() => {
     if (!formData?.deviation_reason_type_id || !org?.organization_id) return;
@@ -204,7 +238,7 @@ function InternAttendanceTimelogsForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" ) && id) {
       setLoading(true);
       getdataById();
     }
@@ -346,30 +380,44 @@ function InternAttendanceTimelogsForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
+               
+
+
+                                <Autocomplete
                   fullWidth
-                  label="Intern Name/ID"
-                  name="intern_id"
-                  value={formData?.intern_id}
-                  onChange={handleChange}
-                  error={!!formErrors.intern_id}
-                  helperText={formErrors.intern_id}
-                  required
-                >
-                  {Intern?.map((option) => {
-                    const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.intern_code || ""}`.trim();
-                    return (
-                      <MenuItem
-                        key={option?.intern_id}
-                        value={option?.intern_id}
-                      >
-                        {fullName}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+                  options={Intern || []}
+                  getOptionLabel={(option) =>
+                    `${option?.first_name || ""}  ${option?.middle_name || ""} ${option?.last_name || ""} ( ${option?.intern_code || ""} )`.trim()
+                  }
+                  value={
+                    Intern?.find(
+                      (intern) => intern?.intern_id === formData?.intern_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "intern_id",
+                        value: newValue?.intern_id || "",
+                      },
+                    });
+                  }}
+                  disabled={Intern?.length === 0 || mode === "view"}
+                  isOptionEqualToValue={(option, value) =>
+                    option?.intern_id === value?.intern_id
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Intern Name/ID"
+                      name="intern_id"
+                      required
+                      error={!!formErrors?.intern_id}
+                      helperText={formErrors?.intern_id}
+                      fullWidth
+                    />
+                  )}
+                />
 
                 <TextField
                   select
@@ -377,6 +425,7 @@ function InternAttendanceTimelogsForm({ mode }) {
                   label="Attendance Log Type"
                   name="attendance_log_type"
                   value={formData?.attendance_log_type}
+                  disabled={mode === "view"}
                   onChange={(e) => {
                     const { name, value } = e.target;
                     handleChange(e);
@@ -418,9 +467,11 @@ function InternAttendanceTimelogsForm({ mode }) {
                   disabled={
                     !(
                       formData?.attendance_log_type === "Break Start" ||
-                      formData?.attendance_log_type === "Break End"
+                      formData?.attendance_log_type === "Break End" 
                     )
+                     || mode === "view"
                   }
+                  
                 >
                   {breakType?.map((option) => {
                     return (
@@ -444,6 +495,7 @@ function InternAttendanceTimelogsForm({ mode }) {
                   error={!!formErrors.attendance_date}
                   helperText={formErrors.attendance_date}
                   required
+                  disabled={mode === "view"}
                   InputLabelProps={{ shrink: true }}
                 />
 
@@ -499,6 +551,7 @@ function InternAttendanceTimelogsForm({ mode }) {
 
                 <DateTimePicker
                   label="Attendance Log Time"
+                  disabled={mode === "view"}
                   value={
                     formData?.attendance_log_time
                       ? dayjs(formData.attendance_log_time)
@@ -524,6 +577,7 @@ function InternAttendanceTimelogsForm({ mode }) {
                   fullWidth
                   label="Remarks"
                   name="remarks"
+                  disabled={mode === "view"}
                   value={formData?.remarks}
                   onChange={handleChange}
                   error={!!formErrors.remarks}
@@ -539,11 +593,12 @@ function InternAttendanceTimelogsForm({ mode }) {
                   fullWidth
                   label="Deviation Reason  Type"
                   name="deviation_reason_type_id"
+                
                   value={formData?.deviation_reason_type_id}
                   onChange={handleChange}
                   error={!!formErrors.deviation_reason_type_id}
                   helperText={formErrors.deviation_reason_type_id}
-                  disabled={!isDeviationEnabled}
+                  disabled={!isDeviationEnabled || mode === "view"}
                 >
                   {deviationType?.map((option) => {
                     return (
@@ -570,7 +625,7 @@ function InternAttendanceTimelogsForm({ mode }) {
                   onChange={handleChange}
                   error={!!formErrors.deviation_reason_id}
                   helperText={formErrors.deviation_reason_id}
-                  disabled={!isDeviationEnabled}
+                  disabled={!isDeviationEnabled  || mode === "view"}
                 >
                   {deviation?.map((option) => {
                     return (
@@ -591,7 +646,7 @@ function InternAttendanceTimelogsForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

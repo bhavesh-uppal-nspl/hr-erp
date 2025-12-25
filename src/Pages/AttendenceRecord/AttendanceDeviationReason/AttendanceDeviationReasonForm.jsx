@@ -7,6 +7,7 @@ import {
   MenuItem,
   TextField,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -71,7 +72,7 @@ function AttendanceDeviationReasonForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -171,28 +172,47 @@ function AttendanceDeviationReasonForm({ mode }) {
           <Grid item xs={12} md={8}>
             <Paper elevation={4} sx={{ p: 3 }}>
               <Grid container spacing={2}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Deviation Reason Type"
-                  name="organization_attendance_deviation_reason_type_id"
-                  value={formData.organization_attendance_deviation_reason_type_id}
-                  onChange={handleChange}
-                  error={!!formErrors.organization_attendance_deviation_reason_type_id}
-                  helperText={formErrors.organization_attendance_deviation_reason_type_id}
-                  required
-                >
-                  {deviationType.map((option) => {
-                    return (
-                      <MenuItem
-                        key={option.organization_attendance_deviation_reason_type_id}
-                        value={option.organization_attendance_deviation_reason_type_id}
-                      >
-                        {option?.deviation_reason_type_name}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
+          
+                 <Autocomplete
+                fullWidth
+                  options={deviationType || []}
+                  getOptionLabel={(option) =>
+                    option.deviation_reason_type_name || ""
+                  }
+                  value={
+                    deviationType?.find(
+                      (option) =>
+                        option.organization_attendance_deviation_reason_type_id ===
+                        formData.organization_attendance_deviation_reason_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_attendance_deviation_reason_type_id",
+                        value:
+                          newValue?.organization_attendance_deviation_reason_type_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || deviationType?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Deviation Reason Type"
+                      error={
+                        !!formErrors.organization_attendance_deviation_reason_type_id
+                      }
+                      helperText={
+                        formErrors.organization_attendance_deviation_reason_type_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
 
                 <TextField
                   fullWidth
@@ -200,6 +220,7 @@ function AttendanceDeviationReasonForm({ mode }) {
                   name="attendance_deviation_reason_name"
                   value={formData.attendance_deviation_reason_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.attendance_deviation_reason_name}
                   helperText={formErrors.attendance_deviation_reason_name}
                   required
@@ -210,6 +231,7 @@ function AttendanceDeviationReasonForm({ mode }) {
                   fullWidth
                   label="Description"
                   name="description"
+                  disabled={mode === "view"}
                   value={formData.description}
                   onChange={handleChange}
                   error={!!formErrors.description}
@@ -225,7 +247,7 @@ function AttendanceDeviationReasonForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,
@@ -235,11 +257,7 @@ function AttendanceDeviationReasonForm({ mode }) {
                 >
                   {loading || btnLoading ? (
                     <CircularProgress size={24} color="inherit" />
-                  ) : mode === "edit" ? (
-                    "Submit"
-                  ) : (
-                    "Submit"
-                  )}
+                  ) : "Submit"}
                 </Button>
               </Grid>
 

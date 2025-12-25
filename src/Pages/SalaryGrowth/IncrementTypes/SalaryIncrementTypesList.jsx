@@ -1,157 +1,3 @@
-// import React, { useCallback, useEffect, useState } from "react";
-// import Layout1 from "../../DataLayouts/Layout1";
-// import NextWeekIcon from "@mui/icons-material/NextWeek";
-// import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
-// import { fetchEmployeeLeaves } from "../../../Apis/Employee-api";
-// import { MAIN_URL } from "../../../Configurations/Urls";
-// import DateRangeIcon from "@mui/icons-material/DateRange";
-// import PersonIcon from "@mui/icons-material/Person";
-// import CategoryIcon from "@mui/icons-material/Category";
-// import useAuthStore from "../../../Zustand/Store/useAuthStore";
-// import toast from "react-hot-toast";
-// import axios from "axios";
-// import Layout2 from "../../DataLayouts/Layout2";
-// import dayjs from "dayjs";
-// import TableDataGeneric from "../../../Configurations/TableDataGeneric";
-// import { useNavigate, useParams } from "react-router-dom";
-// import Layout4 from "../../DataLayouts/Layout4";
-// import { fetchLeavepolicy } from "../../../Apis/Leave-api";
-// import { fetchIncrementTypes } from "../../../Apis/Salary";
-
-// function SalaryIncrementTypesList() {
-//   const [leaves, setLeaves] = useState([]);
-//   const { userData } = useAuthStore();
-//   const org = userData?.organization;
-//   const [loading, setLoading] = useState(true);
-
-//   const navigate = useNavigate();
-
-//   const { id } = useParams();
-
-//   useEffect(() => {
-//     if (org?.organization_id) {
-//       setLoading(true);
-//       fetchIncrementTypes(org?.organization_id)
-//         .then((data) => {
-//           let a = data?.increments;
-//           console.log("a is ", a);
-//           let b = a.map((item) => {
-//             return {
-//               ...item,
-//               id: item.organization_employee_increment_type_id,
-//               is_active: item?.is_active == null ? "✖" : "✔",
-//                 employee_code:item?.employee?.employee_code,
-//                employee_name: item?.employee
-//                 ? `${item.employee.first_name || ""}  ${item.employee.middle_name || ""} ${item.employee.last_name || ""}`
-//                 : "",
-//             };
-//           });
-//           setLeaves(b);
-//         })
-//         .catch((err) => {});
-//       setLoading(false);
-//     }
-//   }, [org]);
-
-//   let deleteemployeeleave = async (id) => {
-//     try {
-//       const org_id = org.organization_id;
-//       const response = await axios.delete(
-//         `${MAIN_URL}/api/organizations/${org_id}/leave-policy/${id}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${localStorage.getItem("token")}`,
-//           },
-//         }
-//       );
-//     } catch (error) {
-//       if (error.response && error.response.status === 401) {
-//         toast.error("Session Expired!");
-//         window.location.href = "/login";
-//       }
-//       console.error("Delete failed:", error);
-//       toast.error(
-//         error.response?.data?.error || "Failed to delete Employee Leave"
-//       );
-//     }
-//   };
-
-//   const handleDelete = async (id) => {
-//     try {
-//       const response = await fetch(
-//         `${MAIN_URL}/api/organizations/${org?.organization_id}/increment-type/${id}`,
-//         {
-//           method: "DELETE",
-//           headers: {
-//             Authorization: `Bearer ${localStorage.getItem("token")}`,
-//             "Content-Type": "application/json",
-//           },
-//         }
-//       );
-//       if (!response.ok) {
-//         throw new Error(`HTTP error! status: ${response.status}`);
-//       }
-//       toast.success("Successfully deleted Leave policy with id:", id);
-//       return Promise.resolve();
-//     } catch (error) {
-//       console.error("Delete failed:", error);
-//       return Promise.reject(error);
-//     }
-//   };
-
-//   const handleEdit = useCallback(
-//     (item) => {
-//       navigate(`/employee/increment-types/edit/${item.id}`);
-//     },
-
-//     [navigate]
-//   );
-
-//   return (
-//     <>
-//       <Layout4
-//         loading={loading}
-//         heading={"Increment Types"}
-//         btnName={"Add Types"}
-//         Data={leaves}
-//         delete_action={"LEAVE_DELETE"}
-//         Icons={[
-//           <PersonIcon sx={{ fontSize: 60, color: "grey.500", mb: 2 }} />,
-//           <FormatAlignJustifyIcon color="primary" />,
-//           <CategoryIcon sx={{ color: "text.secondary" }} />,
-//           <DateRangeIcon sx={{ color: "text.secondary" }} />,
-//         ]}
-//         // messages={[
-//         //   "Leave Policy",
-//         //   "Leaves Policy",
-//         //   "Add Leave Policy",
-//         //   "Leaves",
-//         // ]}
-//         Route={"/employee/increment-types"}
-//         setData={setLeaves}
-//         DeleteFunc={deleteemployeeleave}
-//       />
-
-//       <TableDataGeneric
-//         tableName="Increment Types"
-//         primaryKey="organization_employee_increment_type_id"
-//         heading="Increment Types"
-//         data={leaves}
-//         sortname={"employee_increment_type_name"}
-//         showActions={true}
-//         Route="/employee/increment-types"
-//         DeleteFunc={handleDelete}
-//         EditFunc={handleEdit}
-//         token={localStorage.getItem("token")}
-//       />
-//     </>
-//   );
-// }
-
-// export default SalaryIncrementTypesList;
-
-
-
 import React, { useCallback, useEffect, useState } from "react";
 import Layout1 from "../../DataLayouts/Layout1";
 import NextWeekIcon from "@mui/icons-material/NextWeek";
@@ -296,6 +142,21 @@ function SalaryIncrementTypesList() {
           },
         }
       );
+
+      if (response.status === 200) {
+        toast.success(response.data.message);
+      } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Increment Types";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
+
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -345,8 +206,9 @@ function SalaryIncrementTypesList() {
         loading={loading}
         heading={"Increment Types"}
         btnName={"Add Types"}
+        add_action={"INCREMENT_TYPE_ADD"}
         Data={leaves}
-        delete_action={"LEAVE_DELETE"}
+        delete_action={"INCREMENT_TYPE_DELETE"}
         Icons={[
           <PersonIcon sx={{ fontSize: 60, color: "grey.500", mb: 2 }} />,
           <FormatAlignJustifyIcon color="primary" />,
@@ -374,6 +236,7 @@ function SalaryIncrementTypesList() {
         Route="/employee/increment-types"
         DeleteFunc={handleDelete}
         EditFunc={handleEdit}
+        edit_delete_action={["INCREMENT_TYPE_DELETE", "INCREMENT_TYPE_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

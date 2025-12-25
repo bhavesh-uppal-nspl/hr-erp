@@ -191,12 +191,22 @@ function FunctionRolesList() {
     [navigate]
   );
 
+
+  
+           const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/functional-roles/view/${item.id}`)
+    },
+    [navigate],
+  )
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Organization Functional Roles"}
         btnName={"Add Roles"}
+        delete_action={"FUNCTIONAL_ROLE_DELETE"}
         Data={func}
         tableHeaders={[
           { name: "Code", value_key: "employee_code", width: "50px" },
@@ -255,6 +265,7 @@ function FunctionRolesList() {
         showActions={true}
         Route="/organization/functional-roles"
         DeleteFunc={deletedesignation}
+        edit_delete_action={["FUNCTIONAL_ROLE_DELETE", "FUNCTIONAL_ROLE_EDIT"]}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
         configss={configColumns}

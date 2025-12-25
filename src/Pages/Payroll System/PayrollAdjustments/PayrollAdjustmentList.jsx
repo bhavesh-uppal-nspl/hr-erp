@@ -133,6 +133,7 @@ function PayrollAdjustmentList() {
         showActions={true}
         Route="/payroll/adjustments"
         DeleteFunc={deleteBreak}
+        edit_delete_action={["PAYROLL_ADJUSTMENT_DELETE", "PAYROLL_ADJUSTMENT_EDIT"]}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
       />

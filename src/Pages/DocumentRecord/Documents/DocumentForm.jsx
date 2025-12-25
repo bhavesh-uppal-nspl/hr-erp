@@ -72,7 +72,13 @@ function DocumentForm({ mode }) {
 
   useEffect(() => {
     fetchOrganizationEmployee(org?.organization_id)
-      .then((data) => setEmployee(data?.employees))
+      .then((data) => {
+        const filteredEmployees = data?.filter(
+          (item) => item.employment_status !== "Exited"
+        );
+        setEmployee(filteredEmployees);
+      })
+
       .catch((err) => setFormErrors(err.message));
   }, []);
 
@@ -123,7 +129,7 @@ function DocumentForm({ mode }) {
       setDocumentUrl(a?.document_url || "");
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -342,10 +348,11 @@ function DocumentForm({ mode }) {
                   error={!!formErrors.employee_id}
                   helperText={formErrors.employee_id}
                   required
+                    disabled={ employee?.length === 0 || mode === "view"}
                 >
                   {employee?.map((option) => {
                     const fullName =
-                      `${option?.first_name || ""} ${option?.middle_name || ""} ${option?.last_name || ""} -- ${option?.employee_code || ""}`.trim();
+                      `${option?.name || ""} ( ${option?.employee_code || ""} )`.trim();
                     return (
                       <MenuItem
                         key={option?.employee_id}
@@ -367,6 +374,7 @@ function DocumentForm({ mode }) {
                   error={!!formErrors.employee_document_type_id}
                   helperText={formErrors.employee_document_type_id}
                   required
+                    disabled={ docType?.length === 0 || mode === "view"}
                 >
                   {docType.map((option) => (
                     <MenuItem
@@ -385,6 +393,7 @@ function DocumentForm({ mode }) {
                   value={formData.document_name}
                   onChange={handleChange}
                   error={!!formErrors.document_name}
+                  disabled={mode === "view"}
                   helperText={formErrors.document_name}
                   inputProps={{ maxLength: 100 }}
                   required
@@ -428,46 +437,46 @@ function DocumentForm({ mode }) {
                   )}
                 </FormControl> */}
 
-
                 <FormControl
-  component="fieldset"
-  fullWidth
-  error={!!formErrors.organization_employee_profile_section_id}
->
-  <FormLabel component="legend" sx={{ mb: 1, fontWeight: 500 }}>
-    Profile Sections *
-  </FormLabel>
+                  component="fieldset"
+                  fullWidth
+                  error={!!formErrors.organization_employee_profile_section_id}
+                >
+                  <FormLabel component="legend" sx={{ mb: 1, fontWeight: 500 }}>
+                    Profile Sections *
+                  </FormLabel>
 
-  <FormGroup row>
-    {profileSection?.map((option) => (
-      <FormControlLabel
-        key={option.organization_employee_profile_section_id}
-        control={
-          <Checkbox
-            checked={
-              formData.organization_employee_profile_section_id?.includes(
-                option.organization_employee_profile_section_id
-              ) || false
-            }
-            onChange={() =>
-              handleCheckboxChange(
-                option.organization_employee_profile_section_id
-              )
-            }
-            name="organization_employee_profile_section_id"
-          />
-        }
-        label={option?.employee_profile_section_name}
-      />
-    ))}
-  </FormGroup>
+                  <FormGroup row>
+                    {profileSection?.map((option) => (
+                      <FormControlLabel
+                        key={option.organization_employee_profile_section_id}
+                        control={
+                          <Checkbox
+                          disabled={mode === "view"}
+                            checked={
+                              formData.organization_employee_profile_section_id?.includes(
+                                option.organization_employee_profile_section_id
+                              ) || false
+                            }
+                            onChange={() =>
+                              handleCheckboxChange(
+                                option.organization_employee_profile_section_id
+                              )
+                            }
+                            name="organization_employee_profile_section_id"
+                          />
+                        }
+                        label={option?.employee_profile_section_name}
+                      />
+                    ))}
+                  </FormGroup>
 
-  {formErrors.organization_employee_profile_section_id && (
-    <FormHelperText>
-      {formErrors.organization_employee_profile_section_id}
-    </FormHelperText>
-  )}
-</FormControl>
+                  {formErrors.organization_employee_profile_section_id && (
+                    <FormHelperText>
+                      {formErrors.organization_employee_profile_section_id}
+                    </FormHelperText>
+                  )}
+                </FormControl>
 
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                   {mode === "edit" ? "Update Document" : "Upload Document"}
@@ -477,6 +486,7 @@ function DocumentForm({ mode }) {
                 {/* File Picker */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Button
+                  disabled={mode === "view"}
                     variant="contained"
                     component="label"
                     sx={{
@@ -551,7 +561,7 @@ function DocumentForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

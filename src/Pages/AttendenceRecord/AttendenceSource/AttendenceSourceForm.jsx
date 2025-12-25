@@ -49,7 +49,7 @@ function AttendenceSourceForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view") && id) {
       setLoading(true);
       getdataById();
     }
@@ -149,6 +149,7 @@ function AttendenceSourceForm({ mode }) {
                   fullWidth
                   label="Source Name"
                   name="attendance_source_name"
+                  disabled={mode === "view"}
                   value={formData.attendance_source_name}
                   onChange={handleChange}
                   error={!!formErrors.attendance_source_name}
@@ -163,6 +164,7 @@ function AttendenceSourceForm({ mode }) {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
                   inputProps={{ maxLength: 255 }}
@@ -176,7 +178,7 @@ function AttendenceSourceForm({ mode }) {
                   color="primary"
                   size="medium"
                   onClick={handleSubmit}
-                  disabled={loading || btnLoading}
+                  disabled={loading || btnLoading || mode === "view"}
                   sx={{
                     borderRadius: 2,
                     minWidth: 120,

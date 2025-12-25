@@ -183,14 +183,24 @@ function OrganizationLocationList() {
     [navigate]
   );
 
+
+
+       const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/location/view/${item.id}`)
+    },
+    [navigate],
+  )
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={" Locations"}
         btnName={"Add Location"}
+        add_action={"LOCATION_ADD"}
         Data={locations}
-        delete_action={"ORG_STRUCTURE_DELETE"}
+        delete_action={"LOCATION_DELETE"}
         tableHeaders={[
           {
             name: "Location ",
@@ -250,6 +260,8 @@ function OrganizationLocationList() {
         Route="/organization/location"
         DeleteFunc={deletelocation}
         EditFunc={handleEdit}
+        handleShow={handleShow}
+        edit_delete_action={["LOCATION_DELETE", "LOCATION_EDIT"]}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

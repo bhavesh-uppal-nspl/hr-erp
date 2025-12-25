@@ -7,6 +7,7 @@ import {
   Paper,
   TextField,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../DataLayouts/Header";
@@ -59,7 +60,7 @@ function LeaveReasonTypeForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" )&& id) {
       setLoading(true);
       getdataById();
     }
@@ -158,13 +159,14 @@ function LeaveReasonTypeForm({ mode }) {
                   name="leave_reason_type_name"
                   value={formData.leave_reason_type_name}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.leave_reason_type_name}
                   helperText={formErrors.leave_reason_type_name}
                   required
                       inputProps={{ maxLength: 50 }}
                 />
 
-                <TextField
+                {/* <TextField
                   select
                   fullWidth
                   label="Leave Type"
@@ -174,6 +176,7 @@ function LeaveReasonTypeForm({ mode }) {
                   error={!!formErrors.organization_leave_type_id}
                   helperText={formErrors.organization_leave_type_id}
                   required
+                      disabled={leaveType?.length === 0}
                 >
                   {leaveType?.map((option) => (
                     <MenuItem
@@ -183,7 +186,48 @@ function LeaveReasonTypeForm({ mode }) {
                       {option.leave_type_name}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextField> */}
+
+                <Autocomplete
+                fullWidth
+                  options={leaveType || []}
+                  getOptionLabel={(option) =>
+                    option.leave_type_name || ""
+                  }
+                  value={
+                    leaveType?.find(
+                      (option) =>
+                        option.organization_leave_type_id ===
+                        formData.organization_leave_type_id
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleChange({
+                      target: {
+                        name: "organization_leave_type_id",
+                        value:
+                          newValue?.organization_leave_type_id ||
+                          "",
+                      },
+                    });
+                  }}
+                  disabled={mode === "view" || leaveType?.length === 0}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Leave Type"
+                      error={
+                        !!formErrors.organization_leave_type_id
+                      }
+                      helperText={
+                        formErrors.organization_leave_type_id
+                      }
+                      required
+                      fullWidth
+                    />
+                  )}
+                />
+
 
                 <TextField
                   fullWidth
@@ -191,6 +235,7 @@ function LeaveReasonTypeForm({ mode }) {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                  disabled={mode === "view"}
                   error={!!formErrors.description}
                   helperText={formErrors.description}
                   
@@ -207,7 +252,7 @@ function LeaveReasonTypeForm({ mode }) {
                                   color="primary"
                                   size="medium"
                                   onClick={handleSubmit}
-                                  disabled={loading || btnLoading}
+                                  disabled={loading || btnLoading || mode === "view"}
                                   sx={{
                                     borderRadius: 2,
                                     minWidth: 120,

@@ -62,7 +62,7 @@ function FunctionalRoleForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" ) && id) {
       setLoading(true);
       getdataById();
     }
@@ -169,8 +169,10 @@ function FunctionalRoleForm({ mode }) {
                 onChange={handleChange}
                 error={!!formErrors.organization_department_id}
                 helperText={formErrors.organization_department_id}
+
+                  disabled={mode === "view"   ||  department?.length === 0}
               >
-                {department.map((type) => (
+                {department?.map((type) => (
                   <MenuItem
                     key={type.organization_department_id}
                     value={type.organization_department_id}
@@ -186,6 +188,7 @@ function FunctionalRoleForm({ mode }) {
                   fullWidth
                   label="Functional Role Name"
                   name="functional_role_name"
+                  disabled={mode === "view"}
                   value={formData.functional_role_name}
                   onChange={handleChange}
                   error={!!formErrors.functional_role_name}
@@ -197,6 +200,7 @@ function FunctionalRoleForm({ mode }) {
                 <TextField
                   fullWidth
                   label="Functional Role Code"
+                  disabled={mode === "view"}
                   name="functional_role_code"
                   value={formData.functional_role_code}
                   onChange={handleChange}
@@ -214,7 +218,7 @@ function FunctionalRoleForm({ mode }) {
                     color="primary"
                     size="medium"
                     onClick={handleSubmit}
-                    disabled={loading || btnLoading}
+                    disabled={loading || btnLoading || mode === "view"}
                     sx={{
                       borderRadius: 2,
                       minWidth: 120,

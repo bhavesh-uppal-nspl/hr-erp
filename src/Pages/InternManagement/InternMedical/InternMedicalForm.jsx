@@ -113,9 +113,21 @@ function InternMedicalForm({ mode }) {
                 <Grid item xs={12} md={8}>
                   <Paper elevation={4} sx={{ p: 3 }}>
                     <Grid container spacing={2}>
+
+                      <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // centers the row
+                    gap: 2, // space between fields
+                    width: "100%", // ensures proper centering
+                  }}
+                >
+
+                  
                       <FormControl
                         fullWidth
                         required
+                          disabled={mode ==="view"}
                         error={!!MedicalErrors?.[idx]?.blood_group}
                         margin="normal"
                       >
@@ -143,8 +155,10 @@ function InternMedicalForm({ mode }) {
                         )}
                       </FormControl>
 
+                      
                       <FormControl
                         fullWidth
+                          disabled={mode ==="view"}
                         required
                         error={!!MedicalErrors?.[idx]?.disability_status}
                         margin="normal"
@@ -173,9 +187,33 @@ function InternMedicalForm({ mode }) {
                         )}
                       </FormControl>
 
+                       
+
+
+                </Box>
+
+                <TextField
+                        fullWidth
+                        label="Medical Notes"
+                        name="medical_notes"
+                          disabled={mode ==="view"}
+                        value={section?.mainData?.medical_notes}
+                        multiline
+                        rows={4}
+                        onChange={(e) => handleChange(e, idx)}
+                        error={!!MedicalErrors?.[idx]?.medical_notes}
+                        helperText={MedicalErrors?.[idx]?.medical_notes}
+                        inputProps={{ maxLength: 200 }}
+                      />
+                       
+
+
+
+
                       <TextField
                         fullWidth
                         label="Disability Description"
+                          disabled={mode ==="view"}
                         name="disability_description"
                         value={section?.mainData?.disability_description}
                         onChange={(e) => handleChange(e, idx)}
@@ -191,6 +229,7 @@ function InternMedicalForm({ mode }) {
                       <TextField
                         fullWidth
                         label="Allergies"
+                          disabled={mode ==="view"}
                         name="allergies"
                         value={section?.mainData?.allergies}
                         onChange={(e) => handleChange(e, idx)}
@@ -204,6 +243,7 @@ function InternMedicalForm({ mode }) {
                       <TextField
                         fullWidth
                         label="Diseases"
+                          disabled={mode ==="view"}
                         name="diseases"
                         value={section?.mainData?.diseases}
                         onChange={(e) => handleChange(e, idx)}
@@ -222,6 +262,7 @@ function InternMedicalForm({ mode }) {
                         <FormControlLabel
                           control={
                             <Checkbox
+                              disabled={mode ==="view"}
                               checked={
                                 section?.mainData?.is_fit_for_duty || false
                               }
@@ -242,6 +283,7 @@ function InternMedicalForm({ mode }) {
 
                       <TextField
                         fullWidth
+                          disabled={mode ==="view"}
                         label="Last HealthCheck on"
                         type="date"
                         name="last_health_check_date"
@@ -254,18 +296,10 @@ function InternMedicalForm({ mode }) {
                         InputLabelProps={{ shrink: true }}
                       />
 
-                      <TextField
-                        fullWidth
-                        label="Medical Notes"
-                        name="medical_notes"
-                        value={section?.mainData?.medical_notes}
-                        multiline
-                        rows={4}
-                        onChange={(e) => handleChange(e, idx)}
-                        error={!!MedicalErrors?.[idx]?.medical_notes}
-                        helperText={MedicalErrors?.[idx]?.medical_notes}
-                        inputProps={{ maxLength: 200 }}
-                      />
+                     
+
+
+
                     </Grid>
                   </Paper>
                 </Grid>

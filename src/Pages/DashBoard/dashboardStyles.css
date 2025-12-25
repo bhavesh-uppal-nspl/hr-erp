@@ -1,0 +1,18 @@
+:root{
+  --hr-primary:#374151;
+  --hr-accent:#4F46E5;
+  --hr-muted:#6B7280;
+}
+
+.dashboard-hero{
+  padding: 8px 0;
+}
+
+/* small visual tweaks for KPI cards to look consistent across app */
+.dashboard-hero .MuiCard-root{
+  border-left: 4px solid rgba(79,70,229,0.08);
+}
+
+@media (max-width:600px){
+  .dashboard-hero .MuiCard-root{ height:110px }
+}

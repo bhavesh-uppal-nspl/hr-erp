@@ -96,6 +96,7 @@ function AdvancePayrollList() {
         loading={loading}
         heading={"Advance Payroll"}
         btnName={"Add Advance"}
+        add_action={"PAYROLL_ADVANCE_ADD"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
@@ -134,6 +135,7 @@ function AdvancePayrollList() {
         sortname={"status"}
         showActions={true}
         Route="/payroll/advance"
+        edit_delete_action={["PAYROLL_ADVANCE_DELETE", "PAYROLL_ADVANCE_EDIT"]}
         DeleteFunc={deleteBreak}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}

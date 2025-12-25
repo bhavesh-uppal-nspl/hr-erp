@@ -139,23 +139,51 @@ function DocumentTypesList() {
       console.log("is is ", id);
       const org_id = org.organization_id;
       const response = await axios.delete(
-        `${MAIN_URL}/api/organizations/${org_id}/employemnt-document/${id}`,
+        `${MAIN_URL}/api/organizations/${org_id}/employemnt-document-type/${id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
+      if (response.status === 200) {
+              toast.success(response.data.message);
+              console.log("Document Type Deleted:", response.data.message);
+            } else {
+              const errorMessage =
+                response.data.message ||
+                response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+                "Failed to delete Type";
+      
+              toast.error(errorMessage);
+              console.warn("Deletion error:", response.status, response.data);
+            }
+    } 
+ catch (error) {
+    // 🔹 Handle different error responses from backend
+    if (error.response) {
+      const status = error.response.status;
+      const backendMessage = error.response.data?.message || error.response.data?.error;
+
+      if (status === 400 && backendMessage?.includes("already assigned")) {
+        // Custom message from Laravel when type is assigned
+        toast.error("This document type is already assigned and cannot be deleted.");
+
+
+      } else if (status === 401) {
         toast.error("Session Expired!");
         window.location.href = "/login";
+      } else {
+        toast.error(backendMessage || "Failed to delete Document Type");
       }
-      console.error("Delete failed:", error);
-      toast.error(
-        error.response?.data?.error || "Failed to delete Attendance Status Type"
-      );
+
+      console.error("Delete failed:", error.response);
+    } else {
+      // Network or other unexpected errors
+      console.error("Unexpected error:", error);
+      toast.error("An unexpected error occurred while deleting.");
     }
+  }
   };
 
   const handleEdit = useCallback(
@@ -166,13 +194,21 @@ function DocumentTypesList() {
     [navigate]
   );
 
+  const handleShow = useCallback(
+    (item) => {
+      navigate(`/employee/document/types/view/${item.id}`)
+    },
+    [navigate],
+  )
+
   return (
     <>
       <Layout4
         loading={loading}
         heading={"Document Types"}
+        add_action={"EMPLOYEE_DOCUMENT_TYPE_ADD"}
         btnName={"Add Types"}
-        delete_action={"ATTENDANCE_DELETE"}
+        delete_action={"EMPLOYEE_DOCUMENT_TYPE_DELETE"}
         Data={types}
         tableHeaders={[
           {
@@ -210,7 +246,7 @@ function DocumentTypesList() {
 
       <TableDataGeneric
         tableName="Document Types"
-        primaryKey="employee_document_type_id "
+        primaryKey="employee_document_type_id"
         heading=" Document Types"
         data={types}
         sortname={"document_type_name"}
@@ -219,6 +255,8 @@ function DocumentTypesList() {
         Route="/employee/document/types"
         DeleteFunc={deleteStatus}
         EditFunc={handleEdit}
+        edit_delete_action={["EMPLOYEE_DOCUMENT_TYPE_EDIT", "EMPLOYEE_DOCUMENT_TYPE_DELETE"]}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

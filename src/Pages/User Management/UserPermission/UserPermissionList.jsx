@@ -1,80 +1,144 @@
 import React, { useEffect, useState } from "react";
 import Layout1 from "../../DataLayouts/Layout1";
-import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
-import {fetchApplicationRoleAssignment} from '../../../Apis/ApplicationManagementApis'
+import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
+import {
+  fetchApplicationUserPermission,
+} from "../../../Apis/ApplicationManagementApis";
 import { MAIN_URL } from "../../../Configurations/Urls";
 import axios from "axios";
 import toast from "react-hot-toast";
-import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import DescriptionIcon from '@mui/icons-material/Description';
-
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import DescriptionIcon from "@mui/icons-material/Description";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@mui/material";
+import useAuthStore from "../../../Zustand/Store/useAuthStore";
 
 function UserPermissionList() {
-
- const [permission, setPermission] = useState([]);
+  const [assignment, setAssignment] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { userData } = useAuthStore();
+  const org = userData?.organization;
+
+  const navigate = useNavigate();
 
   useEffect(() => {
-     {
-       setLoading(true);
-       fetchApplicationRoleAssignment()
-         .then((data) => {
-           let a = data.roleAssignment;
-           console.log("a",a)
-           try {
-                 let b = a.map((item) => {
-             return {
-                id: item.application_user_role_assignment_id,
-                name:item.application_user.full_name,
-                description:`${item.application_user_roles.user_role_name}`,
-             };
-           });
-           setAssignment(b);
-             
-           } catch (error) {
-             console.log(error)
-           }
-         })
-         .catch((err) => {});
-       setLoading(false);
-     }
-   }, []);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await fetchApplicationUserPermission(org?.organization_id);
+        const permissions = res?.permissions || [];
 
+        // Group permissions by unique user
+        const grouped = permissions.reduce((acc, curr) => {
+          const userId = curr.application_user_id;
+          
+          if (!acc[userId]) {
+            acc[userId] = {
+              id: userId,
+              user_id: userId,
+              user_name: curr.application_user?.full_name || "Unknown User",
+              email: curr.application_user?.email || "N/A",
+              // // Count how many permissions this user has
+              // permission_count: 0,
+            };
+          }
+          
+          // Increment permission count for this user
+          acc[userId].permission_count++;
+          
+          return acc;
+        }, {});
 
-  let deleteassignment = async (id) => {
+        console.log("grouped users:", grouped);
+
+        // Convert to array and add view button
+        const userList = Object.values(grouped).map((item) => ({
+          ...item,
+          permissions: `${item.permission_count} Permission(s)`,
+          view: (
+            <Button
+              variant="contained"
+              size="small"
+              color="primary"
+              onClick={() =>
+                navigate(`/application/user-permission/view/${item.user_id}`)
+              }
+            >
+              View
+            </Button>
+          ),
+        }));
+
+        setAssignment(userList);
+      } catch (error) {
+        console.error("Error fetching user permissions:", error);
+        toast.error("Failed to load user permissions");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [navigate]);
+
+  const deleteassignment = async (userId) => {
     try {
-   
       const response = await axios.delete(
-        `${MAIN_URL}/api/application/userrole-assignment/${id}`);
+        `${MAIN_URL}/api/application/user-permissions/particular/${userId}`,
+        {
+          params: {
+            organization_id: org?.organization_id,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success("User permissions deleted successfully");
+        
+        // Remove deleted user from the list
+        setAssignment((prev) => prev.filter((item) => item.user_id !== userId));
+      }
     } catch (error) {
       console.error("Delete failed:", error);
-      toast.error(error.response?.data?.error || "Failed to delete User Role Assignment");
+      toast.error(
+        error.response?.data?.error || "Failed to delete user permissions"
+      );
     }
   };
 
   return (
     <Layout1
       loading={loading}
-      heading={"User Role Assignment"}
-      btnName={"Add User Module Assignment"}
+      delete_action={"USER_PERMISSION_DELETE"}
+      heading={"User Permission Overrides"}
+      add_action={"USER_PERMISSION_ADD"}
+      edit_action={"USER_PERMISSION_EDIT"}
+      
+      btnName={"Add User Permission"}
       Data={assignment}
-      Icons={[
-        <FormatAlignJustifyIcon sx={{ fontSize: 60, color: "grey.500", mb: 2 }} />,
-        <ViewModuleIcon color="primary" />,
-        <DescriptionIcon sx={{ color: "text.secondary" }} />
-      ]
-      }
-      messages={[
-        "User Role Assignment",
-        "User Role Assignment",
-        "Add Application User Role Assignment",
-        "User Role Assignment"
+      tableHeaders={[
+        { name: "User Name", value_key: "user_name", textStyle: "capitalize" },
+        { name: "Email", value_key: "email" },
+        // { name: "Permissions", value_key: "permissions" },
+        { name: "View Permissions", value_key: "view" },
       ]}
-      Route={"/application/userrole-assignments"}
+      Icons={[
+        <FormatAlignJustifyIcon
+          sx={{ fontSize: 60, color: "grey.500", mb: 2 }}
+        />,
+        <ViewModuleIcon color="primary" />,
+        <DescriptionIcon sx={{ color: "text.secondary" }} />,
+      ]}
+      messages={[
+        "User Permission",
+        "User Permission",
+        "Add User Permission",
+        "User Permission",
+      ]}
+      Route={"/application/user-permission"}
       setData={setAssignment}
       DeleteFunc={deleteassignment}
     />
-
   );
 }
 

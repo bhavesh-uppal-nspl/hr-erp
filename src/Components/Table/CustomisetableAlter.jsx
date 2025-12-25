@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   Box,
@@ -31,7 +30,6 @@ import {
   Chip,
   useMediaQuery,
   useTheme,
-  Divider,
   Tooltip,
   ToggleButton,
   ToggleButtonGroup,
@@ -45,28 +43,19 @@ import {
   X,
   Search,
   Tally3 as Columns3,
-  Mail,
-  User,
-  Building,
-  Hash,
-  Calendar,
-  Globe,
-  Phone,
-  MapPin,
   RefreshCw,
   Edit,
   Trash2,
   Printer,
-  Upload,
-  View,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import InputAdornment from "@mui/material/InputAdornment";
 import { useNavigate, useParams } from "react-router-dom";
+import { Eye } from "lucide-react";
 
 import toast from "react-hot-toast";
 import useAuthStore from "../../Zustand/Store/useAuthStore";
-import { MAIN_URL } from "../../Configurations/Urls";
+import usePermissionDataStore from "../../Zustand/Store/usePermissionDataStore";
 import {
   saveLayoutToConfig,
   resetLayoutToDefault,
@@ -74,30 +63,78 @@ import {
   getDefaultConfig,
   getTableConfig,
 } from "../../Configurations/TableDataConfig";
+import PushPinIcon from "@mui/icons-material/PushPin";
 
 // Constants to avoid recreating objects
 const DEFAULT_ROWS_PER_PAGE = 10;
 // const DEFAULT_VISIBLE_COLUMNS = 4;
 
 const formatLabel = (label) => {
-  return label.replace(/_/g, " ");
+  return label
+    .replace(/_/g, " ") // Replace underscores with spaces
+    .split(" ") // Split into words
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize first letter, lowercase rest
+    .join(" "); // Join back together
 };
 
-const Customisetable = ({
+const CustomisetableAlter = ({
   Route,
+  sortname,
+  configss,
+  onSortChange,
+  onFilterChange,
   DeleteFunc,
+  onclickRow,
   EditFunc,
   configuration,
-  apiUrl: apiUrlProp,
   tableName,
   token,
   mainKey,
-  primaryFilds,
+  title,
+  linkType,
+  handleShow,
   mainData,
+  showActions,
+  CardColoumn = [],
+  hideToolbar, // Added hideToolbar prop with default false
+  onEmployeeClick,
+  onSaveLayout, // new optional prop
+  onResetLayout, // Added prop for handling employee clicks
+  loadedBackendConfig,
+  showLayoutButtons,
+  edit_delete_action,
 }) => {
   const { userData } = useAuthStore();
+  const { Permission } = usePermissionDataStore();
   const org = userData?.organization;
   const { id } = useParams();
+
+  // Permission checks for edit and delete actions
+  const hasEditPermission = useMemo(() => {
+    // If EditFunc is provided, use it (TableDataGeneric handles permission check)
+    if (EditFunc !== undefined) {
+      return EditFunc !== null;
+    }
+    // Otherwise check permissions directly
+    if (!edit_delete_action || !Array.isArray(edit_delete_action) || edit_delete_action.length === 0) {
+      return true; // If no permission specified, allow by default
+    }
+    const editPermission = edit_delete_action[0]; // First element is edit permission
+    return Permission && Permission.includes(editPermission);
+  }, [EditFunc, edit_delete_action, Permission]);
+
+  const hasDeletePermission = useMemo(() => {
+    // If DeleteFunc is provided, use it (TableDataGeneric handles permission check)
+    if (DeleteFunc !== undefined) {
+      return DeleteFunc !== null;
+    }
+    // Otherwise check permissions directly
+    if (!edit_delete_action || !Array.isArray(edit_delete_action) || edit_delete_action.length < 2) {
+      return true; // If no permission specified, allow by default
+    }
+    const deletePermission = edit_delete_action[1]; // Second element is delete permission
+    return Permission && Permission.includes(deletePermission);
+  }, [DeleteFunc, edit_delete_action, Permission]);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -106,12 +143,11 @@ const Customisetable = ({
 
   const navigate = useNavigate();
 
-  console.log("congg", configuration)
-
   const [view, setView] = useState("table");
   const [page, setPage] = useState(0);
 
   const [columns, setColumns] = useState([]);
+  const [originalColumnOrder, setOriginalColumnOrder] = useState([]);
   const [data, setData] = useState([]);
   const [sortConfig, setSortConfig] = useState(
     configuration?.[0]?.default_config.sortConfig || []
@@ -130,18 +166,6 @@ const Customisetable = ({
   const initialColumnWidth = useRef(0);
   const [pendingColumns, setPendingColumns] = useState([]);
   const [hoveredColumnIndex, setHoveredColumnIndex] = useState(null);
-
-  const [apiUrl, setApiUrl] = useState(null);
-  const externalApi = !!apiUrlProp;
-  useEffect(() => {
-    if (externalApi && apiUrlProp) {
-      setApiUrl(apiUrlProp);
-      return;
-    }
-    if (org?.organization_id) {
-      // setApiUrl(`${MAIN_URL}/api/organizations/${org?.organization_id}/attendance-time-logs`,)
-    }
-  }, [apiUrlProp, externalApi, org?.organization_id]);
 
   const [showUrlDialog, setShowUrlDialog] = useState(false);
   const [tempUrl, setTempUrl] = useState("");
@@ -231,6 +255,47 @@ const Customisetable = ({
     [theme]
   );
 
+  useEffect(() => {
+    if (loadedBackendConfig && loadedBackendConfig.columns) {
+      console.log(
+        "Applying loaded backend configuration to table:",
+        loadedBackendConfig
+      );
+
+      const mandatoryColumnsArray =
+        loadedBackendConfig.defaults?.mandatoryColumns || [];
+      console.log("Mandatory columns array:", mandatoryColumnsArray);
+
+      // Apply columns
+      const backendColumns = loadedBackendConfig.columns.map((col) => ({
+        ...col,
+        key: col.key || col.field,
+        field: col.field || col.key,
+        mandatory:
+          mandatoryColumnsArray.includes(col.key) ||
+          mandatoryColumnsArray.includes(col.field),
+      }));
+      setColumns(backendColumns);
+      setOriginalColumnOrder(backendColumns);
+      console.log("Processed columns:", backendColumns);
+
+      // Apply sort config if available
+      if (loadedBackendConfig.sortConfig) {
+        setSortConfig(loadedBackendConfig.sortConfig);
+      }
+
+      // Apply rows per page if available
+      if (loadedBackendConfig.rowsPerPage) {
+        setRowsPerPage(loadedBackendConfig.rowsPerPage);
+      }
+
+      // Apply filters if available
+      if (loadedBackendConfig.filters) {
+        setFilters(loadedBackendConfig.filters);
+      }
+    }
+  }, [loadedBackendConfig]);
+
   // function for saveing layout to configuration
   const saveLayoutToConfiguration = useCallback(
     (layoutData) => {
@@ -280,28 +345,52 @@ const Customisetable = ({
     return null;
   }, []);
   // function for reseting layout to default configuration
+  // In Customisetable component
+
   const resetLayout = useCallback(() => {
-    try {
-      const success = resetLayoutToDefault(configuration, tableName);
-      if (success) {
-        loadDataFromConfiguration(tableName); // Reload with default layout
-        setSnackbar({
-          open: true,
-          message: "Layout reset to default configuration",
-          severity: "success",
+    if (onResetLayout) {
+      Promise.resolve(onResetLayout({ tableName }))
+        .then(() => {
+          //  Clear local state to force full reload
+          setColumns([]);
+          setData([]);
+
+          // Reload using existing configuration loader
+          loadDataFromConfiguration(tableName);
+
+          setSnackbar({
+            open: true,
+            message: "Layout reset to default successfully",
+            severity: "success",
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to reset layout via backend:", error);
+          setSnackbar({
+            open: true,
+            message: "Failed to reset layout",
+            severity: "error",
+          });
         });
-      } else {
-        throw new Error("Failed to reset layout");
-      }
-    } catch (error) {
-      console.error("Failed to reset layout:", error);
+      return;
+    }
+
+    const success = resetLayoutToDefault(configuration, tableName);
+    if (success) {
+      loadLayoutFromConfiguration(tableName);
+      setSnackbar({
+        open: true,
+        message: "Layout reset to default configuration",
+        severity: "success",
+      });
+    } else {
       setSnackbar({
         open: true,
         message: "Failed to reset layout",
         severity: "error",
       });
     }
-  }, [tableName]);
+  }, [onResetLayout, tableName, configuration, loadLayoutFromConfiguration]);
 
   // Apply saved layout to columns
   const applyLayoutToColumns = useCallback((baseColumns, savedLayout) => {
@@ -346,12 +435,10 @@ const Customisetable = ({
     if (valueCache.current.has(cacheKey)) {
       return valueCache.current.get(cacheKey);
     }
-    const value = path.split(".").reduce((acc, part) => acc && acc[part], obj);
+    const value = path?.split(".").reduce((acc, part) => acc && acc[part], obj);
     valueCache.current.set(cacheKey, value);
     return value;
   }, []);
-
-
 
   // Replace loadDataFromUrl with loadDataFromConfiguration
   const loadDataFromConfiguration = useCallback(
@@ -359,53 +446,78 @@ const Customisetable = ({
       setLoading(true);
       setData([]);
       setColumns([]);
-      // setSortConfig(DEFAULT_SORT_CONFIG);
       setFilters({});
       setPendingFilters({});
       setCurrentPage(1);
 
       try {
-       
         const result = mainData;
 
-        if (!Array.isArray(result) || result?.length === 0) {
+        if (!Array.isArray(result) || result.length === 0) {
           console.warn(
             "API did not return an array of objects or returned empty data."
           );
           return;
         }
 
-        // Clear the value cache when loading new data
         valueCache.current.clear();
 
-        // Get table configuration
+        //  PRIORITY: Use loadedBackendConfig if available
+        if (loadedBackendConfig && loadedBackendConfig.columns) {
+          console.log(
+            "Using loaded backend configuration:",
+            loadedBackendConfig
+          );
+
+          //  Get mandatory columns from backend defaults
+          const mandatoryColumnsArray =
+            loadedBackendConfig.defaults?.mandatoryColumns || [];
+
+          const backendColumns = loadedBackendConfig.columns.map((col) => ({
+            ...col,
+            key: col.key || col.field,
+            field: col.field || col.key,
+            mandatory:
+              mandatoryColumnsArray.includes(col.key) ||
+              mandatoryColumnsArray.includes(col.field),
+          }));
+
+          setData(result);
+          setColumns(backendColumns);
+          setOriginalColumnOrder(backendColumns);
+
+          if (loadedBackendConfig.sortConfig) {
+            setSortConfig(loadedBackendConfig.sortConfig);
+          }
+          if (loadedBackendConfig.rowsPerPage) {
+            setRowsPerPage(loadedBackendConfig.rowsPerPage);
+          }
+          if (loadedBackendConfig.filters) {
+            setFilters(loadedBackendConfig.filters);
+          }
+
+          return; //  Exit early - we've applied backend config
+        }
+
+        // Fall back to configuration object if no backend config
         const tableConfig = getTableConfig(configuration, tableConfigName);
 
         if (!tableConfig) {
-          // Fallback to original behavior if no config found
-          console.warn(
-            `No configuration found for table: ${tableConfigName}, using default behavior`
-          );
-
-
+          console.warn(`No configuration found for table: ${tableConfigName}`);
           setData(result);
-          // setColumns(filteredBaseColumns);
           return;
         }
 
-        // Load user configuration (or fall back to default)
         const userConfig = getUserConfig(configuration, tableConfigName);
         const configToUse =
           userConfig || getDefaultConfig(configuration, tableConfigName);
 
-        // Convert config columns to component format
         const configuredColumns = configToUse.columns
-          .sort((a, b) => a.order - b.order) // Sort by order
+          .sort((a, b) => a.order - b.order)
           .map((configCol) => {
             const defaultCol = tableConfig.default_config.columns.find(
               (col) => col.key === configCol.key
             );
-            // console.log("configuredColumns", configuredColumns);
             return {
               key: configCol.key,
               label: defaultCol?.label || configCol.key,
@@ -422,29 +534,18 @@ const Customisetable = ({
             };
           });
 
-        // Apply configuration settings
         setData(result);
         setColumns(configuredColumns);
+        setOriginalColumnOrder(configuredColumns);
 
         if (configToUse.sortConfig) {
           setSortConfig(configToUse.sortConfig);
         }
-
         if (configToUse.rowsPerPage) {
           setRowsPerPage(configToUse.rowsPerPage);
         }
-
         if (configToUse.filters) {
           setFilters(configToUse.filters);
-        }
-
-        if (!userConfig) {
-          setSnackbar({
-            open: true,
-            message: "Default configuration loaded",
-            autoHideDuration: 3000,
-            severity: "info",
-          });
         }
       } catch (error) {
         console.error("Failed to load data with config:", error);
@@ -457,28 +558,51 @@ const Customisetable = ({
         setLoading(false);
       }
     },
-    [apiUrl, getNestedValue, tableName,mainData]
+    [getNestedValue, tableName, mainData, loadedBackendConfig] //  Add loadedBackendConfig as dependency
   );
 
   // Update useEffect to use new function
   useEffect(() => {
-    if (apiUrl) {
+    if (tableName) {
       loadDataFromConfiguration(tableName);
     }
-  }, [loadDataFromConfiguration, apiUrl, tableName]);
+  }, [loadDataFromConfiguration, tableName, loadedBackendConfig]);
 
   // Optimized sorting with memoization
   const sortedData = useMemo(() => {
     const currentSort = sortConfig[0];
     if (!currentSort || !currentSort.key) return data;
+
     return [...data].sort((a, b) => {
       const aVal = getNestedValue(a, currentSort.key);
       const bVal = getNestedValue(b, currentSort.key);
+
+      // Check if values are dates (ISO string or date format)
+      const isDateA =
+        aVal && typeof aVal === "string" && !isNaN(Date.parse(aVal));
+      const isDateB =
+        bVal && typeof bVal === "string" && !isNaN(Date.parse(bVal));
+
+      // If both are dates, parse and compare as dates
+      if (isDateA && isDateB) {
+        const dateA = new Date(aVal).getTime();
+        const dateB = new Date(bVal).getTime();
+        return currentSort.direction === "asc" ? dateA - dateB : dateB - dateA;
+      }
+
+      // If both are strings, use localeCompare
       if (typeof aVal === "string" && typeof bVal === "string") {
         return currentSort.direction === "asc"
           ? aVal.localeCompare(bVal)
           : bVal.localeCompare(aVal);
       }
+
+      // If both are numbers, compare directly
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return currentSort.direction === "asc" ? aVal - bVal : bVal - aVal;
+      }
+
+      // Fallback for other types
       if (aVal < bVal) return currentSort.direction === "asc" ? -1 : 1;
       if (aVal > bVal) return currentSort.direction === "asc" ? 1 : -1;
       return 0;
@@ -490,7 +614,7 @@ const Customisetable = ({
 
     // Apply search filter - searches across all columns
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
+      const query = searchQuery?.toLowerCase().trim();
       result = result.filter((item) => {
         return (
           columns.some((col) => {
@@ -498,10 +622,10 @@ const Customisetable = ({
             if (value === null || value === undefined) return false;
 
             // Convert to string and handle different data types
-            const stringValue = String(value).toLowerCase();
+            const stringValue = String(value)?.toLowerCase();
 
             // Also search in formatted labels for better matching
-            const formattedLabel = formatLabel(col.key).toLowerCase();
+            const formattedLabel = formatLabel(col.key)?.toLowerCase();
 
             return (
               stringValue.includes(query) || formattedLabel.includes(query)
@@ -509,7 +633,7 @@ const Customisetable = ({
           }) ||
           Object.values(item).some((value) => {
             if (value === null || value === undefined) return false;
-            return String(value).toLowerCase().includes(query);
+            return String(value)?.toLowerCase().includes(query);
           })
         );
       });
@@ -518,17 +642,17 @@ const Customisetable = ({
     // Apply column filters - IMPROVED to handle partial matches better
     Object.entries(filters).forEach(([key, value]) => {
       if (value && value.trim() !== "") {
-        const filterValue = value.toLowerCase().trim();
+        const filterValue = value?.toLowerCase().trim();
         result = result.filter((item) => {
           const itemValue = getNestedValue(item, key);
           if (itemValue === null || itemValue === undefined) return false;
 
-          const itemString = String(itemValue).toLowerCase();
+          const itemString = String(itemValue)?.toLowerCase();
 
           // Split filter value by spaces to handle multi-word searches
           const filterWords = filterValue
-            .split(/\s+/)
-            .filter((word) => word?.length > 0);
+            ?.split(/\s+/)
+            .filter((word) => word.length > 0);
 
           // Check if all filter words are found in the item value
           return filterWords.every((word) => itemString.includes(word));
@@ -541,24 +665,24 @@ const Customisetable = ({
 
   // Update page if needed when filtered data changes
   useEffect(() => {
-    const totalPages = Math.ceil(filteredData?.length / rowsPerPage);
+    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(totalPages);
     } else if (totalPages === 0 && currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [filteredData?.length, rowsPerPage, currentPage]);
+  }, [filteredData.length, rowsPerPage, currentPage]);
 
   const totalPages = useMemo(
-    () => Math.ceil(filteredData?.length / rowsPerPage),
-    [filteredData?.length, rowsPerPage]
+    () => Math.ceil(filteredData.length / rowsPerPage),
+    [filteredData.length, rowsPerPage]
   );
 
   // Optimized pagination with memoization
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-    return filteredData?.slice(startIndex, endIndex);
+    return filteredData.slice(startIndex, endIndex);
   }, [filteredData, currentPage, rowsPerPage]);
 
   // Optimized handlers with useCallback
@@ -581,37 +705,70 @@ const Customisetable = ({
   const handlePendingFilterChange = useCallback((key, value) => {
     setPendingFilters((prev) => ({ ...prev, [key]: value }));
   }, []);
+
   // Apply pending filters
   const togglePendingColumnVisibility = useCallback((key) => {
     setPendingColumns((prev) =>
-      prev.map((col) =>
-        col.key === key ? { ...col, visible: !col.visible } : col
-      )
+      prev.map((col) => {
+        //  Prevent toggling mandatory columns
+        if (col.key === key && !col.mandatory) {
+          return { ...col, visible: !col.visible };
+        }
+        return col;
+      })
     );
   }, []);
+
   // Select/Deselect all pending columns
   const handleSelectAllPendingColumns = useCallback((event) => {
     const isChecked = event.target.checked;
     setPendingColumns((prev) =>
-      prev.map((col) => ({ ...col, visible: isChecked }))
+      prev.map((col) => ({
+        ...col,
+        visible: col.mandatory ? true : isChecked,
+      }))
     );
   }, []);
+
+  console.log("Pending columns in dialog:", pendingColumns);
+
   // Check if all pending columns are selected
-  const allPendingColumnsVisible = useMemo(
-    () => pendingColumns.every((col) => col.visible),
-    [pendingColumns]
-  );
+  const allPendingColumnsVisible = useMemo(() => {
+    // Only check non-mandatory columns
+    const nonMandatoryColumns = pendingColumns.filter((col) => !col.mandatory);
+    return (
+      nonMandatoryColumns.length > 0 &&
+      nonMandatoryColumns.every((col) => col.visible)
+    );
+  }, [pendingColumns]);
+
   // Check if some (but not all) pending columns are selected
   const handleColumnReorder = useCallback(
     (dragIndex, hoverIndex) => {
-      const dragColumn = columns[dragIndex];
+      //  Only reorder visible columns for table display
+      const visibleCols = columns.filter((col) => col.visible);
+
+      const dragColumn = visibleCols[dragIndex];
+      const hoverColumn = visibleCols[hoverIndex];
+
+      const dragColumnIndex = columns.findIndex(
+        (col) => col.key === dragColumn.key
+      );
+      const hoverColumnIndex = columns.findIndex(
+        (col) => col.key === hoverColumn.key
+      );
+
       const newColumns = [...columns];
-      newColumns.splice(dragIndex, 1);
-      newColumns.splice(hoverIndex, 0, dragColumn);
+      newColumns.splice(dragColumnIndex, 1);
+      newColumns.splice(hoverColumnIndex, 0, dragColumn);
+
       setColumns(newColumns);
+
+      //  DON'T update pendingColumns here - keep it unchanged
     },
     [columns]
   );
+
   // Column resizing handlers
   const handleMouseDown = useCallback(
     (e, key) => {
@@ -723,14 +880,14 @@ const Customisetable = ({
       const jsPDF = jsPDFModule.default;
       const doc = new jsPDF();
       const visibleColumns = columns.filter((col) => col.visible);
-      if (visibleColumns?.length === 0) {
+      if (visibleColumns.length === 0) {
         alert(
           "No visible columns to export. Please manage columns and ensure at least one is visible."
         );
         setExportMenuAnchorEl(null);
         return;
       }
-      if (filteredData?.length === 0) {
+      if (filteredData.length === 0) {
         alert("No data to export after applying filters.");
         setExportMenuAnchorEl(null);
         return;
@@ -773,7 +930,7 @@ const Customisetable = ({
         currentY
       );
       doc.text(
-        `Total Records: ${filteredData?.length}`,
+        `Total Records: ${filteredData.length}`,
         pageWidth - margin - 50,
         currentY
       );
@@ -788,13 +945,13 @@ const Customisetable = ({
         let recordBlockContentHeight = 0;
         visibleColumns.forEach((col) => {
           const value = String(getNestedValue(dataRow, col.key) || "");
-          const valueLines = doc.splitTextToSize(
+          const valueLines = doc?.splitTextToSize(
             value,
             valueColumnWidth - cellPadding * 2
           );
           const rowHeight = Math.max(
             minCellHeight,
-            valueLines?.length * lineHeight + cellPadding * 2
+            valueLines.length * lineHeight + cellPadding * 2
           );
           recordBlockContentHeight += rowHeight;
         });
@@ -837,21 +994,21 @@ const Customisetable = ({
 
         visibleColumns.forEach((col) => {
           const value = String(getNestedValue(dataRow, col.key) || "");
-          const valueLines = doc.splitTextToSize(
+          const valueLines = doc?.splitTextToSize(
             value,
             valueColumnWidth - cellPadding * 2
           );
           const rowHeight = Math.max(
             minCellHeight,
-            valueLines?.length * lineHeight + cellPadding * 2
+            valueLines.length * lineHeight + cellPadding * 2
           );
 
           doc.rect(margin, currentY, keyColumnWidth, rowHeight, "S");
-          const labelLines = doc.splitTextToSize(
+          const labelLines = doc?.splitTextToSize(
             formatLabel(col.label),
             keyColumnWidth - cellPadding * 2
           );
-          const totalLabelTextHeight = labelLines?.length * lineHeight;
+          const totalLabelTextHeight = labelLines.length * lineHeight;
           const labelYOffset = (rowHeight - totalLabelTextHeight) / 2;
           labelLines.forEach((line, lineIndex) => {
             doc.text(
@@ -872,7 +1029,7 @@ const Customisetable = ({
             rowHeight,
             "S"
           );
-          const totalValueTextHeight = valueLines?.length * lineHeight;
+          const totalValueTextHeight = valueLines.length * lineHeight;
           const valueYOffset = (rowHeight - totalValueTextHeight) / 2;
           valueLines.forEach((line, lineIndex) => {
             doc.text(
@@ -902,7 +1059,7 @@ const Customisetable = ({
           pageHeight - 10
         );
         doc.text(
-          `${filteredData?.length} records exported`,
+          `${filteredData.length} records exported`,
           margin,
           pageHeight - 10
         );
@@ -932,9 +1089,9 @@ const Customisetable = ({
       const headerText = col.label || "";
       const maxDataLength = filteredData.reduce((max, row) => {
         const cellValue = String(getNestedValue(row, col.key) || "");
-        return Math.max(max, cellValue?.length);
+        return Math.max(max, cellValue.length);
       }, 0);
-      return { wch: Math.max(headerText?.length, maxDataLength) + 2 };
+      return { wch: Math.max(headerText.length, maxDataLength) + 2 };
     });
 
     ws["!cols"] = columnWidths;
@@ -968,9 +1125,38 @@ const Customisetable = ({
       timestamp: new Date().toISOString(),
     };
 
-    // Save to TableConfig instead of localStorage
+    if (onSaveLayout) {
+      // delegate to parent; keep UX feedback consistent
+      Promise.resolve(onSaveLayout({ tableName, layoutData }))
+        .then(() => {
+          setSnackbar({
+            open: true,
+            message: "Layout saved successfully",
+            severity: "success",
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to save layout to backend:", error);
+          setSnackbar({
+            open: true,
+            message: "Failed to save layout",
+            severity: "error",
+          });
+        });
+      return;
+    }
+
+    // fallback: Save to TableConfig instead of localStorage
     saveLayoutToConfiguration(layoutData);
-  }, [columns, filters, rowsPerPage, sortConfig, saveLayoutToConfiguration]);
+  }, [
+    columns,
+    filters,
+    rowsPerPage,
+    sortConfig,
+    onSaveLayout,
+    tableName,
+    saveLayoutToConfiguration,
+  ]);
 
   // Add export/import config functions
   const exportCurrentConfig = useCallback(() => {
@@ -1070,11 +1256,27 @@ const Customisetable = ({
     },
     [totalPages]
   );
+
   // Column manager dialog handlers
   const handleColumnDialogOpen = useCallback(() => {
-    setPendingColumns([...columns]);
+    // Use original order but with current visibility state
+    const columnsWithCurrentVisibility = originalColumnOrder.map((origCol) => {
+      // Find the same column in current columns state to get its visibility
+      const currentCol = columns.find((col) => col.key === origCol.key);
+      return {
+        ...origCol,
+        visible: currentCol?.visible ?? origCol.visible, // Use current visibility
+        mandatory: origCol.mandatory ?? false, // Keep mandatory property
+      };
+    });
+    console.log(
+      "Columns with mandatory flags for dialog:",
+      columnsWithCurrentVisibility
+    );
+    setPendingColumns(columnsWithCurrentVisibility);
     setColumnManagerOpen(true);
-  }, [columns]);
+  }, [originalColumnOrder, columns]);
+
   // Close without applying
   const handleColumnDialogClose = useCallback(() => {
     setPendingColumns([...columns]);
@@ -1091,10 +1293,6 @@ const Customisetable = ({
     setColumnManagerOpen(false);
   }, [columns]);
   // API URL dialog handlers
-  const handleUrlDialogOpen = useCallback(() => {
-    setTempUrl(apiUrl);
-    setShowUrlDialog(true);
-  }, [apiUrl]);
 
   // Memoized derived values
   const visibleColumns = useMemo(
@@ -1102,7 +1300,7 @@ const Customisetable = ({
     [columns]
   );
   const activeFilters = useMemo(
-    () => Object.keys(filters).filter((key) => filters[key])?.length,
+    () => Object.keys(filters).filter((key) => filters[key]).length,
     [filters]
   );
 
@@ -1117,6 +1315,17 @@ const Customisetable = ({
       }
     },
     [EditFunc, navigate, Route, mainKey]
+  );
+
+  const handleShowData = useCallback(
+    (item) => {
+      if (handleShow) {
+        handleShow(item);
+      } else {
+        navigate(`${Route}/view/${item?.[mainKey]}`);
+      }
+    },
+    [handleShow, navigate, Route, mainKey]
   );
 
   // Delete handlers
@@ -1137,24 +1346,25 @@ const Customisetable = ({
           prevData.filter((item) => item?.[mainKey] !== selectedItem?.[mainKey])
         );
 
-        // Show success toast like submit button
-        toast.success("Employee deleted successfully!");
+        // // Show success toast like submit button
+        // toast.success("Employee deleted successfully!");
       } else {
         // Fallback for when no DeleteFunc is provided
         setData((prevData) =>
           prevData.filter((item) => item?.[mainKey] !== selectedItem?.[mainKey])
         );
-        toast.success("Employee deleted successfully!");
+        // toast.success("Employee deleted successfully!");
       }
     } catch (error) {
       console.error("Delete Error:", error);
       // Show error toast like submit button error handling
-      toast.error("Failed to delete Employee. Please try again.");
+      toast.error("Failed to delete . Please try again.");
     } finally {
       setDeleteDialogOpen(false);
       setSelectedItem(null);
     }
   }, [selectedItem, DeleteFunc]);
+  console.log("lodlkfhalkh", visibleColumns);
 
   // Dynamic card component for mobile/tablet view
   const DynamicUserCard = ({ item, index }) => {
@@ -1173,50 +1383,10 @@ const Customisetable = ({
       >
         <CardContent sx={{ p: 3 }}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {/* Primary fields (name, title, email) - highlighted */}
-            {visibleCols
-              .filter((col) => isPrimaryField(col.key))
-              ?.slice(0, 2) // Show max 2 primary fields prominently
-              .map((col, idx) => {
-                const value = getNestedValue(item, col.key);
-
-                return (
-                  <Box key={col.key}>
-                    <Typography
-                      variant={idx === 0 ? "h6" : "subtitle1"}
-                      sx={{
-                        fontWeight: idx === 0 ? 600 : 500,
-                        color: colors.text.primary,
-                        fontSize: idx === 0 ? "1.1rem" : "1rem",
-                        mb: 0.5,
-                      }}
-                    >
-                      {String(value || "N/A")}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: colors.text.secondary,
-                        fontSize: "0.75rem",
-                        textTransform: "capitalize",
-                        letterSpacing: "0.5px",
-                      }}
-                    >
-                      {col.label}
-                    </Typography>
-                  </Box>
-                );
-              })}
-
-            {/* Divider if we have primary fields */}
-            {visibleCols.some((col) => isPrimaryField(col.key)) && (
-              <Divider sx={{ my: 1 }} />
-            )}
-
             {/* All other fields */}
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
               {visibleCols
-                .filter((col) => !isPrimaryField(col.key))
+                .filter((col) => col.key)
                 .map((col) => {
                   const value = getNestedValue(item, col.key);
                   const displayValue = String(value || "N/A");
@@ -1266,7 +1436,7 @@ const Customisetable = ({
                             lineHeight: 1.4,
                           }}
                         >
-                          {displayValue?.length > 100
+                          {displayValue.length > 100
                             ? `${displayValue.substring(0, 100)}...`
                             : displayValue}
                         </Typography>
@@ -1277,61 +1447,91 @@ const Customisetable = ({
             </Box>
 
             {/* Action buttons and record number */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
-                mt: 1,
-              }}
-            >
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Tooltip title="Edit">
-                  <IconButton
-                    size="small"
-                    onClick={() => handleEdit(item)}
-                    sx={{
-                      color: theme.palette.mode === "dark" ? "#fff" : "#333",
-                      "&:hover": {
-                        backgroundColor:
-                          theme.palette.mode === "dark"
-                            ? "rgba(255,255,255,0.1)"
-                            : "#33333315",
-                      },
-                    }}
-                  >
-                    <Edit size={16} />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Delete">
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(item)}
-                    sx={{
-                      color: theme.palette.mode === "dark" ? "#fff" : "#333",
-                      "&:hover": {
-                        backgroundColor:
-                          theme.palette.mode === "dark"
-                            ? "rgba(255,255,255,0.1)"
-                            : "#33333315",
-                      },
-                    }}
-                  >
-                    <Trash2 size={16} />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              <Chip
-                label={`#${(currentPage - 1) * rowsPerPage + index + 1}`}
-                size="small"
+            {showActions && (
+              <Box
                 sx={{
-                  backgroundColor: colors.grey[200],
-                  color: colors.text.secondary,
-                  fontSize: "0.7rem",
-                  height: 20,
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                  mt: 1,
                 }}
-              />
-            </Box>
+              >
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <>
+                    <Tooltip title="Show">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleShowData(item)}
+                        sx={{
+                          color:
+                            theme.palette.mode === "dark" ? "#fff" : "#333",
+                          "&:hover": {
+                            backgroundColor:
+                              theme.palette.mode === "dark"
+                                ? "rgba(255,255,255,0.1)"
+                                : "#33333315",
+                          },
+                        }}
+                      >
+                        <Eye size={20} /> {/* ← Only this line changed */}
+                      </IconButton>
+                    </Tooltip>
+
+                    {hasEditPermission && (
+                      <Tooltip title="Edit">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEdit(item)}
+                          sx={{
+                            color:
+                              theme.palette.mode === "dark" ? "#fff" : "#333",
+                            "&:hover": {
+                              backgroundColor:
+                                theme.palette.mode === "dark"
+                                  ? "rgba(255,255,255,0.1)"
+                                  : "#33333315",
+                            },
+                          }}
+                        >
+                          <Edit size={16} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+
+                    {hasDeletePermission && (
+                      <Tooltip title="Delete">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDelete(item)}
+                          sx={{
+                            color:
+                              theme.palette.mode === "dark" ? "#fff" : "#333",
+                            "&:hover": {
+                              backgroundColor:
+                                theme.palette.mode === "dark"
+                                  ? "rgba(255,255,255,0.1)"
+                                  : "#33333315",
+                            },
+                          }}
+                        >
+                          <Trash2 size={16} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </>
+                </Box>
+                <Chip
+                  label={`#${(currentPage - 1) * rowsPerPage + index + 1}`}
+                  size="small"
+                  sx={{
+                    backgroundColor: colors.grey[200],
+                    color: colors.text.secondary,
+                    fontSize: "0.7rem",
+                    height: 20,
+                  }}
+                />
+              </Box>
+            )}
           </Box>
         </CardContent>
       </Card>
@@ -1438,7 +1638,7 @@ const Customisetable = ({
 
     // Get table data - assuming rows are available in component state/props
     const tableData = data || [];
-    const totalRecords = tableData?.length;
+    const totalRecords = tableData.length;
 
     // Create custom print content
     const printContent = document.createElement("div");
@@ -1481,7 +1681,7 @@ const Customisetable = ({
         const fieldNameCell = document.createElement("td");
         fieldNameCell.className = "field-name";
         fieldNameCell.textContent =
-          key.charAt(0).toUpperCase() + key?.slice(1).replace(/([A-Z])/g, " $1");
+          key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, " $1");
 
         const fieldValueCell = document.createElement("td");
         fieldValueCell.className = "field-value";
@@ -1524,10 +1724,10 @@ const Customisetable = ({
       <>
         <Box display="flex" gap={1} alignItems="center">
           <ToggleButtonGroup value={view} exclusive size="small">
-            <ToggleButton value="table" onClick={() => setView("table")} >
+            <ToggleButton value="table" onClick={() => setView("table")}>
               <TableRowsIcon />
             </ToggleButton>
-            <ToggleButton value="card" onClick={() => setView("card")} disabled>
+            <ToggleButton value="card" onClick={() => setView("card")}>
               <ViewModuleIcon />
             </ToggleButton>
           </ToggleButtonGroup>
@@ -1629,44 +1829,46 @@ const Customisetable = ({
         >
           <Printer size={20} />
         </Button>
-        <Button
-          variant="text"
-          title="Save Layout"
-          sx={{
-            backgroundColor: "transparent",
-            color: theme.palette.text.primary,
-            "&:hover": {
-              backgroundColor: theme.palette.action.hover,
-            },
-            borderRadius: "50%",
-            minWidth: "48px",
-            width: "48px",
-            height: "48px",
-          }}
-          onClick={saveLayout}
-          disabled
-        >
-          <Save size={20} />
-        </Button>
-        <Button
-          variant="text"
-          title="Reset Layout"
-          sx={{
-            backgroundColor: "transparent",
-            color: theme.palette.text.primary,
-            "&:hover": {
-              backgroundColor: theme.palette.action.hover,
-            },
-            borderRadius: "50%",
-            minWidth: "48px",
-            width: "48px",
-            height: "48px",
-          }}
-          onClick={resetLayout}
-          disabled
-        >
-          <RefreshCw size={20} />
-        </Button>
+        {showLayoutButtons && (
+          <>
+            <Button
+              variant="text"
+              title="Save Layout"
+              sx={{
+                backgroundColor: "transparent",
+                color: theme.palette.text.primary,
+                "&:hover": {
+                  backgroundColor: theme.palette.action.hover,
+                },
+                borderRadius: "50%",
+                minWidth: "48px",
+                width: "48px",
+                height: "48px",
+              }}
+              onClick={saveLayout}
+            >
+              <Save size={20} />
+            </Button>
+            <Button
+              variant="text"
+              title="Reset Layout"
+              sx={{
+                backgroundColor: "transparent",
+                color: theme.palette.text.primary,
+                "&:hover": {
+                  backgroundColor: theme.palette.action.hover,
+                },
+                borderRadius: "50%",
+                minWidth: "48px",
+                width: "48px",
+                height: "48px",
+              }}
+              onClick={resetLayout}
+            >
+              <RefreshCw size={20} />
+            </Button>
+          </>
+        )}
       </>
     ),
     [
@@ -1683,6 +1885,10 @@ const Customisetable = ({
       handlePrint,
       data,
       userData,
+      showLayoutButtons, // Added this
+      setExportMenuAnchorEl,
+      view,
+      setView,
     ]
   );
 
@@ -1708,52 +1914,60 @@ const Customisetable = ({
       }}
     >
       {/* Toolbar */}
-      <Paper
-        elevation={1}
-        sx={{
-          mb: 3,
-          p: 2,
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 0.5,
-          alignItems: "center",
-          justifyContent: "space-between",
-          backgroundColor: colors.surface,
-        }}
-      >
-        <TextField
-          size="small"
-          placeholder="Search across all columns..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+      {!hideToolbar && ( // Conditionally render toolbar based on hideToolbar prop
+        <Paper
+          elevation={1}
           sx={{
-            minWidth: isSmallScreen ? "200px" : "300px",
-            maxWidth: isSmallScreen ? "250px" : "400px",
-            "& .MuiOutlinedInput-root": {
-              backgroundColor: theme.palette.background.paper,
-              "& fieldset": {
-                borderColor: theme.palette.divider,
-              },
-              "&:hover fieldset": {
-                borderColor: theme.palette.text.secondary,
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: colors.primary,
-              },
-            },
+            mb: 3,
+            p: isSmallScreen ? 1 : 2,
+            display: "flex",
+            flexDirection: isSmallScreen ? "column" : "row",
+            flexWrap: isSmallScreen ? "nowrap" : "wrap",
+            gap: isSmallScreen ? 1 : 0.5,
+            alignItems: isSmallScreen ? "stretch" : "center",
+            justifyContent: isSmallScreen ? "flex-start" : "space-between",
+            backgroundColor: colors.surface,
+            width: "100%",
+            minWidth: 0,
           }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search size={18} color={colors.grey[500]} />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
-          {ToolbarButtons}
-        </Box>
-      </Paper>
+        >
+          <TextField
+            size="small"
+            placeholder="Search across all columns..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            sx={{
+              minWidth: "300px",
+              maxWidth: isSmallScreen ? "100%" : "400px",
+              width: isSmallScreen ? "100%" : "auto",
+              mb: isSmallScreen ? 1 : 0,
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: theme.palette.background.paper,
+              },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={18} color={colors.grey[500]} />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: isSmallScreen ? "row" : "row",
+              flexWrap: isSmallScreen ? "wrap" : "nowrap",
+              gap: isSmallScreen ? 1 : 0.5,
+              width: isSmallScreen ? "100%" : "auto",
+              justifyContent: isSmallScreen ? "flex-start" : "flex-end",
+              alignItems: "center",
+            }}
+          >
+            {ToolbarButtons}
+          </Box>
+        </Paper>
+      )}
 
       {/* Export Menu */}
       <Menu
@@ -1825,34 +2039,37 @@ const Customisetable = ({
                 pt: 2,
               }}
             >
-              {visibleColumns.map((col) => (
-                <TextField
-                  key={col.key}
-                  label={col.label}
-                  variant="outlined"
-                  size="small"
-                  value={pendingFilters[col.key] || ""}
-                  onChange={(e) =>
-                    handlePendingFilterChange(col.key, e.target.value)
-                  }
-                  InputProps={{
-                    startAdornment: (
-                      <Search
-                        size={16}
-                        style={{
-                          marginRight: "8px",
-                          color: colors.grey[800],
-                        }}
-                      />
-                    ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: colors.surface,
-                    },
-                  }}
-                />
-              ))}
+              {/*  Only show filterable columns */}
+              {visibleColumns
+                .filter((col) => col.filterable !== false) // Filter only filterable columns
+                .map((col) => (
+                  <TextField
+                    key={col.key}
+                    label={formatLabel(col.label)}
+                    variant="outlined"
+                    size="small"
+                    value={pendingFilters[col.key] || ""}
+                    onChange={(e) =>
+                      handlePendingFilterChange(col.key, e.target.value)
+                    }
+                    InputProps={{
+                      startAdornment: (
+                        <Search
+                          size={16}
+                          style={{
+                            marginRight: "8px",
+                            color: colors.grey[800],
+                          }}
+                        />
+                      ),
+                    }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: colors.surface,
+                      },
+                    }}
+                  />
+                ))}
             </Box>
             <Box
               sx={{
@@ -1978,6 +2195,7 @@ const Customisetable = ({
                     <Checkbox
                       checked={col.visible}
                       onChange={() => togglePendingColumnVisibility(col.key)}
+                      disabled={col.mandatory}
                       sx={{ color: colors.success }}
                     />
                   }
@@ -2074,15 +2292,491 @@ const Customisetable = ({
                 No records found.
               </Typography>
             </Paper>
+          ) : view === "table" ? (
+            <TableContainer>
+              <Table sx={{ minWidth: 650 }} aria-label="dynamic data grid">
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: colors.grey[100] }}>
+                    {visibleColumns.map((col, index) => (
+                      <TableCell
+                        key={col.key}
+                        sx={{
+                          p: 2,
+                          textAlign: "left",
+                          fontWeight: 700,
+                          fontSize: "14px",
+                          color: colors.text.primary,
+                          borderRight: `1px solid ${colors.grey[300]}`,
+                          minWidth: col.width,
+                          maxWidth: col.width,
+                          position:
+                            col.pinned === "left" ? "sticky" : "relative",
+                          left: col.pinned === "left" ? 0 : "auto",
+                          backgroundColor:
+                            col.pinned === "left" ? colors.surface : undefined,
+                          zIndex: col.pinned === "left" ? 2 : undefined,
+                          userSelect: "none",
+                          textTransform: "capitalize",
+                          letterSpacing: "0.08333em",
+                          cursor:
+                            resizingColumnKey === col.key
+                              ? "col-resize"
+                              : "default",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const dropIndex = index;
+                          const dragIndex = Number.parseInt(
+                            e.dataTransfer.getData("text/plain"),
+                            10
+                          );
+                          if (dragIndex !== dropIndex) {
+                            handleColumnReorder(dragIndex, dropIndex);
+                          }
+                          setDraggedColumnIndex(null);
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          title={`Click to sort by ${formatLabel(col.label)} or drag to reorder`}
+                          sx={{
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                            "&:hover": { cursor: "grab" },
+                            "&:active": { cursor: "grabbing" },
+                            "&:hover .sort-icon": { opacity: 1 },
+                          }}
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData(
+                              "text/plain",
+                              index.toString()
+                            );
+                            setDraggedColumnIndex(index);
+                          }}
+                          onDragEnd={() => setDraggedColumnIndex(null)}
+                          onClick={() => handleSort(col.key)}
+                        >
+                          {formatLabel(col.label)}
+                          {col.pinned === "left" && (
+                            <PushPinIcon
+                              fontSize="small"
+                              sx={{
+                                ml: 0.5,
+                                color: colors.primary,
+                                opacity: 0.8,
+                                transform: "rotate(-20deg)",
+                              }}
+                              titleAccess="Pinned column"
+                            />
+                          )}
+                          {col.sortable && (
+                            <Box
+                              className="sort-icon"
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                fontSize: "14px",
+                                opacity: sortConfig[0].key === col.key ? 1 : 0,
+                                transition: "opacity 0.2s ease-in-out",
+                                color: colors.primary,
+                                "&:hover": { opacity: 1 },
+                              }}
+                            >
+                              {sortConfig[0].key === col.key ? (
+                                sortConfig[0].direction === "asc" ? (
+                                  <span>↑</span>
+                                ) : (
+                                  <span>↓</span>
+                                )
+                              ) : (
+                                <span style={{ opacity: 0.5 }}>↕</span>
+                              )}
+                            </Box>
+                          )}
+                        </Box>
+                        {/* Resize handle */}
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            right: 0,
+                            top: 0,
+                            bottom: 0,
+                            width: "16px",
+                            cursor: "col-resize",
+                            backgroundColor:
+                              resizingColumnKey === col.key
+                                ? colors.primary
+                                : "transparent",
+                            opacity: resizingColumnKey === col.key ? 0.5 : 0.2,
+                            "&:hover": {
+                              opacity: 1,
+                              backgroundColor: colors.primary,
+                            },
+                            transition:
+                              "opacity 0.2s ease-in-out, background-color 0.2s ease-in-out",
+                            zIndex: 2,
+                          }}
+                          onMouseDown={(e) => handleMouseDown(e, col.key)}
+                        />
+                      </TableCell>
+                    ))}
+                    {showActions && (
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          backgroundColor: colors.grey[100],
+                          position: "sticky",
+                          right: 0,
+                          zIndex: 2,
+                          borderBottom: `1px solid ${colors.grey[300]}`,
+                        }}
+                      >
+                        {/* Optionally add 'Actions' label here */}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={visibleColumns.length + 1}
+                        sx={{ textAlign: "center", py: 3 }}
+                      >
+                        <CircularProgress
+                          size={24}
+                          sx={{ color: colors.primary }}
+                        />
+                        <Typography
+                          variant="body2"
+                          sx={{ mt: 1, ml: 2, color: colors.text.secondary }}
+                        >
+                          Loading data...
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : paginatedData?.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={visibleColumns.length + 1}
+                        sx={{ textAlign: "center", py: 3 }}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{ color: colors.text.secondary }}
+                        >
+                          No records found.
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedData?.map((row, rowIndex) => (
+                      <TableRow key={row?.[mainKey] || rowIndex}>
+                        {visibleColumns.map((col) => (
+                          <TableCell
+                            key={col.key}
+                            sx={{
+                              p: 2,
+                              fontSize: "14px",
+                              color: colors.text.primary,
+                              borderBottom: `1px solid ${colors.grey[200]}`,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              maxWidth: col.width || 150,
+                            }}
+                          >
+                            {/* CHANGE START */}
+                            {col.key?.toLowerCase() === linkType ||
+                            col.key?.toLowerCase() === linkType ||
+                            col.label?.toLowerCase() === linkType ? (
+                              <Box
+                                component="span"
+                                onClick={() => {
+                                  onclickRow(row);
+                                }}
+                                sx={{
+                                  cursor: "pointer",
+                                  color:
+                                    theme.palette.mode === "dark"
+                                      ? "skyblue"
+                                      : "blue",
+                                  textDecoration: "underline",
+                                }}
+                                title={title}
+                              >
+                                {String(getNestedValue(row, col.key))}
+                              </Box>
+                            ) : (
+                              String(getNestedValue(row, col.key))
+                            )}
+                            {/* CHANGE END */}
+                          </TableCell>
+                        ))}
+                        {showActions && (
+                          <TableCell
+                            sx={{
+                              p: 2,
+                              textAlign: "center",
+                              borderBottom: `1px solid ${colors.grey[200]}`,
+                              minWidth: 120,
+                              maxWidth: 120,
+                              position: "sticky",
+                              right: 0,
+                              backgroundColor: colors.background,
+                              zIndex: 1,
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                gap: 0.5,
+                                justifyContent: "flex-end",
+                              }}
+                            >
+                              <>
+                                <Tooltip title="Show">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleShowData(row)}
+                                    sx={{
+                                      color:
+                                        theme.palette.mode === "dark"
+                                          ? "#fff"
+                                          : "#333",
+                                      "&:hover": {
+                                        backgroundColor:
+                                          theme.palette.mode === "dark"
+                                            ? "rgba(255,255,255,0.1)"
+                                            : "#33333315",
+                                      },
+                                    }}
+                                  >
+                                    <Eye size={20} />{" "}
+                                    {/* ← Replaced Edit with Eye */}
+                                  </IconButton>
+                                </Tooltip>
+
+                                {hasEditPermission && (
+                                  <Tooltip title="Edit">
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => handleEdit(row)}
+                                      sx={{
+                                        color:
+                                          theme.palette.mode === "dark"
+                                            ? "#fff"
+                                            : "#333",
+                                        "&:hover": {
+                                          backgroundColor:
+                                            theme.palette.mode === "dark"
+                                              ? "rgba(255,255,255,0.1)"
+                                              : "#33333315",
+                                        },
+                                      }}
+                                    >
+                                      <Edit size={16} />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                                {hasDeletePermission && (
+                                  <Tooltip title="Delete">
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => handleDelete(row)}
+                                      sx={{
+                                        color:
+                                          theme.palette.mode === "dark"
+                                            ? "#fff"
+                                            : "#333",
+                                        "&:hover": {
+                                          backgroundColor:
+                                            theme.palette.mode === "dark"
+                                              ? "rgba(255,255,255,0.1)"
+                                              : "#33333315",
+                                        },
+                                      }}
+                                    >
+                                      <Trash2 size={16} />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                              </>
+                            </Box>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
           ) : (
-            <Box>
-              {paginatedData?.map((item, index) => (
-                <DynamicUserCard
-                  key={item?.[mainKey] || index}
-                  item={item}
-                  index={index}
-                />
-              ))}
+            <Box
+              display="grid"
+              gridTemplateColumns="repeat(auto-fit,minmax(225px,1fr))"
+              gap={2}
+            >
+              {paginatedData?.map((employee, index) => {
+                console.log("CardColoumn", CardColoumn);
+
+                const cardData = CardColoumn?.map((item) => {
+                  const label = item?.key
+                    ?.split("_") // Split by underscore
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize first letter of each word
+                    .join(" "); // Join with spaces
+
+                  return {
+                    ...item,
+                    value: employee[item?.key],
+                    label, // ✔ Add dynamically generated label
+                  };
+                });
+
+                return (
+                  <Box
+                    key={index}
+                    sx={{
+                      border: "1px solid #ddd",
+                      borderRadius: 2,
+                      p: 2,
+                      height: "max-content",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      "&:hover": {
+                        boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+                      },
+                    }}
+                  >
+                    {/* Card Content */}
+                    <Box>
+                      {cardData.map((item, i) => (
+                        <Box key={i} mb={1}>
+                          {item.type === "photo" ? (
+                            <Box
+                              component="img"
+                              src={
+                                item.value ||
+                                "https://avatar.iran.liara.run/public/47"
+                              }
+                              alt="Employee"
+                              sx={{
+                                width: 80,
+                                height: 80,
+                                borderRadius: "50%",
+                                objectFit: "cover",
+                                border: "1px solid #ccc",
+                                mb: 1,
+                              }}
+                            />
+                          ) : (
+                            <Typography
+                              variant={i === 0 ? "h6" : "body2"}
+                              sx={{
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                maxWidth: "100%",
+                                display: "block",
+                              }}
+                            >
+                              <strong>{item?.value}</strong>
+                            </Typography>
+                          )}
+                        </Box>
+                      ))}
+                    </Box>
+
+                    {/* Action Buttons */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 0.5,
+                        justifyContent: "flex-start",
+                      }}
+                    >
+                      {showActions && (
+                        <>
+                          <Tooltip title="Show">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleShowData(employee)}
+                              sx={{
+                                color:
+                                  theme.palette.mode === "dark"
+                                    ? "#fff"
+                                    : "#333",
+                                "&:hover": {
+                                  backgroundColor:
+                                    theme.palette.mode === "dark"
+                                      ? "rgba(255,255,255,0.1)"
+                                      : "#33333315",
+                                },
+                              }}
+                            >
+                              <Eye size={20} /> {/* ← Replaced Edit with Eye */}
+                            </IconButton>
+                          </Tooltip>
+
+                          {hasEditPermission && (
+                            <Tooltip title="Edit">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleEdit(employee)}
+                                sx={{
+                                  color:
+                                    theme.palette.mode === "dark"
+                                      ? "#fff"
+                                      : "#333",
+                                  "&:hover": {
+                                    backgroundColor:
+                                      theme.palette.mode === "dark"
+                                        ? "rgba(255,255,255,0.1)"
+                                        : "#33333315",
+                                  },
+                                }}
+                              >
+                                <Edit size={16} />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          {hasDeletePermission && (
+                            <Tooltip title="Delete">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDelete(employee)}
+                                sx={{
+                                  color:
+                                    theme.palette.mode === "dark"
+                                      ? "#fff"
+                                      : "#333",
+                                  "&:hover": {
+                                    backgroundColor:
+                                      theme.palette.mode === "dark"
+                                        ? "rgba(255,255,255,0.1)"
+                                        : "#33333315",
+                                  },
+                                }}
+                              >
+                                <Trash2 size={16} />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </>
+                      )}
+                    </Box>
+                  </Box>
+                );
+              })}
             </Box>
           )}
 
@@ -2102,7 +2796,7 @@ const Customisetable = ({
               }}
             >
               <Typography variant="body2" sx={{ color: colors.text.secondary }}>
-                {filteredData?.length} records
+                {filteredData.length} records
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <Button
@@ -2173,7 +2867,12 @@ const Customisetable = ({
                           borderRight: `1px solid ${colors.grey[300]}`,
                           minWidth: col.width,
                           maxWidth: col.width,
-                          position: "relative",
+                          position:
+                            col.pinned === "left" ? "sticky" : "relative",
+                          left: col.pinned === "left" ? 0 : "auto",
+                          backgroundColor:
+                            col.pinned === "left" ? colors.surface : undefined,
+                          zIndex: col.pinned === "left" ? 2 : undefined,
                           userSelect: "none",
                           textTransform: "capitalize",
                           letterSpacing: "0.08333em",
@@ -2207,15 +2906,9 @@ const Customisetable = ({
                             display: "flex",
                             alignItems: "center",
                             gap: 0.5,
-                            "&:hover": {
-                              cursor: "grab",
-                            },
-                            "&:active": {
-                              cursor: "grabbing",
-                            },
-                            "&:hover .sort-icon": {
-                              opacity: 1,
-                            },
+                            "&:hover": { cursor: "grab" },
+                            "&:active": { cursor: "grabbing" },
+                            "&:hover .sort-icon": { opacity: 1 },
                           }}
                           draggable
                           onDragStart={(e) => {
@@ -2229,31 +2922,44 @@ const Customisetable = ({
                           onClick={() => handleSort(col.key)}
                         >
                           {formatLabel(col.label)}
-                          <Box
-                            className="sort-icon"
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              fontSize: "14px",
-                              opacity: sortConfig[0].key === col.key ? 0 : 0,
-                              transition: "opacity 0.2s ease-in-out",
-                              color: colors.primary,
-                              "&:hover": {
-                                opacity: 1,
-                              },
-                            }}
-                          >
-                            {sortConfig[0].key === col.key ? (
-                              sortConfig[0].direction === "asc" ? (
-                                <span>🡡</span>
+                          {col.pinned === "left" && (
+                            <PushPinIcon
+                              fontSize="small"
+                              sx={{
+                                ml: 0.5,
+                                color: colors.primary,
+                                opacity: 0.8,
+                                transform: "rotate(-20deg)",
+                              }}
+                              titleAccess="Pinned column"
+                            />
+                          )}
+                          {col.sortable && (
+                            <Box
+                              className="sort-icon"
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                fontSize: "14px",
+                                opacity: sortConfig[0].key === col.key ? 1 : 0,
+                                transition: "opacity 0.2s ease-in-out",
+                                color: colors.primary,
+                                "&:hover": { opacity: 1 },
+                              }}
+                            >
+                              {sortConfig[0].key === col.key ? (
+                                sortConfig[0].direction === "asc" ? (
+                                  <span>↑</span>
+                                ) : (
+                                  <span>↓</span>
+                                )
                               ) : (
-                                <span>🡣</span>
-                              )
-                            ) : (
-                              <span style={{ opacity: 0.5 }}>🡡</span>
-                            )}
-                          </Box>
+                                <span style={{ opacity: 0.5 }}>↕</span>
+                              )}
+                            </Box>
+                          )}
                         </Box>
+                        {/* Resize handle */}
                         <Box
                           sx={{
                             position: "absolute",
@@ -2279,23 +2985,27 @@ const Customisetable = ({
                         />
                       </TableCell>
                     ))}
-                    <TableCell
-                      sx={{
-                        fontWeight: 600,
-                        backgroundColor: colors.grey[100],
-                        position: "sticky",
-                        right: 0,
-                        zIndex: 2,
-                        borderBottom: `1px solid ${colors.grey[300]}`,
-                      }}
-                    ></TableCell>
+                    {showActions && (
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          backgroundColor: colors.grey[100],
+                          position: "sticky",
+                          right: 0,
+                          zIndex: 2,
+                          borderBottom: `1px solid ${colors.grey[300]}`,
+                        }}
+                      >
+                        {/* Optionally add 'Actions' label here */}
+                      </TableCell>
+                    )}
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {loading ? (
                     <TableRow>
                       <TableCell
-                        colSpan={visibleColumns?.length + 1}
+                        colSpan={visibleColumns.length + (showActions ? 1 : 0)}
                         sx={{ textAlign: "center", py: 3 }}
                       >
                         <CircularProgress
@@ -2313,7 +3023,7 @@ const Customisetable = ({
                   ) : paginatedData?.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={visibleColumns?.length + 1}
+                        colSpan={visibleColumns.length + (showActions ? 1 : 0)}
                         sx={{ textAlign: "center", py: 3 }}
                       >
                         <Typography
@@ -2339,35 +3049,255 @@ const Customisetable = ({
                               overflow: "hidden",
                               textOverflow: "ellipsis",
                               maxWidth: col.width || 150,
+                              position:
+                                col.pinned === "left" ? "sticky" : "relative",
+                              left: col.pinned === "left" ? 0 : "auto",
+                              backgroundColor:
+                                col.pinned === "left"
+                                  ? colors.surface
+                                  : undefined,
+                              zIndex: col.pinned === "left" ? 1 : undefined,
                             }}
                           >
-                            {String(getNestedValue(row, col.key))}
+                            {/* CHANGE START */}
+                            {col.key?.toLowerCase() === linkType ||
+                            col.key?.toLowerCase() === linkType ||
+                            col.label?.toLowerCase() === linkType ? (
+                              <Box
+                                component="span"
+                                onClick={() => {
+                                  onclickRow(row);
+                                }}
+                                sx={{
+                                  cursor: "pointer",
+                                  color:
+                                    theme.palette.mode === "dark"
+                                      ? "skyblue"
+                                      : "blue",
+                                  textDecoration: "underline",
+                                }}
+                                title={title}
+                              >
+                                {String(getNestedValue(row, col.key))}
+                              </Box>
+                            ) : (
+                              String(getNestedValue(row, col.key))
+                            )}
+                            {/* CHANGE END */}
                           </TableCell>
                         ))}
-                        <TableCell
-                          sx={{
-                            p: 2,
-                            textAlign: "center",
-                            borderBottom: `1px solid ${colors.grey[200]}`,
-                            minWidth: 120,
-                            maxWidth: 120,
-                            position: "sticky",
-                            right: 0,
-                            backgroundColor: colors.background,
-                            zIndex: 1,
-                          }}
-                        >
-                          <Box
+                        {showActions && (
+                          <TableCell
                             sx={{
-                              display: "flex",
-                              gap: 0.5,
-                              justifyContent: "flex-end",
+                              p: 2,
+                              textAlign: "center",
+                              borderBottom: `1px solid ${colors.grey[200]}`,
+                              minWidth: 120,
+                              maxWidth: 120,
+                              position: "sticky",
+                              right: 0,
+                              backgroundColor: colors.background,
+                              zIndex: 1,
                             }}
                           >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                gap: 0.5,
+                                justifyContent: "flex-end",
+                              }}
+                            >
+                              <>
+                                <Tooltip title="Show">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleShowData(row)}
+                                    sx={{
+                                      color:
+                                        theme.palette.mode === "dark"
+                                          ? "#fff"
+                                          : "#333",
+                                      "&:hover": {
+                                        backgroundColor:
+                                          theme.palette.mode === "dark"
+                                            ? "rgba(255,255,255,0.1)"
+                                            : "#33333315",
+                                      },
+                                    }}
+                                  >
+                                    <Eye size={20} />{" "}
+                                    {/* ← Replaced Edit with Eye */}
+                                  </IconButton>
+                                </Tooltip>
+
+                                {hasEditPermission && (
+                                  <Tooltip title="Edit">
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => handleEdit(row)}
+                                      sx={{
+                                        color:
+                                          theme.palette.mode === "dark"
+                                            ? "#fff"
+                                            : "#333",
+                                        "&:hover": {
+                                          backgroundColor:
+                                            theme.palette.mode === "dark"
+                                              ? "rgba(255,255,255,0.1)"
+                                              : "#33333315",
+                                        },
+                                      }}
+                                    >
+                                      <Edit size={16} />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                                {hasDeletePermission && (
+                                  <Tooltip title="Delete">
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => handleDelete(row)}
+                                      sx={{
+                                        color:
+                                          theme.palette.mode === "dark"
+                                            ? "#fff"
+                                            : "#333",
+                                        "&:hover": {
+                                          backgroundColor:
+                                            theme.palette.mode === "dark"
+                                              ? "rgba(255,255,255,0.1)"
+                                              : "#33333315",
+                                        },
+                                      }}
+                                    >
+                                      <Trash2 size={16} />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                              </>
+                            </Box>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Box
+              display="grid"
+              gridTemplateColumns="repeat(auto-fit,minmax(225px,1fr))"
+              gap={2}
+            >
+              {paginatedData?.map((employee, index) => {
+                console.log("CardColoumn", CardColoumn);
+
+                const cardData = CardColoumn?.map((item) => {
+                  const label = item?.key
+                    ?.split("_") // Split by underscore
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize first letter of each word
+                    .join(" "); // Join with spaces
+
+                  return {
+                    ...item,
+                    value: employee[item?.key],
+                    label, // ✔ Add dynamically generated label
+                  };
+                });
+
+                return (
+                  <Box
+                    key={index}
+                    sx={{
+                      border: "1px solid #ddd",
+                      borderRadius: 2,
+                      p: 2,
+                      height: "max-content",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      "&:hover": {
+                        boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+                      },
+                    }}
+                  >
+                    {/* Card Content */}
+                    <Box>
+                      {cardData.map((item, i) => (
+                        <Box key={i} mb={1}>
+                          {item.type === "photo" ? (
+                            <Box
+                              component="img"
+                              src={
+                                item.value ||
+                                "https://avatar.iran.liara.run/public/47"
+                              }
+                              alt="Employee"
+                              sx={{
+                                width: 80,
+                                height: 80,
+                                borderRadius: "50%",
+                                objectFit: "cover",
+                                border: "1px solid #ccc",
+                                mb: 1,
+                              }}
+                            />
+                          ) : (
+                            <Typography
+                              variant={i === 0 ? "h6" : "body2"}
+                              sx={{
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                maxWidth: "100%",
+                                display: "block",
+                              }}
+                            >
+                              <strong>{item?.value}</strong>
+                            </Typography>
+                          )}
+                        </Box>
+                      ))}
+                    </Box>
+
+                    {/* Action Buttons */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 0.5,
+                        justifyContent: "flex-start",
+                      }}
+                    >
+                      {showActions && (
+                        <>
+                          <Tooltip title="Show">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleShowData(employee)}
+                              sx={{
+                                color:
+                                  theme.palette.mode === "dark"
+                                    ? "#fff"
+                                    : "#333",
+                                "&:hover": {
+                                  backgroundColor:
+                                    theme.palette.mode === "dark"
+                                      ? "rgba(255,255,255,0.1)"
+                                      : "#33333315",
+                                },
+                              }}
+                            >
+                              <Eye size={20} /> {/* ← Replaced Edit with Eye */}
+                            </IconButton>
+                          </Tooltip>
+
+                          {hasEditPermission && (
                             <Tooltip title="Edit">
                               <IconButton
                                 size="small"
-                                onClick={() => handleEdit(row)}
+                                onClick={() => handleEdit(employee)}
                                 sx={{
                                   color:
                                     theme.palette.mode === "dark"
@@ -2384,10 +3314,12 @@ const Customisetable = ({
                                 <Edit size={16} />
                               </IconButton>
                             </Tooltip>
+                          )}
+                          {hasDeletePermission && (
                             <Tooltip title="Delete">
                               <IconButton
                                 size="small"
-                                onClick={() => handleDelete(row)}
+                                onClick={() => handleDelete(employee)}
                                 sx={{
                                   color:
                                     theme.palette.mode === "dark"
@@ -2404,105 +3336,13 @@ const Customisetable = ({
                                 <Trash2 size={16} />
                               </IconButton>
                             </Tooltip>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          ) : (
-            <Box
-              display="grid"
-              gridTemplateColumns="repeat(auto-fit,minmax(225px,1fr))"
-              gap={2}
-              value="card"
-            >
-              {paginatedData.map((row,rowIndex,index) => (
-                <Box
-                  key={row?.[mainKey] || rowIndex}
-                  index={index}
-                  sx={{
-                    border: "1px solid #ddd",
-                    borderRadius: 2,
-                    p: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                    transition: "box-shadow 0.3s ease-in-out",
-                    "&:hover": {
-                      boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-                    },
-                  }}
-                >
-                  <Box> 
-                    {visibleColumns.map((col) => (
-                      <Typography
-                        key={col.key}
-                        variant="body2"
-                        sx={{
-                          mb: 1,
-                          color: colors.text.primary,
-                          // whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          fontWeight: 500,
-                        }}
-                      >
-                        <strong>{formatLabel(col.label)}:</strong>{" "}
-                        {String(getNestedValue(row, col.key))}
-                      </Typography>
-                    ))}
-                   
+                          )}
+                        </>
+                      )}
+                    </Box>
                   </Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 0.5,
-                      justifyContent: "flex-start",
-                    }}
-                  >
-                    <Tooltip title="Edit">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEdit(row)}
-                        sx={{
-                          color:
-                            theme.palette.mode === "dark" ? "#fff" : "#333",
-                          "&:hover": {
-                            backgroundColor:
-                              theme.palette.mode === "dark"
-                                ? "rgba(255,255,255,0.1)"
-                                : "#33333315",
-                          },
-                        }}
-                      >
-                        <Edit size={16} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDelete(row)}
-                        sx={{
-                          color:
-                            theme.palette.mode === "dark" ? "#fff" : "#333",
-                          "&:hover": {
-                            backgroundColor:
-                              theme.palette.mode === "dark"
-                                ? "rgba(255,255,255,0.1)"
-                                : "#33333315",
-                          },
-                        }}
-                      >
-                        <Trash2 size={16} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Box>
-              ))}
+                );
+              })}
             </Box>
           )}
         </Paper>
@@ -2524,7 +3364,7 @@ const Customisetable = ({
           }}
         >
           <Typography variant="body2" sx={{ color: colors.text.secondary }}>
-            Showing {filteredData?.length} of {data?.length} records
+            Showing {filteredData.length} of {data.length} records
           </Typography>
           <Typography variant="body2" sx={{ color: colors.text.secondary }}>
             {activeFilters} filter(s) active
@@ -2557,7 +3397,7 @@ const Customisetable = ({
               title="Previous page"
               sx={{
                 backgroundColor: colors.primary,
-                color: "white",
+                color: theme.palette.mode === "dark" ? "black" : "white",
                 "&:hover": {
                   backgroundColor:
                     theme.palette.mode === "dark"
@@ -2581,7 +3421,7 @@ const Customisetable = ({
               title="Next page"
               sx={{
                 backgroundColor: colors.primary,
-                color: "white",
+                color: theme.palette.mode === "dark" ? "black" : "white",
                 "&:hover": {
                   backgroundColor:
                     theme.palette.mode === "dark"
@@ -2599,7 +3439,7 @@ const Customisetable = ({
       )}
 
       {/* Delete Dialog */}
-      <Dialog
+      {/* <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         maxWidth="sm"
@@ -2668,6 +3508,204 @@ const Customisetable = ({
             Cancel
           </Button>
         </DialogActions>
+      </Dialog> */}
+
+      {/* Delete Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            backgroundColor: colors.surface,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            background: `linear-gradient(135deg, ${colors.error} 0%, ${theme.palette.mode === "dark" ? theme.palette.error.dark : theme.palette.error.light} 100%)`,
+            color: "white",
+            borderRadius: "12px 12px 0 0",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Box
+                sx={{
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  borderRadius: "50%",
+                  p: 1,
+                  display: "flex",
+                  backdropFilter: "blur(10px)",
+                }}
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />
+                </svg>
+              </Box>
+              <Typography
+                variant="h6"
+                component="span"
+                sx={{ fontWeight: 600, letterSpacing: "0.3px" }}
+              >
+                Confirm Delete
+              </Typography>
+            </Box>
+            <IconButton
+              onClick={() => setDeleteDialogOpen(false)}
+              sx={{
+                color: "white",
+                backgroundColor: "rgba(255,255,255,0.1)",
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  transform: "rotate(90deg)",
+                  transition: "all 0.3s ease",
+                },
+              }}
+            >
+              <X size={20} />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            p: 4,
+            backgroundColor: colors.surface,
+          }}
+        >
+          <Box
+            sx={{
+              alignItems: "flex-start",
+              gap: 2,
+              p: 2.5,
+              borderRadius: 2,
+              backgroundColor:
+                theme.palette.mode === "dark"
+                  ? "rgba(244, 67, 54, 0.1)"
+                  : "rgba(244, 67, 54, 0.05)",
+              border: `1px solid ${theme.palette.mode === "dark" ? "rgba(244, 67, 54, 0.2)" : "rgba(244, 67, 54, 0.15)"}`,
+            }}
+          >
+            <Box
+              sx={{
+                color: colors.error,
+                mt: 0.3,
+                minWidth: "24px",
+              }}
+            >
+              <svg
+                style={{ position: "relative", top: "23", right: "13px" }}
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+
+              <Typography
+                variant="body1"
+                sx={{
+                  display: "flex",
+                  color: colors.text.primary,
+                  lineHeight: 1.6,
+                  ml: 2,
+                  fontSize: "0.95rem",
+                }}
+              >
+                Are you sure you want to permanently delete this item? This
+                action cannot be undone.
+              </Typography>
+            </Box>
+
+            <Typography
+              variant="body2"
+              sx={{ color: colors.text.secondary, mt: 1 }}
+            >
+              Deleting this item will also permanently remove all related
+              records.
+            </Typography>
+          </Box>
+        </DialogContent>
+
+        <DialogActions
+          sx={{
+            p: 3,
+            pt: 0,
+            pb: 3,
+            backgroundColor: colors.surface,
+            gap: 1.5,
+          }}
+        >
+          <Button
+            variant="outlined"
+            onClick={() => setDeleteDialogOpen(false)}
+            sx={{
+              color: colors.text.secondary,
+              borderColor:
+                theme.palette.mode === "dark"
+                  ? "rgba(255,255,255,0.2)"
+                  : "rgba(0,0,0,0.2)",
+              px: 3,
+              py: 1,
+              borderRadius: 2,
+              fontWeight: 500,
+              textTransform: "none",
+              fontSize: "0.95rem",
+              "&:hover": {
+                borderColor: colors.text.secondary,
+                backgroundColor:
+                  theme.palette.mode === "dark"
+                    ? "rgba(255,255,255,0.05)"
+                    : "rgba(0,0,0,0.05)",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleDeleteConfirm}
+            sx={{
+              background: `linear-gradient(135deg, ${colors.error} 0%, ${theme.palette.mode === "dark" ? theme.palette.error.light : theme.palette.error.dark} 100%)`,
+              color: "white",
+              px: 3,
+              py: 1,
+              borderRadius: 2,
+              fontWeight: 600,
+              textTransform: "none",
+              fontSize: "0.95rem",
+              boxShadow: `0 4px 12px ${theme.palette.mode === "dark" ? "rgba(244, 67, 54, 0.3)" : "rgba(244, 67, 54, 0.4)"}`,
+              "&:hover": {
+                background: `linear-gradient(135deg, ${theme.palette.mode === "dark" ? theme.palette.error.light : theme.palette.error.dark} 0%, ${colors.error} 100%)`,
+                boxShadow: `0 6px 16px ${theme.palette.mode === "dark" ? "rgba(244, 67, 54, 0.4)" : "rgba(244, 67, 54, 0.5)"}`,
+                transform: "translateY(-1px)",
+              },
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
       </Dialog>
 
       {/* Snackbar for notifications */}
@@ -2718,4 +3756,4 @@ const Customisetable = ({
   );
 };
 
-export default Customisetable;
+export default CustomisetableAlter;

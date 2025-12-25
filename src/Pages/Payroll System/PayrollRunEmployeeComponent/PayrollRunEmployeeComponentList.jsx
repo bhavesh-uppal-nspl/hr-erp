@@ -96,6 +96,7 @@ function PayrollRunEmployeeComponentList() {
         loading={loading}
         heading={"Payroll Employee Run Components"}
         btnName={"Add Component"}
+        add_action={"PAYROLL_RUN_EMPLOYEE_COMPONENT_ADD"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
@@ -133,6 +134,7 @@ function PayrollRunEmployeeComponentList() {
         data={Break}
         sortname={"component_type"}
         showActions={true}
+        edit_delete_action={["PAYROLL_RUN_EMPLOYEE_COMPONENT_DELETE", "PAYROLL_RUN_EMPLOYEE_COMPONENT_EDIT"]}
         Route="/payroll/employee-runs/components"
         DeleteFunc={deleteBreak}
         EditFunc={handleEdit}

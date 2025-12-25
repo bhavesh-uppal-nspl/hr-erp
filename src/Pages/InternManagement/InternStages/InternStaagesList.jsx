@@ -15,9 +15,7 @@ import TableDataGeneric from "../../../Configurations/TableDataGeneric";
 import { useCallback } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import Layout4 from "../../DataLayouts/Layout4";
-import {
-  fetchInternStages,
-} from "../../../Apis/InternManagement";
+import { fetchInternStages } from "../../../Apis/InternManagement";
 
 function InternStaagesList() {
   const [exit, setexit] = useState([]);
@@ -35,10 +33,9 @@ function InternStaagesList() {
           let b = a.map((item) => {
             return {
               ...item,
-              id: item.organization_internship_stage_id ,
-             
+              id: item.organization_internship_stage_id,
+
               Intern_status: item?.status?.internship_status_name || "",
-             
             };
           });
           setexit(b);
@@ -52,23 +49,53 @@ function InternStaagesList() {
     try {
       const org_id = org.organization_id;
       const response = await axios.delete(
-        `${MAIN_URL}/api/organizations/${org_id}/intern-stages/${id}`,
+        `${MAIN_URL}/api/organizations/${org_id}/internship-stages/${id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        toast.error("Session Expired!");
-        window.location.href = "/login";
+
+      if (response.status === 200) {
+        toast.success(response.data.message);
+      } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Stages";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
       }
-      console.error("Delete failed:", error);
-      toast.error(
-        error.response?.data?.error ||
-          "Failed to delete Intern Stipend Details "
-      );
+    } catch (error) {
+      console.log("error is ", error);
+      // 🔹 Handle different error responses from backend
+      if (error.response) {
+        const status = error.response.status;
+
+        console.log("stataus ", status);
+        const backendMessage =
+          error.response.data?.message || error.response.data?.error;
+
+        console.log("backend message ", backendMessage);
+
+        if (status === 400 && backendMessage?.includes("already assigned")) {
+          // Custom message from Laravel when type is assigned
+          toast.error("This Stages is already assigned and cannot be deleted.");
+        } else if (status === 401) {
+          toast.error("Session Expired!");
+          window.location.href = "/login";
+        } else {
+          toast.error(backendMessage || "Failed to delete Intership Stages");
+        }
+
+        console.error("Delete failed:", error.response);
+      } else {
+        // Network or other unexpected errors
+        console.error("Unexpected error:", error);
+        toast.error("An unexpected error occurred while deleting.");
+      }
     }
   };
 
@@ -82,6 +109,13 @@ function InternStaagesList() {
     [navigate]
   );
 
+  const handleShow = useCallback(
+    (item) => {
+      navigate(`/intern/intern-stages/view/${item.id}`);
+    },
+    [navigate]
+  );
+
   return (
     <>
       <Layout4
@@ -89,6 +123,7 @@ function InternStaagesList() {
         heading={"Intern Stages"}
         btnName={"Add Stages"}
         Data={exit}
+        delete_action={"INTERN_STAGES_DELETE"}
         tableHeaders={[
           { name: "Code", value_key: "employee_code", width: "50px" },
           { name: "Name", value_key: "name", width: "150px" },
@@ -148,26 +183,17 @@ function InternStaagesList() {
         Route="/intern/intern-stages"
         DeleteFunc={deleteExit}
         EditFunc={handleEdit}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
-
-        
-                organizationUserId={userData?.organization_user_id} 
-          showLayoutButtons={true}
-          config={{
-            defaultVisibleColumns: [
+        organizationUserId={userData?.organization_user_id}
+        showLayoutButtons={true}
+        config={{
+          defaultVisibleColumns: [
             "internship_stage_name",
             "status",
-            "description"
-          
+            "description",
           ],
-          mandatoryColumns: [
-             "internship_stage_name",
-            "status",
-            "description"
-          
-           
-           
-          ],
+          mandatoryColumns: ["internship_stage_name", "status", "description"],
         }}
       />
     </>

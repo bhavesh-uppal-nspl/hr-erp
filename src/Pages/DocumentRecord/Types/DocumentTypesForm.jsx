@@ -45,7 +45,7 @@ function DocumentTypesForm({ mode }) {
       setFormData(a);
       setLoading(false);
     };
-    if (mode === "edit" && id) {
+    if ((mode === "edit" || mode === "view" ) && id) {
       setLoading(true);
       getdataById();
     }
@@ -151,6 +151,15 @@ function DocumentTypesForm({ mode }) {
                   helperText={formErrors.document_type_name}
                   inputProps={{ maxLength: 100 }}
                   required
+                  disabled={mode === "view"}
+                      sx={{
+                        "& .Mui-disabled": {
+                          WebkitTextFillColor: "rgba(0,0,0,0.7)",
+                          color: "rgba(0,0,0,0.7)",
+                        },
+                      }}
+
+
                 />
 
                 <TextField
@@ -163,6 +172,15 @@ function DocumentTypesForm({ mode }) {
                   error={!!formErrors.document_type_short_name}
                   helperText={formErrors.document_type_short_name}
                   inputProps={{ maxLength: 50 }}
+                  disabled={mode === "view"}
+                      sx={{
+                        "& .Mui-disabled": {
+                          WebkitTextFillColor: "rgba(0,0,0,0.7)",
+                          color: "rgba(0,0,0,0.7)",
+                        },
+                      }}
+
+
                   
                 />
 
@@ -178,6 +196,15 @@ function DocumentTypesForm({ mode }) {
                   multiline
                   minRows={3} // Minimum visible height
                   maxRows={5}
+                  disabled={mode === "view"}
+                      sx={{
+                        "& .Mui-disabled": {
+                          WebkitTextFillColor: "rgba(0,0,0,0.7)",
+                          color: "rgba(0,0,0,0.7)",
+                        },
+                      }}
+
+
                 />
 
               
@@ -191,7 +218,7 @@ function DocumentTypesForm({ mode }) {
                                 color="primary"
                                 size="medium"
                                 onClick={handleSubmit}
-                                disabled={loading || btnLoading}
+                                disabled={loading || btnLoading  || mode === "view"}
                                 sx={{
                                   borderRadius: 2,
                                   minWidth: 120,

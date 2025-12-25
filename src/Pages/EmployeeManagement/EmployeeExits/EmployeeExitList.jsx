@@ -49,7 +49,7 @@ const DEFAULT_COLUMNS = [
   },
   {
     field: "last_working_date",
-    label: "Lst Working Date",
+    label: "Last Working Date",
     visible: true,
     width: 150,
     filterable: true,
@@ -189,6 +189,19 @@ const formatDate = (dateStr) => {
           },
         }
       );
+       if (response.status === 200) {
+        toast.success(response.data.message);
+        console.log("Exit Employee  deleted:", response.data.message);
+      } else {
+        const errorMessage =
+          response.data.message ||
+          response.data.errors?.[Object.keys(response.data.errors)[0]]?.[0] ||
+          "Failed to delete Exit Employee";
+
+        toast.error(errorMessage);
+        console.warn("Deletion error:", response.status, response.data);
+      }
+
     } catch (error) {
       if (error.response && error.response.status === 401) {
         toast.error("Session Expired!");
@@ -211,12 +224,21 @@ const formatDate = (dateStr) => {
     [navigate]
   );
 
+  const handleShow = useCallback(
+    (item) => {
+      navigate(`/organization/employee/employee-exits/view/${item.id}`)
+    },
+    [navigate],
+  )
+
   return (
     <>
       <Layout4
         loading={loading}
+        add_action={"EMPLOYEE_EXIT_ADD"}
         heading={"Employee Exit"}
         btnName={"Add Employee Exit"}
+        delete_action={"EMPLOYEE_EXIT_DELETE"}
         Data={exit}
         tableHeaders={[
           { name: "Code", value_key: "employee_code", width: "50px" },
@@ -273,10 +295,12 @@ const formatDate = (dateStr) => {
         data={exit}
         sortname={"employee_name"}
         showActions={true}
+        edit_delete_action={["EMPLOYEE_EXIT_EDIT", "EMPLOYEE_EXIT_DELETE"]}
         // apiUrl={`${MAIN_URL}/api/organizations/${org?.organization_id}/employee-exit`}
         Route="/organization/employee/employee-exits"
         DeleteFunc={deleteExit}
         EditFunc={handleEdit}
+        handleShow={handleShow}
         token={localStorage.getItem("token")}
         configss={configColumns}
         {...(tableConfig && { config: tableConfig })}

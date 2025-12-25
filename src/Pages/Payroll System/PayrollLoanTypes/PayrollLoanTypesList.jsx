@@ -92,6 +92,7 @@ function PayrollLoanTypesList() {
         loading={loading}
         heading={"Payroll Loan Types"}
         btnName={"Add Type"}
+        add_action={"PAYROLL_LOAN_TYPE_ADD"}
         Data={Break}
         delete_action={"ORG_STRUCTURE_DELETE"}
         tableHeaders={[
@@ -130,6 +131,7 @@ function PayrollLoanTypesList() {
         sortname={"loan_type_name"}
         showActions={true}
         Route="/payroll/loan-types"
+        edit_delete_action={["PAYROLL_LOAN_TYPE_DELETE", "PAYROLL_LOAN_TYPE_EDIT"]}
         DeleteFunc={deleteBreak}
         EditFunc={handleEdit}
         token={localStorage.getItem("token")}
